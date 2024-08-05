@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using WordFlux.ApiService;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
@@ -5,6 +8,7 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.AddNpgsqlDbContext<ApplicationDbContext>("postgresdb");
 
 var app = builder.Build();
 
@@ -16,24 +20,33 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/weatherforecast", async (ApplicationDbContext dbContext, ILogger<Program> logger) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    // get connection string
+    var connectionString = dbContext.Database.GetConnectionString();
+    logger.LogInformation("Connection string: {connectionString}", connectionString);
+    
+    await dbContext.Database.EnsureCreatedAsync();
+    
+    var item = new WeatherForecast
+    {
+        Id = Guid.NewGuid(),
+        TemperatureC = Random.Shared.Next(-20, 55),
+        CreatedAt = DateTime.UtcNow
+    };
+
+    dbContext.Forecasts.Add(item);
+    await dbContext.SaveChangesAsync();
+
+    return await dbContext.Forecasts.ToListAsync();
+
 });
 
 app.MapDefaultEndpoints();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record WeatherForecastDto(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
