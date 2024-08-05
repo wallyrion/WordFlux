@@ -62,6 +62,9 @@ jobs:
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
+        working-directory: ./WordFlux.AppHost
+
 
       - name: Deploy Application
         run: azd deploy --no-prompt
+        working-directory: ./WordFlux.AppHost
