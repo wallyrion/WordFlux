@@ -27,6 +27,9 @@ properties:
     containers:
       - image: {{ .Image }}
         name: apiservice
+        resources:
+          cpu: 0.25
+          memory: 0.5Gi
         env:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
@@ -44,6 +47,9 @@ properties:
             secretRef: connectionstrings--postgresdb
     scale:
       minReplicas: 1
+
+      
+
 tags:
   azd-service-name: apiservice
   aspire-resource-name: apiservice
