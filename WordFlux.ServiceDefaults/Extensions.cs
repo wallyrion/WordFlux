@@ -90,6 +90,7 @@ public static class Extensions
         return builder;
     }
 
+    
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
