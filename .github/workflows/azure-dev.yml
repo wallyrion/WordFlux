@@ -58,15 +58,20 @@ jobs:
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Deploy Application
+        run: azd up
+        env:
+          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
+        working-directory: ./WordFlux.AppHost
 
 #      - name: Provision Infrastructure
 #        run: azd provision --no-prompt
 #        env:
 #          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
 #        working-directory: ./WordFlux.AppHost
-
-      - name: Deploy Application
-        run: azd deploy --no-prompt
-        env:
-          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
-        working-directory: ./WordFlux.AppHost
+#
+#      - name: Deploy Application
+#        run: azd deploy --no-prompt
+#        env:
+#          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
+#        working-directory: ./WordFlux.AppHost
