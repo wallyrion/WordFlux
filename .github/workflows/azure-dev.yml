@@ -29,6 +29,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+
+      - name: Print GitHub Secret
+        run: |
+          echo "Your secret is: ${{ secrets.YOUR_SECRET_NAME }}"
+
       - name: Install azd
         uses: Azure/setup-azd@v1.0.0
 
