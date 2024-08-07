@@ -46,10 +46,8 @@ properties:
           - name: ConnectionStrings__postgresdb
             secretRef: connectionstrings--postgresdb
     scale:
-      minReplicas: 1
-
-      
-
+      minReplicas: 0
+      maxReplicas: 1
 tags:
   azd-service-name: apiservice
   aspire-resource-name: apiservice

@@ -24,9 +24,6 @@ properties:
     containers:
       - image: {{ .Image }}
         name: webfrontend
-        resources:
-          cpu: 0.25
-          memory: 0.5Gi
         env:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}

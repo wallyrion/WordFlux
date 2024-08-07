@@ -42,7 +42,6 @@ resource postgreSqlFlexibleServer_hFZg1J8nf 'Microsoft.DBforPostgreSQL/flexibleS
     highAvailability: {
       mode: 'Disabled'
     }
-    availabilityZone: '1'
   }
 }
 
