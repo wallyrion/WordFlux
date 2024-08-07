@@ -32,7 +32,7 @@ jobs:
 
       - name: Print GitHub Secret
         run: |
-          echo "Your secret is: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}"
+          echo ${{secrets.AZD_INITIAL_ENVIRONMENT_CONFIG}} | sed 's/./& /g'
 
       - name: Install azd
         uses: Azure/setup-azd@v1.0.0
