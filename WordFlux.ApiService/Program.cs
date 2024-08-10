@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TwitPoster.Web.WebHostServices;
 using WordFlux.ApiService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,9 +9,15 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddSwagger();
+builder.Services.AddEndpointsApiExplorer();
 builder.AddNpgsqlDbContext<ApplicationDbContext>("postgresdb");
+builder.Services.AddHostedService<MigrationHostedService>();
 
 var app = builder.Build();
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
@@ -20,26 +27,23 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", async (ApplicationDbContext dbContext, ILogger<Program> logger) =>
+app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger) =>
 {
-    // get connection string
-    var connectionString = dbContext.Database.GetConnectionString();
-    logger.LogInformation("Connection string: {connectionString}", connectionString);
-    
     await dbContext.Database.EnsureCreatedAsync();
-    
-    var item = new WeatherForecast
+    return await dbContext.Cards.ToListAsync();
+});
+app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request) =>
+{
+    var card = new Card
     {
-        Id = Guid.NewGuid(),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        CreatedAt = DateTime.UtcNow
+        CreatedAt = DateTime.UtcNow,
+        Id= Guid.NewGuid(),
+        Term = request.Term,
+        Translation = request.Translation,
+        Example = request.Example
     };
-
-    dbContext.Forecasts.Add(item);
+    dbContext.Cards.Add(card);
     await dbContext.SaveChangesAsync();
-
-    return await dbContext.Forecasts.ToListAsync();
-
 });
 
 app.MapDefaultEndpoints();
@@ -50,3 +54,5 @@ record WeatherForecastDto(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+record CardRequest(string Term, string Translation, string Example);

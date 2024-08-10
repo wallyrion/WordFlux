@@ -1,4 +1,8 @@
+### Wait for dependencies
+https://github.com/davidfowl/WaitForDependenciesAspire
+
 # Next Steps after `azd init`
+
 
 ## Table of Contents
 
@@ -72,3 +76,5 @@ For more troubleshooting information, visit [Container Apps troubleshooting](htt
 ### Additional information
 
 For additional information about setting up your `azd` project, visit our official [docs](https://learn.microsoft.com/azure/developer/azure-developer-cli/make-azd-compatible?pivots=azd-convert).
+
+

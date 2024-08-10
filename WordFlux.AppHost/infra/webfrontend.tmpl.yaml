@@ -24,6 +24,9 @@ properties:
     containers:
       - image: {{ .Image }}
         name: webfrontend
+        resources:
+          cpu: 0.25
+          memory: 0.5Gi
         env:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
@@ -42,7 +45,8 @@ properties:
           - name: services__apiservice__https__0
             value: https://apiservice.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
     scale:
-      minReplicas: 1
+      minReplicas: 0
+      maxReplicas: 1
 tags:
   azd-service-name: webfrontend
   aspire-resource-name: webfrontend
