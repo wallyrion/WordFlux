@@ -1,0 +1,138 @@
+﻿@page "/review"
+@using WordFlux.Web.Components.Shared
+@inject WeatherApiClient WeatherApi
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject NavigationManager Navigation
+
+<PageTitle>Review yourself</PageTitle>
+
+<div class="container mx-auto">
+
+    @if (_isLoading)
+    {
+        <p>
+            <em>Loading...</em>
+        </p>
+    }
+    else
+    {
+        if (_currentCard == null)
+        {
+            <div class="card text-center">
+                <div class="card-header">
+                    Nothing to learn at this moment. <a href="/">Create new cards</a>
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p>A well-known quote, contained in a blockquote element.</p>
+                        <footer class="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+                    </blockquote>
+                </div>
+            </div>
+        }
+
+        else
+        {
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">@_currentCard.Term</h5>
+                    @if (isShowTranslation)
+                    {
+                        <p class="card-text">@_currentCard.Translations.First().Term</p>
+                    }
+                </div>
+            </div>
+
+            <div class="container-fluid">
+                @if (isShowTranslation)
+                {
+                    <div class="row justify-content-center mt-2 mb-2">
+                        <div class="col-5 col-lg-2">
+                            <button type="button" class="btn btn-warning w-100" @onclick="Reject">
+                                Learning...
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-diamond-fill" viewBox="0 0 16 16">
+                                    <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L4.047 3.339 8 7.293l3.954-3.954L9.049.435zm3.61 3.611L8.708 8l3.954 3.954 2.904-2.905c.58-.58.58-1.519 0-2.098l-2.904-2.905zm-.706 8.614L8 8.708l-3.954 3.954 2.905 2.904c.58.58 1.519.58 2.098 0l2.905-2.904zm-8.614-.706L7.292 8 3.339 4.046.435 6.951c-.58.58-.58 1.519 0 2.098z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="col-5 col-lg-2">
+                            <button type="button" class="btn btn-success w-100" @onclick="Approve">
+                                I know this
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations"/>
+                }
+
+                else
+                {
+                    <div class="row justify-content-center mt-2 mb-2">
+                        <div class="col-5 col-lg-2">
+                            <button type="button" class="btn btn-outline-primary w-100" @onclick="ShowTranslation">Show translation</button>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+    }
+
+
+</div>
+
+@code {
+    private readonly string _examples = "<strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.\n";
+    private CardDto? _currentCard;
+    private CardDto? _nextCard;
+    bool _isLoading = true;
+    bool isShowTranslation = false;
+
+    RenderFragment StringToHtml(string htmlString)
+    {
+        return b => b.AddMarkupContent(0, htmlString);
+    }
+
+    async Task SearchForTerm(TranslationItem item)
+    {
+        Navigation.NavigateTo("/?term=" + item.Term);
+    }
+
+    private async Task Approve()
+    {
+        await WeatherApi.ApproveCard(_currentCard!.Id);
+        await LoadNext();
+    }
+
+    void ShowTranslation()
+    {
+        isShowTranslation = true;
+    }
+
+    private async Task Reject()
+    {
+        await WeatherApi.RejectCard(_currentCard!.Id);
+        await LoadNext();
+    }
+
+    private async Task LoadNext()
+    {
+        isShowTranslation = false;
+        _currentCard = _nextCard;
+        _nextCard = await WeatherApi.GetNextCard(1);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentCard = await WeatherApi.GetNextCard();
+        _nextCard = await WeatherApi.GetNextCard(1);
+
+        _isLoading = false;
+    }
+
+}

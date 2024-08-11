@@ -8,34 +8,45 @@
 
 <div class="container mx-auto">
 
-    @if (_currentCard == null)
+    @if (isLoading)
     {
         <p><em>Loading...</em></p>
     }
     else
     {
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">@_currentCard.Term</h5>
-                <p class="card-text">@_currentCard.Translations.First().Term</p>
-            </div>
-        </div>
+        if (_currentCard == null)
+        {
+            <p><em>No cards found.</em></p>
+            <p><a href="/">Create my first card</a></p>
+        }
 
-
-        <div class="container">
-            <div class="row justify-content-center mt-2 mb-2">
-                <div class="col-5 col-lg-2">
-                    <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Previous</button>
-                </div>
-
-                <div class="col-5 col-lg-2">
-                    <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Next</button>
+        else
+        {
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">@_currentCard.Term</h5>
+                    <p class="card-text">@_currentCard.Translations.First().Term</p>
                 </div>
             </div>
 
-            <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations"/>
 
-        </div>
+            <div class="container">
+                <div class="row justify-content-center mt-2 mb-2">
+                    <div class="col-5 col-lg-2">
+                        <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Previous</button>
+                    </div>
+
+                    <div class="col-5 col-lg-2">
+                        <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Next</button>
+                    </div>
+                </div>
+
+                <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations"/>
+
+            </div>
+        }
+        
+       
     }
 
 
@@ -45,6 +56,7 @@
     private readonly string _examples = "<strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.\n";
     private List<CardDto> _cards = [];
     private CardDto? _currentCard;
+    bool isLoading = true;
 
     RenderFragment StringToHtml(string htmlString)
     {
@@ -110,5 +122,7 @@
         _cards = cards;
 
         _currentCard = GetNextCard();
+
+        isLoading = false;
     }
 }

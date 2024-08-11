@@ -22,6 +22,8 @@ public class Card
     public List<CardTranslationItem> Translations { get; set; }
     public string Term { get; set; }
     public Guid CreatedBy { get; set; }
+    public DateTime NextReviewDate { get; set; }
+    public TimeSpan ReviewInterval { get; set; }
 }
 
 /*public interface IEntity

@@ -26,19 +26,55 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
-// Configure the HTTP request pipeline.
 app.UseExceptionHandler();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
 app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
 {
     return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
 });
+
+app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId, int? skip = 0) =>
+{
+    skip ??= 0;
+    return await dbContext.Cards.Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow).OrderBy(x => x.NextReviewDate).Skip(skip.Value).FirstOrDefaultAsync();
+});
+
+app.MapPost("/cards/{cardId:guid}/approve", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid cardId, Guid userId) =>
+{
+    var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
+
+    if (existingCard == null)
+    {
+        return Results.NotFound();
+    }
+    
+    var reviewInterval = existingCard.ReviewInterval * 2;
+    var nextReviewDate = DateTime.UtcNow + reviewInterval + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 10000));
+
+    existingCard.NextReviewDate = nextReviewDate;
+    existingCard.ReviewInterval = reviewInterval;
+    await dbContext.SaveChangesAsync();
+    
+    return Results.Ok();
+});
+
+app.MapPost("/cards/{cardId:guid}/reject", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid cardId, Guid userId) =>
+{
+    var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
+
+    if (existingCard == null)
+    {
+        return Results.NotFound();
+    }
+    
+    var nextReviewDate = DateTime.UtcNow + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 10000));
+
+    existingCard.NextReviewDate = nextReviewDate;
+    await dbContext.SaveChangesAsync();
+    
+    return Results.Ok();
+});
+
 
 app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid userId) =>
 {
@@ -48,7 +84,9 @@ app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> lo
         Id= Guid.NewGuid(),
         Term = request.Term,
         Translations = request.Translations,
-        CreatedBy = userId
+        CreatedBy = userId,
+        NextReviewDate = DateTime.MinValue,
+        ReviewInterval = TimeSpan.FromMinutes(2)
     };
     dbContext.Cards.Add(card);
     await dbContext.SaveChangesAsync();

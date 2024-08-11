@@ -38,13 +38,30 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage)
         return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?userId={myId}"))!;
     }
     
+    public async Task<CardDto> GetNextCard(int skip = 0)
+    {
+        var myId = await storage.GetMyId();
+        
+        return (await httpClient.GetFromJsonAsync<CardDto>($"/cards/next?userId={myId}&skip={skip}"))!;
+    }
+    
+    public async Task ApproveCard(Guid cardId)
+    {
+        var myId = await storage.GetMyId();
+        
+        await httpClient.PostAsync($"/cards/{cardId}/approve?userId={myId}", null!);
+    }
+    
+    public async Task RejectCard(Guid cardId)
+    {
+        var myId = await storage.GetMyId();
+        
+        await httpClient.PostAsync($"/cards/{cardId}/reject?userId={myId}", null!);
+    }
+
+    
     public async Task<TranslationResponse> GetTranslations(string term)
     {
-        /*var requestUri = new UriBuilder()
-        {
-            Path = "/term",
-            Query = $"term={term}"
-        }.Uri;*/
         return (await httpClient.GetFromJsonAsync<TranslationResponse>($"/term?term={term}"))!;
     }
     
