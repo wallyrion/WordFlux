@@ -1,11 +1,15 @@
+using Blazored.LocalStorage;
 using WordFlux.Web;
 using WordFlux.Web.Components;
-
+using WordFlux.Web.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
+
+builder.Services.AddTransient<LocalStorage>();
+builder.Services.AddBlazoredLocalStorage();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

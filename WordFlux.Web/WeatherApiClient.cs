@@ -1,6 +1,8 @@
+using WordFlux.Web.Storage;
+
 namespace WordFlux.Web;
 
-public class WeatherApiClient(HttpClient httpClient)
+public class WeatherApiClient(HttpClient httpClient, LocalStorage storage)
 {
     public async Task<WeatherForecast[]> GetWeatherAsync(int maxItems = 10, CancellationToken cancellationToken = default)
     {
@@ -30,7 +32,10 @@ public class WeatherApiClient(HttpClient httpClient)
             Path = "/term",
             Query = $"term={term}"
         }.Uri;*/
-        return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards"))!;
+        var myId = await storage.GetMyId();
+
+        
+        return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?userId={myId}"))!;
     }
     
     public async Task<TranslationResponse> GetTranslations(string term)
@@ -45,12 +50,13 @@ public class WeatherApiClient(HttpClient httpClient)
     
     public async Task SaveNewCard(CardRequest card)
     {
+        var myId = await storage.GetMyId();
         /*var requestUri = new UriBuilder()
         {
             Path = "/term",
             Query = $"term={term}"
         }.Uri;*/
-        await httpClient.PostAsJsonAsync($"/cards", card);
+        await httpClient.PostAsJsonAsync($"/cards?userId={myId}", card);
     }
 }
 

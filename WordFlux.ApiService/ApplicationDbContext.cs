@@ -21,6 +21,7 @@ public class Card
     public DateTime CreatedAt { get; set; }
     public List<CardTranslationItem> Translations { get; set; }
     public string Term { get; set; }
+    public Guid CreatedBy { get; set; }
 }
 
 /*public interface IEntity

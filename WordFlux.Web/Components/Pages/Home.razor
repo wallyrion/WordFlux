@@ -1,9 +1,12 @@
 ﻿@page "/"
 @using System.Text.RegularExpressions
 @using WordFlux.Web.Components.Shared
+@using WordFlux.Web.Storage
 @inject WeatherApiClient WeatherApi
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject LocalStorage storageService
 
 <PageTitle>Home</PageTitle>
 
@@ -81,12 +84,21 @@
 
 @code {
 
+    /*protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var myId = storageService.GetMyId();
+        
+        await localStorage.SetItemAsync("name", "John Smith");
+        var name = await localStorage.GetItemAsync<string>("name");
+    }*/
+    
     [SupplyParameterFromQuery(Name = "term")]
     string? Term { get; set; }
     bool IsLoading { get; set; }
     bool IsSaved { get; set; }
     
     TranslationResponse? Translation { get; set; }
+    Guid MyId{ get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,6 +107,7 @@
             await TryItOut();
         }
 
+        MyId = await storageService.GetMyId();
     }
 
 
@@ -148,12 +161,7 @@
             Navigation.GetUriWithQueryParameter("term", (string?) null));
     }
     
-    async Task SearchForTerm(string term)
-    {
-        Term = term;
-        await TryItOut();
-    }
-    
+  
     // example: "This is a *bold* text"
     static string ConvertAserisksToBold(string text)
     {

@@ -20,8 +20,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.AddNpgsqlDbContext<ApplicationDbContext>("postgresdb");
 builder.Services.AddHostedService<MigrationHostedService>();
 
-
-
 builder.Services.AddOpenAi(builder.Configuration);
 
 var app = builder.Build();
@@ -37,19 +35,20 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger) =>
+app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
 {
-    await dbContext.Database.EnsureCreatedAsync();
-    return await dbContext.Cards.ToListAsync();
+    return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
 });
-app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request) =>
+
+app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid userId) =>
 {
     var card = new Card
     {
         CreatedAt = DateTime.UtcNow,
         Id= Guid.NewGuid(),
         Term = request.Term,
-        Translations = request.Translations
+        Translations = request.Translations,
+        CreatedBy = userId
     };
     dbContext.Cards.Add(card);
     await dbContext.SaveChangesAsync();
