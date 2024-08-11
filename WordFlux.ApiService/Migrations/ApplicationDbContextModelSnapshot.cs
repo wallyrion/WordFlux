@@ -31,21 +31,49 @@ namespace WordFlux.ApiService.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Example")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Term")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Translation")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.ToTable("Cards");
+                });
+
+            modelBuilder.Entity("WordFlux.ApiService.Card", b =>
+                {
+                    b.OwnsMany("WordFlux.ApiService.CardTranslationItem", "Translations", b1 =>
+                        {
+                            b1.Property<Guid>("CardId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("ExampleOriginal")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("ExampleTranslated")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Term")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("CardId", "Id");
+
+                            b1.ToTable("Cards");
+
+                            b1.ToJson("Translations");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CardId");
+                        });
+
+                    b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618
         }

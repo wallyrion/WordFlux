@@ -1,74 +1,95 @@
 ﻿@page "/cards"
-@rendermode InteractiveServer
+@using WordFlux.Web.Components.Shared
+@inject WeatherApiClient WeatherApi
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject NavigationManager Navigation
 
 <PageTitle>Cards</PageTitle>
 
-<div class="container mx-auto text-center">
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">@_currentCard.Term</h5>
-            <p class="card-text">@_currentCard.Translation</p>
-        </div>
-    </div>
+<div class="container mx-auto">
 
-    <div class="container mt-4">
-        <div class="row justify-content-center">
-            <div class="col-5 col-lg-2">
-                <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Previous</button>
-            </div>
-
-            <div class="col-5 col-lg-2">
-                <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Next</button>
+    @if (_currentCard == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">@_currentCard.Term</h5>
+                <p class="card-text">@_currentCard.Translations.First().Term</p>
             </div>
         </div>
 
 
-        <div class="accordion mt-2" id="accordionExample">
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button show" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        Examples
-                    </button>
-                </h2>
-                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                    <div class="accordion-body">
-                        @StringToHtml(_currentCard.Examples)
-                    </div>
+        <div class="container">
+            <div class="row justify-content-center mt-2 mb-2">
+                <div class="col-5 col-lg-2">
+                    <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Previous</button>
+                </div>
+
+                <div class="col-5 col-lg-2">
+                    <button type="button" class="btn btn-primary w-100" @onclick="SetNextCard">Next</button>
                 </div>
             </div>
-           
+
+            <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations"/>
+
         </div>
-    </div>
-    
+    }
+
+
 </div>
 
 @code {
     private readonly string _examples = "<strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.\n";
-    private List<CardDto> _cards;
-    private CardDto _currentCard;
+    private List<CardDto> _cards = [];
+    private CardDto? _currentCard;
 
     RenderFragment StringToHtml(string htmlString)
     {
         return new RenderFragment(b => b.AddMarkupContent(0, htmlString));
     }
 
-    record CardDto(Guid Id, string Term, string Translation, string Examples);
 
+        
+    async Task SearchForTerm(TranslationItem item)
+    {
+        Navigation.NavigateTo("/?term=" + item.Term, new NavigationOptions
+        {
+            ForceLoad = false
+        });
+    }
 
+    
     private void SetNextCard()
     {
-        _currentCard = GetNextCard();
+        var nextCard = GetNextCard();
+
+        while (nextCard == _currentCard)
+        {
+            nextCard = GetNextCard();
+        }
+
+        _currentCard = nextCard;
     }
     
-    private CardDto GetNextCard()
+    private CardDto? GetNextCard()
     {
+        if (_cards.Count == 0)
+        {
+            return null;
+        }
+        
         // get random card from the list
         return _cards[new Random().Next(0, _cards.Count)];
     }
     
     protected override async Task OnInitializedAsync()
     {
-        _cards = [
+        var cards = await WeatherApi.GetCards();
+
+        /*_cards = [
             new CardDto(Guid.NewGuid(), "to facilitate", "Облегчить", "The new policy will <strong>facilitate</strong> the release of new software."),
             new CardDto(Guid.NewGuid(), "get along with", "Ладить", "I don't <strong>get along with</strong> my boss."),
             new CardDto(Guid.NewGuid(), "to be in charge of", "Отвечать за", "I'm <strong>in charge of</strong> the project."),
@@ -84,6 +105,9 @@
             new CardDto(Guid.NewGuid(), "to be good for", "Быть хорошим для", "It's <strong>good for</strong> your health."),
             new CardDto(Guid.NewGuid(), "to be bad for", "Быть плохим для", "It's <strong>bad for</strong> your health.")
         ];
+        */
+
+        _cards = cards;
 
         _currentCard = GetNextCard();
     }

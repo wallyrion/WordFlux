@@ -23,6 +23,8 @@ properties:
     secrets:
       - name: connectionstrings--postgresdb
         value: '{{ secretOutput "SERVICE_BINDING_KVD0D4074E_ENDPOINT" "connectionString" }};Database=postgresdb'
+      - name: connectionstrings--secrets
+        value: '{{ .Env.SECRETS_VAULTURI }}'
   template:
     containers:
       - image: {{ .Image }}
@@ -45,6 +47,8 @@ properties:
             value: in_memory
           - name: ConnectionStrings__postgresdb
             secretRef: connectionstrings--postgresdb
+          - name: ConnectionStrings__secrets
+            secretRef: connectionstrings--secrets
     scale:
       minReplicas: 0
       maxReplicas: 1

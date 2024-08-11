@@ -1,21 +1,183 @@
 ﻿@page "/"
+@using System.Text.RegularExpressions
+@using WordFlux.Web.Components.Shared
+@inject WeatherApiClient WeatherApi
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject NavigationManager Navigation
 
 <PageTitle>Home</PageTitle>
 
 <div class="container">
 
-    <div class="input-group mb-3">
-        <textarea class="form-control" placeholder="What do you want to memorize?" aria-label="term"></textarea>
-    </div>
+    @if (Translation is { SuggestedTerm: not null })
+    {
+        <div>No found results for <span class="text-secondary">@Translation.Term</span>. Showing results for <span class="text-info">@Translation.SuggestedTerm </span></div>
+    }
 
     <div class="input-group mb-3">
+        <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
+    </div>
+
+
+    <button type="button" class="btn btn-outline-secondary me-1 @EnabledState()" @onclick="Reset">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16">
+            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+        </svg>
+    </button>
+    
+    @if (IsLoading)
+    {
+        <button class="btn btn-outline-info @EnabledState()" type="button" disabled>
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span role="status">Loading...</span>
+        </button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-outline-info @EnabledState()" @onclick="TryItOut">
+            🔍
+            <span > Try it!</span>
+        </button>
+    }
+    @if (Translation != null && Translation.Translations.Count != 0)
+    {
+        @if (IsSaved)
+        {
+            <button type="button" class="btn btn-warning ms-1 disabled">
+                ✔️
+                <span class=""> Saved to cards</span>
+            </button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-outline-warning ms-1 @EnabledState()" @onclick="SaveToCards">
+                ✔️
+                <span class=""> Save to cards</span>
+            </button>
+        }
+      
+    }
+
+
+    @if (Translation != null)
+    {
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Translation.Translations"/>
+    }
+
+
+    @*<div class="input-group mb-3">
         <textarea class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
     </div>
 
     <div class="input-group mb-3">
         <textarea class="form-control" placeholder="Examples" aria-label="examples"></textarea>
-    </div>
+    </div>*@
 
-    <button type="button" class="btn btn-primary">Save</button>
 </div>
 
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "term")]
+    string? Term { get; set; }
+    bool IsLoading { get; set; }
+    bool IsSaved { get; set; }
+    
+    TranslationResponse? Translation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Term))
+        {
+            await TryItOut();
+        }
+
+    }
+
+
+    async Task SearchForTerm(TranslationItem item)
+    {
+        Term = item.Term;
+        
+        Navigation.NavigateTo(
+            Navigation.GetUriWithQueryParameter("term", Term));
+        
+        await TryItOut();
+
+
+    }
+
+    
+    string getPopularityOpacity(TranslationItem item)
+        => $"opacity-{item.Popularity switch { < 25 => 25, < 50 => 50, < 75 => 75, _ => 100 }}";
+
+    async Task TryItOut()
+    {
+        if (string.IsNullOrWhiteSpace(Term))
+        {
+            return;
+        }
+
+        IsLoading = true;
+        IsSaved = false;
+
+        var translations = await WeatherApi.GetTranslations(Term);
+
+        translations = translations with { Translations = translations.Translations.Select(x => 
+            new TranslationItem(
+                x.Term, 
+                ConvertAserisksToBold(x.ExampleTranslated), 
+                ConvertAserisksToBold(x.ExampleOriginal),
+                x.Popularity
+                )).ToList() };
+
+        Translation = translations;
+
+        IsLoading = false;
+    }
+
+    void Reset()
+    {
+        Term = null;
+        Translation = null;
+        
+        Navigation.NavigateTo(
+            Navigation.GetUriWithQueryParameter("term", (string?) null));
+    }
+    
+    async Task SearchForTerm(string term)
+    {
+        Term = term;
+        await TryItOut();
+    }
+    
+    // example: "This is a *bold* text"
+    static string ConvertAserisksToBold(string text)
+    {
+        // This pattern looks for text surrounded by asterisks (*)
+        string pattern = @"\*(.*?)\*";
+
+        // Replace the asterisks and the text between them with the <strong> HTML tag
+        string result = Regex.Replace(text, pattern, "<strong>$1</strong>");
+
+        return result;
+    }
+
+    string EnabledState()
+    {
+        return IsLoading ? "disabled" : "";
+    }
+    
+    async Task SaveToCards()
+    {
+        if (Translation == null)
+        {
+            return;
+        }
+        
+        var cardRequest = new CardRequest(Translation.SuggestedTerm ?? Translation.Term, Translation.Translations);
+        await WeatherApi.SaveNewCard(cardRequest);
+
+        IsSaved = true;
+    }
+}

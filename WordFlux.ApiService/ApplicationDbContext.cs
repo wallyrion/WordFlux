@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WordFlux.ApiService.DbConfigurations;
 
 namespace WordFlux.ApiService;
 
@@ -6,6 +7,11 @@ namespace WordFlux.ApiService;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Card> Cards { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration(new CardConfiguration());
+    }
 }
 
 
@@ -13,9 +19,8 @@ public class Card
 {
     public Guid Id { get;  set; }
     public DateTime CreatedAt { get; set; }
+    public List<CardTranslationItem> Translations { get; set; }
     public string Term { get; set; }
-    public string Translation { get; set;  } 
-    public string Example { get; set; }
 }
 
 /*public interface IEntity

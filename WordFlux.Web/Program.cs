@@ -1,6 +1,7 @@
 using WordFlux.Web;
 using WordFlux.Web.Components;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
