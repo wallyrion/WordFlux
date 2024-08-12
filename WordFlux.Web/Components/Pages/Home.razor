@@ -10,23 +10,32 @@
 
 <div class="container">
 
-    @if (Translation is { SuggestedTerm: not null })
+    @if (Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm))
     {
         <div>No found results for <span class="text-secondary">@Translation.Term</span>. Showing results for <span class="text-info">@Translation.SuggestedTerm </span></div>
     }
 
-    <div class="input-group mb-3">
+
+
+
+    <div class="mb-3 position-relative">
+
+        @if (Translation != null)
+        {
+            <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Translation.Level</span>
+
+        }
         <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
     </div>
     
-   
+    
     <button type="button" class="btn btn-outline-secondary me-1 @EnabledState()" @onclick="Reset">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
         </svg>
     </button>
-    
+
     @if (IsLoading)
     {
         <button class="btn btn-outline-info @EnabledState()" type="button" disabled>
@@ -59,7 +68,6 @@
                 <span class=""> Save to cards</span>
             </button>
         }
-      
     }
 
 
@@ -85,16 +93,17 @@
     /*protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         var myId = storageService.GetMyId();
-        
+
         await localStorage.SetItemAsync("name", "John Smith");
         var name = await localStorage.GetItemAsync<string>("name");
     }*/
-    
+
     [SupplyParameterFromQuery(Name = "term")]
     string? Term { get; set; }
+
     bool IsLoading { get; set; }
     bool IsSaved { get; set; }
-    
+
     TranslationResponse? Translation { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -108,16 +117,12 @@
     async Task SearchForTerm(TranslationItem item)
     {
         Term = item.Term;
-        
+
         Navigation.NavigateTo(
             Navigation.GetUriWithQueryParameter("term", Term));
-        
+
         await TryItOut();
     }
-
-    
-    string getPopularityOpacity(TranslationItem item)
-        => $"opacity-{item.Popularity switch { < 25 => 25, < 50 => 50, < 75 => 75, _ => 100 }}";
 
     async Task TryItOut()
     {
@@ -131,13 +136,15 @@
 
         var translations = await WeatherApi.GetTranslations(Term);
 
-        translations = translations with { Translations = translations.Translations.Select(x => 
-            new TranslationItem(
-                x.Term, 
-                ConvertAserisksToBold(x.ExampleTranslated), 
-                ConvertAserisksToBold(x.ExampleOriginal),
-                x.Popularity
-                )).ToList() };
+        translations = translations with
+        {
+            Translations = translations.Translations.Select(x =>
+                x with
+                {
+                    ExampleTranslated = ConvertAserisksToBold(x.ExampleTranslated),
+                    ExampleOriginal = ConvertAserisksToBold(x.ExampleOriginal)
+                }).ToList()
+        };
 
         Translation = translations;
 
@@ -148,12 +155,11 @@
     {
         Term = null;
         Translation = null;
-        
+
         Navigation.NavigateTo(
-            Navigation.GetUriWithQueryParameter("term", (string?) null));
+            Navigation.GetUriWithQueryParameter("term", (string?)null));
     }
-    
-  
+
     // example: "This is a *bold* text"
     static string ConvertAserisksToBold(string text)
     {
@@ -174,10 +180,11 @@
         {
             return;
         }
-        
-        var cardRequest = new CardRequest(Translation.SuggestedTerm ?? Translation.Term, Translation.Translations);
+
+        var cardRequest = new CardRequest(Translation.SuggestedTerm ?? Translation.Term,  Translation.Level, Translation.Translations);
         await WeatherApi.SaveNewCard(cardRequest);
 
         IsSaved = true;
     }
+
 }

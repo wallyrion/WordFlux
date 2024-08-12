@@ -24,6 +24,7 @@ public class Card
     public Guid CreatedBy { get; set; }
     public DateTime NextReviewDate { get; set; }
     public TimeSpan ReviewInterval { get; set; }
+    public string Level { get; set; } = null!;
 }
 
 /*public interface IEntity

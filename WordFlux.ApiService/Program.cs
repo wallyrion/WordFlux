@@ -86,7 +86,8 @@ app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> lo
         Translations = request.Translations,
         CreatedBy = userId,
         NextReviewDate = DateTime.MinValue,
-        ReviewInterval = TimeSpan.FromMinutes(2)
+        ReviewInterval = TimeSpan.FromMinutes(2),
+        Level = request.Level
     };
     dbContext.Cards.Add(card);
     await dbContext.SaveChangesAsync();

@@ -79,10 +79,10 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage)
 
 public record WeatherForecast(Guid Id, DateTime CreatedAt, int TemperatureC);
 
-public record TranslationResponse(string Term, List<TranslationItem> Translations, string? SuggestedTerm);
-public record TranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity);
+public record TranslationResponse(string Term, List<TranslationItem> Translations, string Level, string? SuggestedTerm);
+public record TranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity, string Level);
 
-public record CardRequest(string Term, List<TranslationItem> Translations);
+public record CardRequest(string Term, string Level, List<TranslationItem> Translations);
 
 
-public record CardDto(Guid Id, DateTime CreatedAt, string Term, List<TranslationItem> Translations);
+public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations);

@@ -16,7 +16,7 @@ public class OpenAiGenerator
         OutputVariable = new OutputVariable
         {
             JsonSchema = """
-                         {"term":"adjictable", "suggestedTerm": "addictive", "list":[{"tr":"вызывающий привыкание ","e_tr":"Социальные сети могут *вызывать привыкание*","e_or":"Social media can be very *addictive*"}]}
+                         {"term":"adjictable","l":"B1","suggestedTerm": "addictive", "list":[{"tr":"вызывающий привыкание ","l":"B1","e_tr":"Социальные сети могут *вызывать привыкание*","e_or":"Social media can be very *addictive*"}]}
                          """
         }
     });
@@ -48,8 +48,8 @@ public class OpenAiGenerator
             return null;
         }
         
-        var items = content!.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal, t.Popularity));
-        var response = new TranslationResponse(content.Term, items, content.SuggestedTerm);
+        var items = content!.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal, t.Popularity, t.Level));
+        var response = new TranslationResponse(content.Term, items, content.Level, content.SuggestedTerm);
 
         return response;
     }
@@ -67,7 +67,9 @@ file class TranslationResult
     
     [JsonPropertyName("suggestedTerm")]
     public string? SuggestedTerm { get; set; }
-
+        
+    [JsonPropertyName("l")]
+    public string Level { get; set; }
 }
 
 file class TranslationItemDto
@@ -83,4 +85,7 @@ file class TranslationItemDto
     
     [JsonPropertyName("u_f")]
     public int Popularity { get; set; }
+        
+    [JsonPropertyName("l")]
+    public string Level { get; set; }
 }

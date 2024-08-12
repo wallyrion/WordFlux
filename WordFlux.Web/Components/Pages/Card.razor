@@ -22,7 +22,9 @@
 
         else
         {
-            <div class="card text-center">
+            <div class="card text-center position-relative">
+                <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@_currentCard.Level</span>
+
                 <div class="card-body">
                     <h5 class="card-title">@_currentCard.Term</h5>
                     <p class="card-text">@_currentCard.Translations.First().Term</p>
