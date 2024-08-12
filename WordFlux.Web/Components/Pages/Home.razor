@@ -10,7 +10,7 @@
 
 <div class="container">
 
-    @if (Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm))
+    @if (Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) && !Translation.SuggestedTerm.Equals(Term, StringComparison.InvariantCultureIgnoreCase))
     {
         <div>No found results for <span class="text-secondary">@Translation.Term</span>. Showing results for <span class="text-info">@Translation.SuggestedTerm </span></div>
     }
