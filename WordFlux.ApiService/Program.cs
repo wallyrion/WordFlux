@@ -36,7 +36,10 @@ app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> log
 app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId, int? skip = 0) =>
 {
     skip ??= 0;
-    return await dbContext.Cards.Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow).OrderBy(x => x.NextReviewDate).Skip(skip.Value).FirstOrDefaultAsync();
+    return await dbContext.Cards
+        .Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow)
+        .OrderBy(x => x.NextReviewDate)
+        .Skip(skip.Value).FirstOrDefaultAsync();
 });
 
 app.MapPost("/cards/{cardId:guid}/approve", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid cardId, Guid userId) =>

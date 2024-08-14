@@ -89,4 +89,4 @@ public record TranslationItem(string Term, string ExampleTranslated, string Exam
 public record CardRequest(string Term, string Level, List<TranslationItem> Translations);
 
 
-public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations);
+public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations, TimeSpan ReviewInterval);

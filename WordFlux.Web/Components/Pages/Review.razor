@@ -43,6 +43,16 @@
                         <p class="card-text">@_currentCard.Translations.First().Term</p>
                     }
                 </div>
+                
+                @if (isShowTranslation)
+                {
+                    var currentProgress = _currentCard.GetProgressRate();
+                    <div class="card-footer">
+                        <div class="progress" role="progressbar" aria-label="Default striped example" aria-valuenow="@currentProgress" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar @(currentProgress>=100?"bg-success":"progress-bar-striped")" style="width: @currentProgress%;"></div>
+                        </div>
+                    </div>
+                }
             </div>
 
             <div>
