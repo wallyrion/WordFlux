@@ -69,7 +69,7 @@
 
                     </div>
 
-                    <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations"/>
+                    <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations" OnMakePrimary="MakePrimary"/>
                 }
 
                 else
@@ -103,6 +103,14 @@
     async Task SearchForTerm(TranslationItem item)
     {
         Navigation.NavigateTo("/?term=" + item.Term);
+    }
+    
+    async Task MakePrimary(TranslationItem item)
+    {
+        _currentCard!.Translations.Remove(item);
+        _currentCard.Translations.Insert(0, item);
+
+        await WeatherApi.UpdateCard(new CardRequest(_currentCard.Term, _currentCard.Level, _currentCard.Translations), _currentCard.Id);
     }
 
     private async Task Approve()

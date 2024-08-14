@@ -68,12 +68,16 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage)
     public async Task SaveNewCard(CardRequest card)
     {
         var myId = await storage.GetMyId();
-        /*var requestUri = new UriBuilder()
-        {
-            Path = "/term",
-            Query = $"term={term}"
-        }.Uri;*/
+
         await httpClient.PostAsJsonAsync($"/cards?userId={myId}", card);
+    }
+    
+    
+    public async Task UpdateCard(CardRequest card, Guid cardId)
+    {
+        var myId = await storage.GetMyId();
+        
+        await httpClient.PutAsJsonAsync($"/cards/{cardId}?userId={myId}", card);
     }
 }
 

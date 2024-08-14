@@ -18,8 +18,6 @@ if (builder.ExecutionContext.IsPublishMode)
     secrets = builder.AddAzureKeyVault("secrets");
 }
 
-
-
 var apiService = builder
         .AddProject<Projects.WordFlux_ApiService>("apiservice")
         .WithReference(postgresdb)

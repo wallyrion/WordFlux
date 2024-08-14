@@ -16,8 +16,6 @@
     }
 
 
-
-
     <div class="mb-3 position-relative">
 
         @if (Translation != null)
@@ -73,7 +71,7 @@
 
     @if (Translation != null)
     {
-        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Translation.Translations"/>
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Translation.Translations" OnMakePrimary="MakePrimary"/>
     }
 
 
@@ -118,10 +116,13 @@
     {
         Term = item.Term;
 
-        Navigation.NavigateTo(
-            Navigation.GetUriWithQueryParameter("term", Term));
-
         await TryItOut();
+    }
+    
+    async Task MakePrimary(TranslationItem item)
+    {
+        Translation!.Translations.Remove(item);
+        Translation.Translations.Insert(0, item);
     }
 
     async Task TryItOut()
@@ -134,6 +135,9 @@
         IsLoading = true;
         IsSaved = false;
 
+        Navigation.NavigateTo(
+            Navigation.GetUriWithQueryParameter("term", Term));
+        
         var translations = await WeatherApi.GetTranslations(Term);
 
         translations = translations with
@@ -149,6 +153,7 @@
         Translation = translations;
 
         IsLoading = false;
+        
     }
 
     void Reset()
@@ -181,7 +186,8 @@
             return;
         }
 
-        var cardRequest = new CardRequest(Translation.SuggestedTerm ?? Translation.Term,  Translation.Level, Translation.Translations);
+        var term = string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.Term : Translation.SuggestedTerm;
+        var cardRequest = new CardRequest(term,  Translation.Level, Translation.Translations);
         await WeatherApi.SaveNewCard(cardRequest);
 
         IsSaved = true;

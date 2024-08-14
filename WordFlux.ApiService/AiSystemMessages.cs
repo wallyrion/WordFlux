@@ -20,7 +20,6 @@ public static class AiSystemMessages
                                                                8. u_f - popularity of translation from 0 to 100 (how often it is used in the context)
                                                                9. there can be a note (clarification) inside 'term' that should be considered as a clue for the context.
                                                                10. For each term and its translation, estimate the level from A0 to C2.
-                                                               11. If 'term' is very complex sentence or more than 1 sentence, give me maximum 2 translations.
                                                                """;
 
 }

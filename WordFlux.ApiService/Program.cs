@@ -93,6 +93,24 @@ app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> lo
     await dbContext.SaveChangesAsync();
 });
 
+app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid userId, Guid cardId) =>
+{
+    var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
+    
+    if (existingCard == null)
+    {
+        return Results.NotFound();
+    }
+
+    existingCard.Term = request.Term;
+    existingCard.Level = request.Level;
+    existingCard.Translations = request.Translations;
+    
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok();
+});
+
 #pragma warning disable SKEXP0010
 
 app.MapGet("/term", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>

@@ -16,15 +16,20 @@
                 </a>*@
                 
                 <h4 class="d-inline">@translation.value.Term</h4>
-                <a class="icon-link icon-link-hover" href="#" role="button" @onclick="() => SearchTerm(translation.value)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right-circle" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.854 10.803a.5.5 0 1 1-.708-.707L9.243 6H6.475a.5.5 0 1 1 0-1h3.975a.5.5 0 0 1 .5.5v3.975a.5.5 0 1 1-1 0V6.707z"/>
 
-                        <use xlink:href="#arrow-right"></use>
-                    </svg>
+              
+                
+                <a class="icon-link icon-link-hover fs-5" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => MakePrimary(translation.value)">
+                    <i class="bi bi-file-arrow-up">
+                    </i>
+                </a>
 
+                <a class="icon-link icon-link-hover fs-5" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => SearchTerm(translation.value)">
+                    <i class="bi bi-search">
+                    </i>
                 </a>
                 
+               
                 
                 @*<a class="icon-link icon-link-hover" href="#" role="button"  @onclick="() => SearchTerm(translation.value)">
                     @translation.value.Term
@@ -66,11 +71,17 @@
     private int currentCount = 0;
 
     [Parameter] public EventCallback<TranslationItem> OnTermSearch { get; set; }
+    [Parameter] public EventCallback<TranslationItem> OnMakePrimary { get; set; }
     [Parameter] public List<TranslationItem> Translations { get; set; }
 
     async Task SearchTerm(TranslationItem item)
     {
         await OnTermSearch.InvokeAsync(item);
+    }
+    
+    async Task MakePrimary(TranslationItem item)
+    {
+        await OnMakePrimary.InvokeAsync(item);
     }
 
     static string GetFireColor(TranslationItem item)
