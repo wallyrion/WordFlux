@@ -116,6 +116,14 @@ app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogge
 
 #pragma warning disable SKEXP0010
 
+app.MapGet("/term/level", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>
+{
+    var respose = await translation.GetLevel(term);
+
+    return new {Level = respose};
+});
+
+
 app.MapGet("/term", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>
 {
     var respose = await translation.GetTranslations(term);
@@ -141,6 +149,60 @@ app.MapGet("/term", async (ApplicationDbContext dbContext, ILogger<Program> logg
 
     return response;*/
 });
+
+app.MapGet("/translations", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>
+{
+    var respose = await translation.GetTranslations(term);
+
+    return respose;
+    /*KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+    {
+
+    }) { { "term", term } };
+
+    var result = await kernel.InvokePromptAsync(Examples.RequestForAssistantWithArguments, arguments);
+
+    var strValue = result.GetValue<string>();
+
+    if (strValue.StartsWith("```json"))
+    {
+        strValue = strValue[7..^3];
+    }
+
+    var translationResult = JsonSerializer.Deserialize<TranslationResult>(strValue);
+
+    var response = new TranslationResponse(translationResult.Term, translationResult.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal)));
+
+    return response;*/
+});
+
+app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILogger<Program> logger, GetTranslationExamples request,  OpenAiGenerator ai) =>
+{
+    var respose = await ai.GetExamples(request.Term, request.Translations);
+
+    return respose;
+    /*KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+    {
+
+    }) { { "term", term } };
+
+    var result = await kernel.InvokePromptAsync(Examples.RequestForAssistantWithArguments, arguments);
+
+    var strValue = result.GetValue<string>();
+
+    if (strValue.StartsWith("```json"))
+    {
+        strValue = strValue[7..^3];
+    }
+
+    var translationResult = JsonSerializer.Deserialize<TranslationResult>(strValue);
+
+    var response = new TranslationResponse(translationResult.Term, translationResult.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal)));
+
+    return response;*/
+});
+
+
 #pragma warning restore SKEXP0010
 
 
@@ -151,4 +213,4 @@ app.Run();
 
 
 
-
+public record GetTranslationExamples(string Term, List<string> Translations);

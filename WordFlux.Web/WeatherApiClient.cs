@@ -2,7 +2,7 @@ using WordFlux.Web.Storage;
 
 namespace WordFlux.Web;
 
-public class WeatherApiClient(HttpClient httpClient, LocalStorage storage)
+public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {
     public async Task<WeatherForecast[]> GetWeatherAsync(int maxItems = 10, CancellationToken cancellationToken = default)
     {
@@ -58,11 +58,33 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage)
         
         await httpClient.PostAsync($"/cards/{cardId}/reject?userId={myId}", null!);
     }
+    
+    
+    public async Task<List<TranslationItem>> GetTranslationExamples(string term, List<string> translations)
+    {
+        logger.LogInformation("Getting FROM UI examples for term {term} and translations {@translations}", term, translations);
+        var request = new GetTranslationExamples(term, translations);
+        var r = await httpClient.PostAsJsonAsync("/translations/examples", request);
+        var r2 = await r.Content.ReadFromJsonAsync<List<TranslationItem>>();
 
+        return r2!;
+    }
+    
     
     public async Task<TranslationResponse> GetTranslations(string term)
     {
         return (await httpClient.GetFromJsonAsync<TranslationResponse>($"/term?term={term}"))!;
+    }
+    
+    public async Task<SimpleTranslationResult> GetSimpleTranslations(string term)
+    {
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResult>($"/translations?term={term}"))!;
+    }
+    public async Task<string> GetLevel(string term)
+    {
+        var res =  (await httpClient.GetFromJsonAsync<GetLevelResponse>($"/term/level?term={term}"))!;
+
+        return res.Level;
     }
     
     public async Task SaveNewCard(CardRequest card)
@@ -85,8 +107,12 @@ public record WeatherForecast(Guid Id, DateTime CreatedAt, int TemperatureC);
 
 public record TranslationResponse(string Term, List<TranslationItem> Translations, string Level, string? SuggestedTerm);
 public record TranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity, string Level);
+public record SimpleTranslationResult(string SuggestedTerm, List<string> Translations);
 
 public record CardRequest(string Term, string Level, List<TranslationItem> Translations);
+public record GetLevelResponse(string Level);
 
 
 public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations, TimeSpan ReviewInterval);
+
+public record GetTranslationExamples(string Term, List<string> Translations);
