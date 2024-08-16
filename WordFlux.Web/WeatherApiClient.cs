@@ -101,6 +101,13 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         
         await httpClient.PutAsJsonAsync($"/cards/{cardId}?userId={myId}", card);
     }
+    
+    public async Task DeleteCard(Guid cardId)
+    {
+        var myId = await storage.GetMyId();
+        
+        await httpClient.DeleteAsync($"/cards/{cardId}?userId={myId}");
+    }
 }
 
 public record WeatherForecast(Guid Id, DateTime CreatedAt, int TemperatureC);

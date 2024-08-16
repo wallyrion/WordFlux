@@ -33,6 +33,21 @@ app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> log
     return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
 });
 
+app.MapDelete("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId, Guid cardId) =>
+{
+    var card = await dbContext.Cards.Where(c => c.CreatedBy == userId && c.Id == cardId).FirstOrDefaultAsync();
+
+    if (card == null)
+    {
+        return Results.NotFound();
+    }
+
+    dbContext.Cards.Remove(card);
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok();
+});
+
 app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId, int? skip = 0) =>
 {
     skip ??= 0;
@@ -155,25 +170,6 @@ app.MapGet("/translations", async (ApplicationDbContext dbContext, ILogger<Progr
     var respose = await translation.GetTranslations(term);
 
     return respose;
-    /*KernelArguments arguments = new(new OpenAIPromptExecutionSettings
-    {
-
-    }) { { "term", term } };
-
-    var result = await kernel.InvokePromptAsync(Examples.RequestForAssistantWithArguments, arguments);
-
-    var strValue = result.GetValue<string>();
-
-    if (strValue.StartsWith("```json"))
-    {
-        strValue = strValue[7..^3];
-    }
-
-    var translationResult = JsonSerializer.Deserialize<TranslationResult>(strValue);
-
-    var response = new TranslationResponse(translationResult.Term, translationResult.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal)));
-
-    return response;*/
 });
 
 app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILogger<Program> logger, GetTranslationExamples request,  OpenAiGenerator ai) =>
@@ -181,25 +177,7 @@ app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILo
     var respose = await ai.GetExamples(request.Term, request.Translations);
 
     return respose;
-    /*KernelArguments arguments = new(new OpenAIPromptExecutionSettings
-    {
 
-    }) { { "term", term } };
-
-    var result = await kernel.InvokePromptAsync(Examples.RequestForAssistantWithArguments, arguments);
-
-    var strValue = result.GetValue<string>();
-
-    if (strValue.StartsWith("```json"))
-    {
-        strValue = strValue[7..^3];
-    }
-
-    var translationResult = JsonSerializer.Deserialize<TranslationResult>(strValue);
-
-    var response = new TranslationResponse(translationResult.Term, translationResult.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal)));
-
-    return response;*/
 });
 
 

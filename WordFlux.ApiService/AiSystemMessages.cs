@@ -87,7 +87,7 @@ public static class AiSystemMessages
 
     public const string translationExamples = """
                                                There is a $term = '{{$term}}' and existing translations for it: {{$translations}}.
-                                               For each translation you should give example of usage and return the following object: {"tr": "translation", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of how *translation* is used in the same in translated language", "e_or": "e_tr translated back to original language"}
+                                               For each translation you should give example of usage and return the following object: {"tr": "translation", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of how *translation* is used", "e_or": "e_tr translated back to original language"}
                                                Mapped objects should be in the same order as original 'translations'
                                                Highlight term with '*' in 'e_tr' and 'e_or' example fields.
                                                Response must be in JSON format in the following template:

@@ -36,6 +36,20 @@
             <div class="card text-center position-relative">
                 <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@_currentCard.Level</span>
 
+                @if (isShowTranslation)
+                {
+                    <div class="dropdown">
+                        
+                        <a class="btn btn-secondary dropdown-toggle icon-link icon-link-hover position-absolute end-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                        </a>
+
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" role="button" @onclick="DeleteCard">Delete</a></li>
+                        </ul>
+                    </div> 
+                }
+                
                 <div class="card-body">
                     <h5 class="card-title">@_currentCard.Term</h5>
                     @if (isShowTranslation)
@@ -76,6 +90,8 @@
                                 </svg>
                             </button>
                         </div>
+
+                       
 
                     </div>
 
@@ -160,6 +176,13 @@
         _nextCard = await WeatherApi.GetNextCard(1);
 
         _isLoading = false;
+    }
+
+    private async Task DeleteCard()
+    {
+        await WeatherApi.DeleteCard(_currentCard!.Id);
+        
+        await LoadNext();
     }
 
 }
