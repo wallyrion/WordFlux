@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using System.Text.RegularExpressions
 @using WordFlux.Web.Components.Shared
+@using WordFlux.Web.Models
 @using WordFlux.Web.Storage
 @inject WeatherApiClient WeatherApi
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
@@ -87,7 +88,7 @@
     }
     @if (Examples.Count > 0)
     {
-        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation"
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm" OnAddMyTranslation="AddMyTranslation"
                              />
     }
 
@@ -101,7 +102,9 @@
 
 
     [SupplyParameterFromQuery(Name = "term")]
-    string? Term { get; set; }
+    public string? Term { get; set; }
+
+    public string? ActualTerm => Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
 
     bool IsLoading { get; set; }
     bool IsExamplesLoading { get; set; }
@@ -130,6 +133,12 @@
     {
         Examples.Remove(item);
         Examples.Insert(0, item);
+    }
+    
+     
+    async Task AddMyTranslation(TranslationItem translation)
+    {
+        Examples.Insert(0, translation);
     }
     
     async Task RemoveTranslation(TranslationItem item)
@@ -193,16 +202,7 @@
     }
 
     // example: "This is a *bold* text"
-    static string ConvertAserisksToBold(string text)
-    {
-        // This pattern looks for text surrounded by asterisks (*)
-        string pattern = @"\*(.*?)\*";
-
-        // Replace the asterisks and the text between them with the <strong> HTML tag
-        string result = Regex.Replace(text, pattern, "<strong>$1</strong>");
-
-        return result;
-    }
+   
 
     string EnabledState() => IsLoading ? "disabled" : "";
 
