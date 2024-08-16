@@ -28,6 +28,13 @@ app.UseSwaggerUI();
 
 app.UseExceptionHandler();
 
+app.MapGet("/audio", async () =>    
+{
+    var file = File.OpenRead("sample-3s.mp3");
+    
+    return Results.File(file, "audio/mp3");
+});
+
 app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
 {
     return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
