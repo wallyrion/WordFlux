@@ -43,7 +43,7 @@
                     </svg>
                     
                 </a>*@
-                    @*<button type="button" class="btn btn-link btn-lg text-decoration-none position-relative p-0">
+                @*<button type="button" class="btn btn-link btn-lg text-decoration-none position-relative p-0">
                         <h4>@translation.value.Term</h4>
 
                         $1$<span class="@(translation.index != 0 ? "d-none" : "") badge text-bg-secondary"></span>#1#
@@ -68,6 +68,39 @@
         }
     }
 </div>
+
+
+<form method="post" @onsubmit="Submit" @formname="starship-plain-form">
+    <AntiforgeryToken />
+    <div class="card mt-1">
+        <div class="card-header">
+            <textarea @bind-Value:event="oninput" @bind-Value="Model!.Translation" class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
+
+        </div>
+        <div class="card-body">
+            <textarea @bind-Value:event="oninput" @bind-Value="Model.ExampleTranslated" class="form-control" placeholder="Example translated" aria-label="translation"></textarea>
+
+            <textarea @bind-Value:event="oninput" @bind-Value="Model.ExampleOriginal" class="form-control mt-1" placeholder="Example original" aria-label="translation"></textarea>
+        </div>
+
+        <div class="container-fluid">
+            <button type="submit" class="btn btn-primary m-2">Add my translation</button>
+        </div>
+    </div>
+  
+</form>
+
+
+
+    
+    @*<div class="card-body">
+        <p class="card-text">@StringToHtml(translation.value.ExampleTranslated)</p>
+        <blockquote class="blockquote mb-0">
+            <footer class="blockquote-footer">@StringToHtml(translation.value.ExampleOriginal)</footer>
+        </blockquote>
+    </div>*@
+
+
 
 
 @code {
@@ -105,4 +138,20 @@
         currentCount++;
     }
 
+
+    [SupplyParameterFromForm] 
+    public CustomTranslation? Model { get; set; } = new();
+
+
+    private void Submit()
+    {
+    }
+
+
+    public class CustomTranslation
+    {
+        public string? Translation { get; set; }
+        public string? ExampleTranslated { get; set; }
+        public string? ExampleOriginal { get; set; }
+    }
 }
