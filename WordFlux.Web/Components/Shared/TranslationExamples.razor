@@ -28,7 +28,10 @@
                     <i class="bi bi-search">
                     </i>
                 </a>
-                
+
+                <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => RemoveTranslation(translation.value)">
+                    <i class="bi bi-trash"></i>
+                </a>
                
                 
                 @*<a class="icon-link icon-link-hover" href="#" role="button"  @onclick="() => SearchTerm(translation.value)">
@@ -72,11 +75,16 @@
 
     [Parameter] public EventCallback<TranslationItem> OnTermSearch { get; set; }
     [Parameter] public EventCallback<TranslationItem> OnMakePrimary { get; set; }
+    [Parameter] public EventCallback<TranslationItem> OnRemoveTranslation { get; set; }
     [Parameter] public List<TranslationItem> Translations { get; set; }
 
     async Task SearchTerm(TranslationItem item)
     {
         await OnTermSearch.InvokeAsync(item);
+    }
+    async Task RemoveTranslation(TranslationItem item)
+    {
+        await OnRemoveTranslation.InvokeAsync(item);
     }
     
     async Task MakePrimary(TranslationItem item)

@@ -1,4 +1,4 @@
-﻿@page "/translator"
+﻿@page "/"
 @using System.Text.RegularExpressions
 @using WordFlux.Web.Components.Shared
 @using WordFlux.Web.Storage
@@ -87,7 +87,8 @@
     }
     @if (Examples.Count > 0)
     {
-        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary"/>
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation"
+                             />
     }
 
 
@@ -135,6 +136,16 @@
     {
         Examples.Remove(item);
         Examples.Insert(0, item);
+    }
+    
+    async Task RemoveTranslation(TranslationItem item)
+    {
+        if (Examples.Count == 1)
+        {
+            return;
+        }
+        
+        Examples.Remove(item);
     }
 
     async Task TryItOut()

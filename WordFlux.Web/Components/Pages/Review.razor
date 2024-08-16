@@ -79,7 +79,7 @@
 
                     </div>
 
-                    <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations" OnMakePrimary="MakePrimary"/>
+                    <TranslationExamples OnTermSearch="SearchForTerm" Translations="_currentCard.Translations" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation"/>
                 }
 
                 else
@@ -119,6 +119,13 @@
     {
         _currentCard!.Translations.Remove(item);
         _currentCard.Translations.Insert(0, item);
+
+        await WeatherApi.UpdateCard(new CardRequest(_currentCard.Term, _currentCard.Level, _currentCard.Translations), _currentCard.Id);
+    } 
+    
+    async Task RemoveTranslation(TranslationItem item)
+    {
+        _currentCard!.Translations.Remove(item);
 
         await WeatherApi.UpdateCard(new CardRequest(_currentCard.Term, _currentCard.Level, _currentCard.Translations), _currentCard.Id);
     }
