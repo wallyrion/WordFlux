@@ -15,6 +15,10 @@
     {
         <div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@Translation.SuggestedTerm </span></div>
     }
+    <div class="ms-2 mb-1">
+        <AudioFromText Term="@ActualTerm"/>
+        
+    </div>
 
 
     <div class="mb-3 position-relative">
@@ -32,7 +36,7 @@
         <div class="container-fluid m-2">
             @foreach (var item in Translation.Translations)
             {
-                <h5 class="d-inline me-1"><span class="badge text-bg-secondary">@item</span></h5>
+                <h5 class="d-inline me-1"><span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span></h5>
             }
         </div>
     }

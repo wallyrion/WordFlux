@@ -1,3 +1,4 @@
+using Microsoft.CognitiveServices.Speech;
 using Microsoft.EntityFrameworkCore;
 using TwitPoster.Web.WebHostServices;
 using WordFlux.ApiService;
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
+builder.Services.AddOutputCache();
 
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
@@ -25,10 +27,60 @@ builder.Services.AddOpenAi(builder.Configuration);
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.UseOutputCache();
 app.UseExceptionHandler();
 
-app.MapGet("/audio", async () =>    
+app.MapGet("/audio", async (string term) =>
+{
+    string speechKey = "ea7f33b8f15c41b7bf0a75969953f5f0";
+    string speechRegion = "eastus";
+
+    static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
+    {
+        switch (speechSynthesisResult.Reason)
+        {
+            case ResultReason.SynthesizingAudioCompleted:
+                Console.WriteLine($"Speech synthesized for text: [{text}]");
+                break;
+            case ResultReason.Canceled:
+                var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
+                Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
+
+                if (cancellation.Reason == CancellationReason.Error)
+                {
+                    Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                    Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
+                    Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);      
+
+// The neural multilingual voice can speak different languages based on the input text.
+    speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
+
+    using var speechSynthesizer = new SpeechSynthesizer(speechConfig);
+
+    {
+        // Get text from the console and synthesize to the default speaker.
+        Console.WriteLine("Enter some text that you want to speak >");
+        string text = term;
+
+        var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
+        OutputSpeechSynthesisResult(speechSynthesisResult, text);
+
+        var bytesAudio = speechSynthesisResult.AudioData;
+        
+        return Results.File(bytesAudio, "audio/wav");
+    }
+}).CacheOutput();
+
+app.MapGet("/audio2", async () =>    
 {
     var file = File.OpenRead("sample-3s.mp3");
     

@@ -17,6 +17,44 @@
     <Routes />
     <script src="_framework/blazor.web.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</body>
+
+    <script>
+        window.PlayAudioFileStream = async (contentStreamReference, isPlay) => {
+
+            console.log('PlayAudioFileStream');
+            const arrayBuffer = await contentStreamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            const url = URL.createObjectURL(blob);
+
+            console.log('url = ' + url);
+            var sound = document.createElement('audio');
+            sound.src = url;
+            sound.type = 'audio/mpeg';
+
+            let hasPlayed = false;
+
+            // Event listener to ensure sound only plays once
+            sound.onplay = function() {
+            console.log('played')
+                if (hasPlayed) {
+                    sound.pause();
+                    return;
+                }
+                hasPlayed = true;
+            };
+            
+            document.body.appendChild(sound);
+            sound.load();
+            
+            if (isPlay){
+                sound.play();
+            }
+            sound.onended = function () {
+                document.body.removeChild(sound);
+                URL.revokeObjectURL(url);
+            };
+        }
+    </script>
+    </body>
 
 </html>

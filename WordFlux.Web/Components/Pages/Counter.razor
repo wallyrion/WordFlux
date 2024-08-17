@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@using WordFlux.Web.Components.Shared
 @rendermode InteractiveServer
 
 <PageTitle>Counter</PageTitle>
@@ -11,7 +12,10 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<AudioFromText Term="Привет как дела?"/>
 
+
+@*
 @if (currentCount > 2)
 {
     <div>
@@ -20,6 +24,7 @@
 
     </div>  
 }
+*@
 
 
 

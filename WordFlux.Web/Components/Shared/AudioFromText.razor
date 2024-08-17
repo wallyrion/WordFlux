@@ -1,0 +1,72 @@
+﻿@attribute [OutputCache(Duration = 5)]
+@inject IJSRuntime JS
+@inject WeatherApiClient HttpClient
+
+<div>
+
+    <button class="btn btn-outline-dark btn-sm" @onclick="PlaySound2"><i class="bi bi-music-note-list"></i></button>
+    
+    @*<button class="btn btn-outline-info" @onclick="PlaySound2"><i class="bi bi-music-note-list"></i></button>*@
+    @*<button class="btn btn-outline-info" @onclick="NextSound">Next<i class="bi bi-music-note-list"></i></button>*@
+
+    @*<audio src="@SoundUrl" controls="@showPlayer">
+        Your browser does not support the html audio tag.
+    </audio>*@
+    
+   @* <audio src="https://localhost:7443/audio?term=test" controls="@isPlaySound">
+        Your browser does not support the html audio tag.
+    </audio>
+    
+    *@
+    
+    
+   @* <button class="btn btn-outline-info" onclick="document.getElementById('sound').play()"><i class="bi bi-music-note-list"></i></button> *@
+    
+@*
+    @if(isPlaySound)
+    {
+    <audio src="https://localhost:7443/audio?term=test" controls="@isPlaySound">
+        Your browser does not support the html audio tag.
+    </audio>
+    }
+*@
+
+</div>  
+
+
+
+
+
+@code {
+    [Parameter] public string? Term { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        alreadyPlayed = false;
+    }
+
+    bool alreadyPlayed = false;
+    
+    private async Task PlaySound2()
+    {
+        var audioResult = await HttpClient.GetAudio(Term);
+        
+        // Put the bytes in a memory stream
+        var stream = new MemoryStream(audioResult);
+        // Play the audio file
+        using var streamRef = new DotNetStreamReference(stream: stream);
+        
+        await JS.InvokeVoidAsync("PlayAudioFileStream", streamRef, alreadyPlayed);
+        alreadyPlayed = true;
+        
+        /*showPlayer = true;
+        SoundUrl = "";
+        StateHasChanged();
+
+        SoundUrl = "https://localhost:7443/audio?term=test";
+        //isPlaySound = false;
+        StateHasChanged();
+        //isPlaySound = true;*/
+    }
+
+}

@@ -71,6 +71,18 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     }
     
     
+    public async Task<byte[]> GetAudio(string term)
+    {
+        // get audio from the server
+        
+        
+        var response =  (await httpClient.GetAsync(($"/audio?term={term}")));
+
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        
+        return bytes;
+    }
+    
     public async Task<TranslationResponse> GetTranslations(string term)
     {
         return (await httpClient.GetFromJsonAsync<TranslationResponse>($"/term?term={term}"))!;
