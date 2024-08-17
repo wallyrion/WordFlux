@@ -4,6 +4,7 @@ namespace WordFlux.Web;
 
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {
+    
     public async Task<WeatherForecast[]> GetWeatherAsync(int maxItems = 10, CancellationToken cancellationToken = default)
     {
         List<WeatherForecast>? forecasts = null;
@@ -27,6 +28,7 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     
     public async Task<List<CardDto>> GetCards()
     {
+        
         /*var requestUri = new UriBuilder()
         {
             Path = "/term",
@@ -83,6 +85,16 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return bytes;
     }
     
+    public async Task<string> GetAudioLink(string term)
+    {
+        // get audio from the server
+
+        var response =  (await httpClient.GetFromJsonAsync<GetAudioLinkResponse>(($"/audio/link?term={term}")));
+
+        
+        return response.Link;
+    }
+    
     public async Task<TranslationResponse> GetTranslations(string term)
     {
         return (await httpClient.GetFromJsonAsync<TranslationResponse>($"/term?term={term}"))!;
@@ -130,6 +142,7 @@ public record SimpleTranslationResult(string SuggestedTerm, List<string> Transla
 
 public record CardRequest(string Term, string Level, List<TranslationItem> Translations);
 public record GetLevelResponse(string Level);
+public record GetAudioLinkResponse(string Link);
 
 
 public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations, TimeSpan ReviewInterval);

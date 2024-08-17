@@ -15,10 +15,7 @@
     {
         <div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@Translation.SuggestedTerm </span></div>
     }
-    <div class="ms-2 mb-1">
-        <AudioFromText Term="@ActualTerm"/>
-        
-    </div>
+
 
 
     <div class="mb-3 position-relative">
@@ -31,6 +28,7 @@
         <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
     </div>
 
+    
     @if (Translation != null && Translation.Translations != null)
     {
         <div class="container-fluid m-2">
@@ -81,6 +79,13 @@
             </button>
         }
     }
+
+
+    
+    <div class="mt-1">
+        <AudioFromText Term="@ActualTerm"/>
+    </div>
+
 
     
     @if(IsExamplesLoading)
@@ -200,6 +205,7 @@
     {
         Term = null;
         Translation = null;
+        Examples = [];
 
         Navigation.NavigateTo(
             Navigation.GetUriWithQueryParameter("term", (string?)null));

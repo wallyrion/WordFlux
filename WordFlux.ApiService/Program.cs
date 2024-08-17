@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.TextToAudio;
 using TwitPoster.Web.WebHostServices;
 using WordFlux.ApiService;
 
@@ -30,67 +34,34 @@ app.UseSwaggerUI();
 app.UseOutputCache();
 app.UseExceptionHandler();
 
-app.MapGet("/audio", async (string term) =>
+
+app.MapGet("/audio/link", async (string term) =>
 {
-    string speechKey = "ea7f33b8f15c41b7bf0a75969953f5f0";
-    string speechRegion = "eastus";
+    var url = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io";
 
-    static void OutputSpeechSynthesisResult(SpeechSynthesisResult speechSynthesisResult, string text)
-    {
-        switch (speechSynthesisResult.Reason)
-        {
-            case ResultReason.SynthesizingAudioCompleted:
-                Console.WriteLine($"Speech synthesized for text: [{text}]");
-                break;
-            case ResultReason.Canceled:
-                var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
-                Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
-
-                if (cancellation.Reason == CancellationReason.Error)
-                {
-                    Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                    Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
-                    Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-
-    var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);      
-
-// The neural multilingual voice can speak different languages based on the input text.
-    speechConfig.SpeechSynthesisVoiceName = "en-US-AvaMultilingualNeural";
-
-    using var speechSynthesizer = new SpeechSynthesizer(speechConfig);
-
-    {
-        // Get text from the console and synthesize to the default speaker.
-        Console.WriteLine("Enter some text that you want to speak >");
-        string text = term;
-
-        var speechSynthesisResult = await speechSynthesizer.SpeakTextAsync(text);
-        OutputSpeechSynthesisResult(speechSynthesisResult, text);
-
-        var bytesAudio = speechSynthesisResult.AudioData;
-        
-        return Results.File(bytesAudio, "audio/wav");
-    }
+    return new { Link = $"{url}/audio?term={Uri.EscapeDataString(term)}" };
 }).CacheOutput();
 
-app.MapGet("/audio2", async () =>    
+#pragma warning disable SKEXP0001
+app.MapGet("/audio", async ([FromServices] Kernel kernel, string term) =>
 {
-    var file = File.OpenRead("sample-3s.mp3");
-    
-    return Results.File(file, "audio/mp3");
-});
+#pragma warning disable SKEXP0001
+    var service = kernel.GetRequiredService<ITextToAudioService>();
+#pragma warning restore SKEXP0001
 
-app.MapGet("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
-{
-    return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
-});
+    var res = await service.GetAudioContentsAsync(term);
+
+    var first = res[0];
+
+    return Results.File(first.Data!.Value.ToArray(), "audio/mp3");
+    //return Results.File(file, "audio/mp3");
+}).WithName("audio").CacheOutput();
+
+app.MapGet("/cards",
+    async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
+    {
+        return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
+    });
 
 app.MapDelete("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId, Guid cardId) =>
 {
@@ -110,6 +81,7 @@ app.MapDelete("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILo
 app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId, int? skip = 0) =>
 {
     skip ??= 0;
+
     return await dbContext.Cards
         .Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow)
         .OrderBy(x => x.NextReviewDate)
@@ -124,14 +96,14 @@ app.MapPost("/cards/{cardId:guid}/approve", async (ApplicationDbContext dbContex
     {
         return Results.NotFound();
     }
-    
+
     var reviewInterval = existingCard.ReviewInterval * 2;
     var nextReviewDate = DateTime.UtcNow + reviewInterval + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 10000));
 
     existingCard.NextReviewDate = nextReviewDate;
     existingCard.ReviewInterval = reviewInterval;
     await dbContext.SaveChangesAsync();
-    
+
     return Results.Ok();
 });
 
@@ -143,22 +115,21 @@ app.MapPost("/cards/{cardId:guid}/reject", async (ApplicationDbContext dbContext
     {
         return Results.NotFound();
     }
-    
+
     var nextReviewDate = DateTime.UtcNow + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 10000));
 
     existingCard.NextReviewDate = nextReviewDate;
     await dbContext.SaveChangesAsync();
-    
+
     return Results.Ok();
 });
-
 
 app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid userId) =>
 {
     var card = new Card
     {
         CreatedAt = DateTime.UtcNow,
-        Id= Guid.NewGuid(),
+        Id = Guid.NewGuid(),
         Term = request.Term,
         Translations = request.Translations,
         CreatedBy = userId,
@@ -166,6 +137,7 @@ app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> lo
         ReviewInterval = TimeSpan.FromMinutes(2),
         Level = request.Level
     };
+
     dbContext.Cards.Add(card);
     await dbContext.SaveChangesAsync();
 });
@@ -173,7 +145,7 @@ app.MapPost("/cards", async (ApplicationDbContext dbContext, ILogger<Program> lo
 app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid userId, Guid cardId) =>
 {
     var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
-    
+
     if (existingCard == null)
     {
         return Results.NotFound();
@@ -182,7 +154,7 @@ app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogge
     existingCard.Term = request.Term;
     existingCard.Level = request.Level;
     existingCard.Translations = request.Translations;
-    
+
     await dbContext.SaveChangesAsync();
 
     return Results.Ok();
@@ -194,9 +166,8 @@ app.MapGet("/term/level", async (ApplicationDbContext dbContext, ILogger<Program
 {
     var respose = await translation.GetLevel(term);
 
-    return new {Level = respose};
+    return new { Level = respose };
 });
-
 
 app.MapGet("/term", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>
 {
@@ -231,23 +202,17 @@ app.MapGet("/translations", async (ApplicationDbContext dbContext, ILogger<Progr
     return respose;
 });
 
-app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILogger<Program> logger, GetTranslationExamples request,  OpenAiGenerator ai) =>
+app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILogger<Program> logger, GetTranslationExamples request, OpenAiGenerator ai) =>
 {
     var respose = await ai.GetExamples(request.Term, request.Translations);
 
     return respose;
-
 });
 
-
 #pragma warning restore SKEXP0010
-
 
 app.MapDefaultEndpoints();
 
 app.Run();
-
-
-
 
 public record GetTranslationExamples(string Term, List<string> Translations);

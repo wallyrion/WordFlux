@@ -20,6 +20,9 @@ public static class OpenAiDependencyInjection
     public static IServiceCollection AddOpenAi(this IServiceCollection services, IConfiguration configuration)
     {
         var k = services.AddKernel();
+#pragma warning disable SKEXP0001
+        k.AddOpenAITextToAudio("tts-1", configuration["OpenAIKey"]);
+#pragma warning restore SKEXP0001
         k.AddOpenAIChatCompletion("gpt-4o-mini",
             configuration["OpenAIKey"]!);
         

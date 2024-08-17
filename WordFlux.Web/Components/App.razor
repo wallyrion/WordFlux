@@ -19,6 +19,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
+        window.CreateBlob = async (contentStreamReference) => {
+
+            console.log('Create blob');
+            const arrayBuffer = await contentStreamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            const url = URL.createObjectURL(blob);
+
+            console.log('url = ' + url);
+            return url;
+        }
+
+        window.RevokeUrl = async (url) => {
+            URL.revokeObjectURL(url);
+        }
+        
+        
         window.PlayAudioFileStream = async (contentStreamReference, isPlay) => {
 
             console.log('PlayAudioFileStream');
@@ -36,24 +52,24 @@
             // Event listener to ensure sound only plays once
             sound.onplay = function() {
             console.log('played')
-                if (hasPlayed) {
+                @*if (hasPlayed) {
                     sound.pause();
                     return;
                 }
-                hasPlayed = true;
+                hasPlayed = true;*@
             };
             
             document.body.appendChild(sound);
             sound.load();
-            
-            if (isPlay){
-                sound.play();
-            }
+
+            sound.play();
+
             sound.onended = function () {
                 document.body.removeChild(sound);
                 URL.revokeObjectURL(url);
             };
         }
+    
     </script>
     </body>
 
