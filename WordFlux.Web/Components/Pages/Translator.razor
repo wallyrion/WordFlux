@@ -17,24 +17,24 @@
     }
 
 
-
     <div class="mb-3 position-relative">
 
         @if (Level != null)
         {
             <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Level</span>
-
         }
         <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
     </div>
 
-    
+
     @if (Translation != null && Translation.Translations != null)
     {
         <div class="container-fluid m-2">
             @foreach (var item in Translation.Translations)
             {
-                <h5 class="d-inline me-1"><span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span></h5>
+                <h5 class="d-inline me-1">
+                    <span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span>
+                </h5>
             }
         </div>
     }
@@ -62,7 +62,7 @@
             <span > Try it!</span>
         </button>
     }
-    @if (Translation != null && Translation.Translations != null)
+    @if (Translation is { Translations: not null })
     {
         @if (IsSaved)
         {
@@ -73,7 +73,7 @@
         }
         else
         {
-            <button type="button" class="btn btn-outline-warning ms-1 @EnabledState()" @onclick="SaveToCards">
+            <button type="button" class="btn btn-outline-warning ms-1" disabled="@(IsLoading || IsExamplesLoading)" @onclick="SaveToCards">
                 ✔️
                 <span class=""> Save to cards</span>
             </button>
@@ -81,14 +81,12 @@
     }
 
 
-    
     <div class="mt-1">
         <AudioFromText Term="@ActualTerm"/>
     </div>
 
 
-    
-    @if(IsExamplesLoading)
+    @if (IsExamplesLoading)
     {
         <div class="mt-5">Getting usage examples</div>
         <div class="spinner-border text-primary" role="status">
@@ -97,18 +95,14 @@
     }
     @if (Examples.Count > 0)
     {
-        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm" OnAddMyTranslation="AddMyTranslation"
-                             />
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm" OnAddMyTranslation="AddMyTranslation"/>
     }
 
-
-  
 
 </div>
 
 
 @code {
-
 
     [SupplyParameterFromQuery(Name = "term")]
     public string? Term { get; set; }
@@ -137,26 +131,25 @@
 
         await TryItOut();
     }
-    
+
     async Task MakePrimary(TranslationItem item)
     {
         Examples.Remove(item);
         Examples.Insert(0, item);
     }
-    
-     
+
     async Task AddMyTranslation(TranslationItem translation)
     {
         Examples.Insert(0, translation);
     }
-    
+
     async Task RemoveTranslation(TranslationItem item)
     {
         if (Examples.Count == 1)
         {
             return;
         }
-        
+
         Examples.Remove(item);
     }
 
@@ -175,19 +168,18 @@
             Level = null;
             Examples = [];
 
-
             Navigation.NavigateTo(
                 Navigation.GetUriWithQueryParameter("term", Term));
-        
+
             Translation = await WeatherApi.GetSimpleTranslations(Term);
             IsLoading = false;
             IsExamplesLoading = true;
 
             StateHasChanged();
-        
-            Level = await WeatherApi.GetLevel(Term);;
-            StateHasChanged();
 
+            Level = await WeatherApi.GetLevel(Term);
+            ;
+            StateHasChanged();
 
             var term = string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Term : Translation.SuggestedTerm;
             Examples = await WeatherApi.GetTranslationExamples(term, Translation.Translations);
@@ -198,8 +190,6 @@
             IsExamplesLoading = false;
         }
     }
-    
-    
 
     void Reset()
     {
@@ -212,7 +202,6 @@
     }
 
     // example: "This is a *bold* text"
-   
 
     string EnabledState() => IsLoading ? "disabled" : "";
 

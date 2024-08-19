@@ -33,6 +33,10 @@ public class OpenAiGenerator
                          """
         }
     });   
+    private readonly KernelFunction _giveMotivationalPhraseFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = AiSystemMessages.giveMotivationPhase
+    });   
     
     private readonly KernelFunction _getLevelFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
@@ -162,6 +166,14 @@ public class OpenAiGenerator
         }
 
         return levelResult.Level;
+    }
+    
+    
+    public async Task<string?> GetMotivationalPhrase()
+    {
+        var result = await _giveMotivationalPhraseFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel);
+
+        return result?.Content;
     }
     
     [Experimental("SKEXP0010")]

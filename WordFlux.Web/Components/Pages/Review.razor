@@ -28,15 +28,18 @@
                 </div>
                 <div class="card-body">
                     <blockquote class="blockquote mb-0">
-                        <p>A well-known quote, contained in a blockquote element.</p>
-                        <footer class="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+                        <p>@Motivation</p>
+                        <footer class="blockquote-footer">OpenAI</footer>
                     </blockquote>
                 </div>
                 <div class="card-footer">
                     <button class="btn btn-outline-info" @onclick="OnInitializedAsync">
                         <i class="bi bi-bootstrap-reboot"></i>
                     </button>
-                    Next review in @(TimeToNextReview?.Humanize()).
+                    @if (TimeToNextReview != null)
+                    {
+                        <span>Next review in <strong>@(TimeToNextReview?.Humanize()). </strong> </span>
+                    }
                 </div>
             </div>
         }
@@ -132,6 +135,7 @@
     bool IsShowTranslation { get; set; }
     bool IsRequestInProgress { get; set; }
     TimeSpan? TimeToNextReview { get; set; }
+    string? Motivation { get; set; }
 
     RenderFragment StringToHtml(string htmlString)
     {
@@ -165,6 +169,8 @@
         await LoadNext();
         await WeatherApi.ApproveCard(cardId);
 
+        
+        await GetTimeToNextReview();
         IsRequestInProgress = false;
     }
 
@@ -181,6 +187,9 @@
 
         await LoadNext();
         await WeatherApi.RejectCard(cardId);
+        
+        await GetTimeToNextReview();
+
         IsShowTranslation = true;
     }
 
@@ -191,8 +200,6 @@
         NextCard = await WeatherApi.GetNextCard(1);
 
         StateHasChanged();
-
-        await GetTimeToNextReview();
     }
 
     private async Task GetTimeToNextReview()
@@ -200,7 +207,13 @@
         if (CurrentCard == null)
         {
             TimeToNextReview = await WeatherApi.GetNextReviewTime();
+            Motivation = await WeatherApi.GetMotivation();
         }
+        else
+        {
+            TimeToNextReview = null;
+        }
+
     }
 
     protected override async Task OnInitializedAsync()

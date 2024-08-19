@@ -100,4 +100,9 @@ public static class AiSystemMessages
                                             Give me alternative translations for '{{$term}}' in the same language as existing translations and return response in JSON, for examples: {"translations": ["to long for", "to yearn for"]}
                                             Exclude translations that are already in {{$existingTranslations}} and double check you do not provide duplicates
                                            """;
+    
+    
+    public const string giveMotivationPhase = """
+                                            Give me some rangom quote or motivational phrase. It can be one or several sentences.
+                                           """;
 }

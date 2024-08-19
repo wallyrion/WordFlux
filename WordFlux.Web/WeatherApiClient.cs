@@ -28,16 +28,16 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     
     public async Task<List<CardDto>> GetCards()
     {
-        
-        /*var requestUri = new UriBuilder()
-        {
-            Path = "/term",
-            Query = $"term={term}"
-        }.Uri;*/
         var myId = await storage.GetMyId();
 
-        
         return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?userId={myId}"))!;
+    }  
+    
+    public async Task<string> GetMotivation()
+    {
+        var res = (await httpClient.GetFromJsonAsync<GetMotivationResult>($"/motivation"))!;
+
+        return res.Phrase;
     }
     
     public async Task<CardDto> GetNextCard(int skip = 0)
@@ -156,5 +156,6 @@ public record GetAudioLinkResponse(string Link);
 
 public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations, TimeSpan ReviewInterval);
 public record NextReviewCardTime(TimeSpan TimeToNextReview);
+public record GetMotivationResult(string Phrase);
 
 public record GetTranslationExamples(string Term, List<string> Translations);

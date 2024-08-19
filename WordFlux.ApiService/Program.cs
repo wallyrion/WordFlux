@@ -189,28 +189,9 @@ app.MapGet("/term/level", async (ApplicationDbContext dbContext, ILogger<Program
 
 app.MapGet("/term", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>
 {
-    var respose = await translation.GetTranslations(term);
+    var response = await translation.GetTranslations(term);
 
-    return respose;
-    /*KernelArguments arguments = new(new OpenAIPromptExecutionSettings
-    {
-
-    }) { { "term", term } };
-
-    var result = await kernel.InvokePromptAsync(Examples.RequestForAssistantWithArguments, arguments);
-
-    var strValue = result.GetValue<string>();
-
-    if (strValue.StartsWith("```json"))
-    {
-        strValue = strValue[7..^3];
-    }
-
-    var translationResult = JsonSerializer.Deserialize<TranslationResult>(strValue);
-
-    var response = new TranslationResponse(translationResult.Term, translationResult.Translations.Select(t => new TranslationItem(t.Term, t.ExampleTranslated, t.ExampleOriginal)));
-
-    return response;*/
+    return response;
 });
 
 app.MapGet("/translations", async (ApplicationDbContext dbContext, ILogger<Program> logger, string term, OpenAiGenerator translation) =>
@@ -219,6 +200,13 @@ app.MapGet("/translations", async (ApplicationDbContext dbContext, ILogger<Progr
 
     return respose;
 });
+
+app.MapGet("/motivation", async (ApplicationDbContext dbContext, ILogger<Program> logger, OpenAiGenerator translation) =>
+{
+    var response = await translation.GetMotivationalPhrase();
+
+    return new { Phrase = response };
+}).CacheOutput();
 
 app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILogger<Program> logger, GetTranslationExamples request, OpenAiGenerator ai) =>
 {
