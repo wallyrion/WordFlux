@@ -224,7 +224,7 @@
         }
 
         var term = string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Term : Translation.SuggestedTerm;
-        var cardRequest = new CardRequest(term, "A0", Examples);
+        var cardRequest = new CardRequest(term, Level, Examples);
         await WeatherApi.SaveNewCard(cardRequest);
 
         IsSaved = true;

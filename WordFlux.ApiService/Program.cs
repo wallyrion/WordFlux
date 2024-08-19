@@ -88,6 +88,21 @@ app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ILogger<Program
         .Skip(skip.Value).FirstOrDefaultAsync();
 });
 
+
+
+app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
+{
+    var nextCard = await dbContext.Cards
+        .OrderBy(x => x.NextReviewDate)
+        .Select(x => new {x.NextReviewDate}).FirstOrDefaultAsync();
+    
+    if (nextCard == null)
+    {
+        return Results.Ok(new { TimeToNextReview = TimeSpan.MaxValue });
+    }
+    
+    return Results.Ok(new { TimeToNextReview = nextCard.NextReviewDate - DateTime.UtcNow });
+});
 app.MapPost("/cards/{cardId:guid}/approve", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid cardId, Guid userId) =>
 {
     var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);

@@ -45,6 +45,15 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         var myId = await storage.GetMyId();
         
         return (await httpClient.GetFromJsonAsync<CardDto>($"/cards/next?userId={myId}&skip={skip}"))!;
+    }   
+    
+    public async Task<TimeSpan> GetNextReviewTime()
+    {
+        var myId = await storage.GetMyId();
+        
+        var res = (await httpClient.GetFromJsonAsync<NextReviewCardTime>($"/cards/next/time?userId={myId}"))!;
+
+        return res.TimeToNextReview;
     }
     
     public async Task ApproveCard(Guid cardId)
@@ -146,5 +155,6 @@ public record GetAudioLinkResponse(string Link);
 
 
 public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<TranslationItem> Translations, TimeSpan ReviewInterval);
+public record NextReviewCardTime(TimeSpan TimeToNextReview);
 
 public record GetTranslationExamples(string Term, List<string> Translations);
