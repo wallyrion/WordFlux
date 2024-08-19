@@ -93,6 +93,7 @@ app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ILogger<Program
 app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid userId) =>
 {
     var nextCard = await dbContext.Cards
+        .Where(c => c.CreatedBy == userId)
         .OrderBy(x => x.NextReviewDate)
         .Select(x => new {x.NextReviewDate}).FirstOrDefaultAsync();
     
@@ -100,6 +101,8 @@ app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ILogger<Pr
     {
         return Results.Ok(new { TimeToNextReview = TimeSpan.MaxValue });
     }
+    
+    logger.LogInformation("Time to next review: {TimeToNextReview}", nextCard.NextReviewDate - DateTime.UtcNow);
     
     return Results.Ok(new { TimeToNextReview = nextCard.NextReviewDate - DateTime.UtcNow });
 });

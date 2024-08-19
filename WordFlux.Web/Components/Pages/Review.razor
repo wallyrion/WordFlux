@@ -33,6 +33,9 @@
                     </blockquote>
                 </div>
                 <div class="card-footer">
+                    <button class="btn btn-outline-info" @onclick="OnInitializedAsync">
+                        <i class="bi bi-bootstrap-reboot"></i>
+                    </button>
                     Next review in @(TimeToNextReview?.Humanize()).
                 </div>
             </div>
