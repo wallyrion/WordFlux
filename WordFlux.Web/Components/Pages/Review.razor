@@ -32,8 +32,8 @@
                         <footer class="blockquote-footer">OpenAI</footer>
                     </blockquote>
                 </div>
-                <div class="card-footer">
-                    <button class="btn btn-outline-info" @onclick="OnInitializedAsync">
+                <div class="card-footer d-flex justify-content-center align-items-center">
+                    <button class="btn btn-outline-info me-3" @onclick="OnInitializedAsync">
                         <i class="bi bi-bootstrap-reboot"></i>
                     </button>
                     @if (TimeToNextReview != null)
@@ -135,7 +135,7 @@
     bool IsShowTranslation { get; set; }
     bool IsRequestInProgress { get; set; }
     TimeSpan? TimeToNextReview { get; set; }
-    string? Motivation { get; set; }
+    string Motivation { get; set; } = "There is no better time to learn than now";
 
     RenderFragment StringToHtml(string htmlString)
     {
@@ -164,32 +164,25 @@
 
     private async Task Approve()
     {
-        var cardId = CurrentCard!.Id;
         IsRequestInProgress = true;
+        await WeatherApi.ApproveCard(CurrentCard!.Id);
         await LoadNext();
-        await WeatherApi.ApproveCard(cardId);
 
-        
-        await GetTimeToNextReview();
         IsRequestInProgress = false;
-    }
-
-    void ShowTranslation()
-    {
-        IsShowTranslation = true;
     }
 
     private async Task Reject()
     {
-        var cardId = CurrentCard!.Id;
-
         IsRequestInProgress = true;
 
+        await WeatherApi.RejectCard(CurrentCard!.Id);
         await LoadNext();
-        await WeatherApi.RejectCard(cardId);
         
-        await GetTimeToNextReview();
-
+        IsRequestInProgress = false;
+    }
+    
+    void ShowTranslation()
+    {
         IsShowTranslation = true;
     }
 
@@ -197,12 +190,14 @@
     {
         IsShowTranslation = false;
         CurrentCard = NextCard;
-        NextCard = await WeatherApi.GetNextCard(1);
-
         StateHasChanged();
+        await UpdateTimeToNextReview();
+        
+        NextCard = await WeatherApi.GetNextCard(1);
+        
     }
 
-    private async Task GetTimeToNextReview()
+    private async Task UpdateTimeToNextReview()
     {
         if (CurrentCard == null)
         {
@@ -220,7 +215,7 @@
     {
         CurrentCard = await WeatherApi.GetNextCard();
         NextCard = await WeatherApi.GetNextCard(1);
-        await GetTimeToNextReview();
+        await UpdateTimeToNextReview();
 
         IsLoading = false;
     }
@@ -230,6 +225,8 @@
         await WeatherApi.DeleteCard(CurrentCard!.Id);
 
         await LoadNext();
+        
+        await UpdateTimeToNextReview();
     }
 
 }
