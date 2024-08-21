@@ -111,7 +111,8 @@ public class OpenAiGenerator
         
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
-            ResponseFormat = "json_object"
+            ResponseFormat = "json_object",
+            Temperature = 0.5
         }) { { "term", term },  { "translations", JsonSerializer.Serialize(translations) } };
         
         var result = await _examplesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
@@ -184,7 +185,8 @@ public class OpenAiGenerator
         
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
-            ResponseFormat = "json_object"
+            ResponseFormat = "json_object",
+            Temperature = 0.2
         }) { { "term", term } };
         
         var result = await _translationsFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
