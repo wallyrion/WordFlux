@@ -29,7 +29,7 @@ public class OpenAiGenerator
         OutputVariable = new OutputVariable
         {
             JsonSchema = """
-                         {"translations":["to encourage"], "suggested_term": "поощрять"}
+                         {"translations":["to encourage"], "suggested_term": "поощрять", "srcL": "en-US", "outL": "ru-RU"}
                          """
         }
     });   
@@ -57,11 +57,34 @@ public class OpenAiGenerator
     private readonly KernelFunction _examplesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.translationExamples,
-        InputVariables = [new() { Name = "term", Description = "the original phrase or word that is translated" }, new() { Name = "translations", Description = "Existing translations for the term" }  ],
+        InputVariables = [
+            new() { Name = "term", Description = "the original phrase or word that is translated" }, 
+            new() { Name = "translations", Description = "Existing translations for the term" } ,
+            new() { Name = "srclang", Description = "language of the original term" } ,
+            new() { Name = "destLang", Description = "language of the translations" } 
+        ],
         OutputVariable = new OutputVariable
         {
             JsonSchema = """
                          {"translations": [{"tr": "translation", "l": "A0", "p": "55", "e_tr": "example of 'translation'", "e_or": "example translated"}]}
+                         """
+        }
+    });
+    
+    
+    private readonly KernelFunction _detectLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = """
+                   Detect language of the {{$src}} and {{$dest}} and map to the JSON object: {"srcLang": "en-US", "destLang": "ru-RU"} 
+                   """,
+        InputVariables = [
+            new() { Name = "src" }, 
+            new() { Name = "dest" } ,
+        ],
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         {"srcLang": "en-US", "destLang": "ru-RU"}
                          """
         }
     });
@@ -103,17 +126,50 @@ public class OpenAiGenerator
 
 }*/
     
-    
     [Experimental("SKEXP0010")]
-    public async Task<List<TranslationItem>> GetExamples(string term, List<string> translations)
+    public async Task<(string srcLang, string destLang)?> DetectLanguage(string src, string dest)
     {
-        _logger.LogInformation("Getting examples for term {term} and translations {@translations}", term, translations);
         
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
             Temperature = 0.5
-        }) { { "term", term },  { "translations", JsonSerializer.Serialize(translations) } };
+        }) { { "src", src }, { "dest", dest }};
+        
+        var result = await _detectLanguageFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+
+        if (result == null || result.Content == null)
+        {
+            _logger.LogError("Got null result");
+
+            return null;
+        }
+        
+        _logger.LogInformation("Got result {result}", result.Content);
+
+
+        var content = JsonSerializer.Deserialize<DetectLanguageResponse>(result.Content);
+
+        if (content == null)
+        {
+            return null;
+        }
+
+        return (content.SourceLanguage, content.DestinationLanguage);
+    }
+    
+    
+    
+    [Experimental("SKEXP0010")]
+    public async Task<List<TranslationItem>> GetExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage)
+    {
+        _logger.LogInformation("Getting examples for term {Term} and translations {@Translations}", term, translations);
+        
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            Temperature = 0.5
+        }) { { "term", term }, { "srcLang", sourceLanguage }, { "destLang", destinationLanguage }, { "translations", JsonSerializer.Serialize(translations) } };
         
         var result = await _examplesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
 
@@ -180,7 +236,6 @@ public class OpenAiGenerator
     [Experimental("SKEXP0010")]
     public async Task<SimpleTranslationResult?> GetTranslations(string term)
     {
-        
         _logger.LogInformation("Getting translations for term {term}", term);
         
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
@@ -206,7 +261,7 @@ public class OpenAiGenerator
             return null;
         }
 
-        var response = new SimpleTranslationResult(content.SuggestedTerm, content.Translations);
+        var response = new SimpleTranslationResult(content.SuggestedTerm, content.Translations, content.SourceLanguage, content.OutputLanguage);
 
         return response;
     }
@@ -270,6 +325,15 @@ file class TranslationExampleResult
     public List<TranslationItemDtoNew> Translations { get; set; }
 }
 
+file class DetectLanguageResponse
+{
+    [JsonPropertyName("srcLang")]
+    public string SourceLanguage { get; set; }
+    
+    [JsonPropertyName("destLang")]
+    public string DestinationLanguage { get; set; }
+}
+
 
 file class EstimateLevelResult
 {
@@ -284,4 +348,12 @@ file class TranslationResultNew
     
     [JsonPropertyName("suggested_term")]
     public string? SuggestedTerm { get; set; }
+
+
+    [JsonPropertyName("srcL")] 
+    public string SourceLanguage { get; set; } = null!;
+    
+        
+    [JsonPropertyName("outL")]
+    public string OutputLanguage { get; set; } = null!;
 }

@@ -73,21 +73,23 @@ public static class AiSystemMessages
 
     public const string GiveTranslations = """
                                               There is a $term = '{{$term}}'.
-                                              if $term is in English, translate $term into russian. (example_output1).
-                                              If $term is in Russian, translate $term into english. (example_output2).
-                                              If $term is not valid word (there is grammar miskate), try to fix a typo and put corrected value into $corrected. (example_output2, example_output3).
-                                              If $term has no grammar mistakes, do not include $corrected into json. (example_output1).
-                                              You can provide up to 4 translations, but most proper (most popular) translations for the $term must be first.
+                                              if $term is in English, translate $term into russian. 
+                                              If $term is in Russian, translate $term into english.
+                                              If $term has typo, try to fix a typo and put corrected value into suggested_term.
+                                              If $term has no grammar mistakes, do not include suggested_term into json.
+                                              Provide up to 4 translations, but most proper translations must be first.
                                               $term may contain a note (clarification) that should be considered as a clue for the context. (example_output1)
+                                              Indicate the input and output language in the response in srcL and outL fields.
                                               Response must be in JSON.
-                                              example_output1: {"translations":["bow"]} for input '$term' = 'лук (для стрельбы)'
-                                              example_output2: {"suggested_term": "поощрять", "translations":["to encourage", "to promote", "to reward"]} for input '$term' = 'поощрать'
-                                              example_output3: {"suggested_term": "Tell me where I was wrong?", "translations":["Подскажи, где я был неправ?"]} for input '$term' = 'Tall me where was I wrong?'
+                                              example_output1: {"translations":["bow"], "srcL": "en-US", "outL": "ru-RU"} for input '$term' = 'лук (для стрельбы)'
+                                              example_output2: {"suggested_term": "поощрять", "translations":["to encourage", "to promote", "to reward"], "srcL": "ru-RU", "outL": "en-US"} for input '$term' = 'поощрать'
+                                              example_output3: {"suggested_term": "Tell me where I was wrong?", "translations":["Подскажи, где я был неправ?"], "srcL": "en-US", "outL": "ru-RU"} for input '$term' = 'Tall me where was I wrong?'
                                               """;
 
     public const string translationExamples = """
-                                               There is a $term = '{{$term}}' in original language and existing translations for it: {{$translations}}.
-                                               For each translation you should give example of usage and map to the object: {"tr": "item of the translation array without changes", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of usages for *translation*", "e_or": "example of usages translated back to original language"}
+                                               There is a $term = '{{$term}}' and translations for it: {{$translations}} in {{$destLang}}.
+                                               For each translation you should give example of usage and map to the object: 
+                                               {"tr": "the provided translation", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of usages for *translation* in {{$destLang}}", "e_or": "translated example back to {{$srcLang}}. should contain *term*"}
                                                Mapped objects should be in the same order and same count as original 'translations' array.
                                                Highlight term with '*' in 'e_tr' and 'e_or' example fields.
                                                Response must be in JSON format in the following template:

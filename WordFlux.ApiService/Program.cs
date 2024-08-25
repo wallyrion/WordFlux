@@ -210,9 +210,21 @@ app.MapGet("/motivation", async (ApplicationDbContext dbContext, ILogger<Program
 
 app.MapPost("/translations/examples", async (ApplicationDbContext dbContext, ILogger<Program> logger, GetTranslationExamples request, OpenAiGenerator ai) =>
 {
-    var respose = await ai.GetExamples(request.Term, request.Translations);
+    if (string.IsNullOrEmpty(request.SourceLanguage) || string.IsNullOrEmpty(request.DestinationLanguage))
+    {
+        (string srcLang, string destLang)? detectedLanguages = await ai.DetectLanguage(request.Term, request.Translations.First());
+        
+        if (detectedLanguages == null)
+        {
+            return Results.BadRequest("Could not detect languages");
+        }
+        
+        request = request with {SourceLanguage = detectedLanguages.Value.srcLang, DestinationLanguage = detectedLanguages.Value.destLang};
+    }
+    
+    var response = await ai.GetExamples(request.Term, request.Translations, request.SourceLanguage, request.DestinationLanguage);
 
-    return respose;
+    return Results.Ok(response);
 });
 
 #pragma warning restore SKEXP0010
@@ -221,4 +233,4 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-public record GetTranslationExamples(string Term, List<string> Translations);
+public record GetTranslationExamples(string Term, List<string> Translations, string SourceLanguage, string DestinationLanguage);

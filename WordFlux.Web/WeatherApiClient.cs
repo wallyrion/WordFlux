@@ -4,7 +4,6 @@ namespace WordFlux.Web;
 
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {
-    
     public async Task<WeatherForecast[]> GetWeatherAsync(int maxItems = 10, CancellationToken cancellationToken = default)
     {
         List<WeatherForecast>? forecasts = null;
@@ -28,10 +27,16 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     
     public async Task<List<CardDto>> GetCards()
     {
+        /*var requestUri = new UriBuilder()
+        {
+            Path = "/term",
+            Query = $"term={term}"
+        }.Uri;*/
         var myId = await storage.GetMyId();
 
+        
         return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?userId={myId}"))!;
-    }  
+    }
     
     public async Task<string> GetMotivation()
     {
@@ -45,7 +50,7 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         var myId = await storage.GetMyId();
         
         return (await httpClient.GetFromJsonAsync<CardDto>($"/cards/next?userId={myId}&skip={skip}"))!;
-    }   
+    }
     
     public async Task<TimeSpan> GetNextReviewTime()
     {
@@ -71,10 +76,10 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     }
     
     
-    public async Task<List<TranslationItem>> GetTranslationExamples(string term, List<string> translations)
+    public async Task<List<TranslationItem>> GetTranslationExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage)
     {
-        logger.LogInformation("Getting FROM UI examples for term {term} and translations {@translations}", term, translations);
-        var request = new GetTranslationExamples(term, translations);
+        logger.LogInformation("Getting FROM UI examples for term {Term} and translations {@Translations}", term, translations);
+        var request = new GetTranslationExamples(term, translations, sourceLanguage, destinationLanguage);
         var r = await httpClient.PostAsJsonAsync("/translations/examples", request);
         var r2 = await r.Content.ReadFromJsonAsync<List<TranslationItem>>();
 
@@ -147,7 +152,7 @@ public record WeatherForecast(Guid Id, DateTime CreatedAt, int TemperatureC);
 
 public record TranslationResponse(string Term, List<TranslationItem> Translations, string Level, string? SuggestedTerm);
 public record TranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity, string Level);
-public record SimpleTranslationResult(string SuggestedTerm, List<string> Translations);
+public record SimpleTranslationResult(string SuggestedTerm, List<string> Translations, string SourceLanguage, string DestinationLanguage);
 
 public record CardRequest(string Term, string Level, List<TranslationItem> Translations);
 public record GetLevelResponse(string Level);
@@ -158,4 +163,4 @@ public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, Li
 public record NextReviewCardTime(TimeSpan TimeToNextReview);
 public record GetMotivationResult(string Phrase);
 
-public record GetTranslationExamples(string Term, List<string> Translations);
+public record GetTranslationExamples(string Term, List<string> Translations,  string SourceLanguage, string DestinationLanguage);

@@ -182,7 +182,7 @@
             StateHasChanged();
 
             var term = string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Term : Translation.SuggestedTerm;
-            Examples = await WeatherApi.GetTranslationExamples(term, Translation.Translations);
+            Examples = await WeatherApi.GetTranslationExamples(term, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
         }
         finally
         {
