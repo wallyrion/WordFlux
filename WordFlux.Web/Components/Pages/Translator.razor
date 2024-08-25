@@ -85,6 +85,15 @@
         <AudioFromText Term="@ActualTerm"/>
     </div>
 
+    @if (Examples.Count > 0)
+    {
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
+          
+        <div class="d-flex justify-content-center mt-1 mb-3">
+            <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>
+        </div>
+
+    }
 
     @if (IsExamplesLoading)
     {
@@ -93,17 +102,12 @@
             <span class="sr-only"></span>
         </div>
     }
-    @if (Examples.Count > 0)
-    {
-        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
-          
-        <div class="d-flex justify-content-center">
-            <button class="btn btn-outline-dark">Load more</button>
-        </div>
 
+    @if (Translation != null)
+    {
         <EditTranslation OnAddMyTranslation="AddMyTranslation" Term="@ActualTerm" />
     }
-
+    
 
 </div>
 
@@ -187,8 +191,7 @@
             ;
             StateHasChanged();
 
-            var term = string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Term : Translation.SuggestedTerm;
-            Examples = await WeatherApi.GetTranslationExamples(term, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
         }
         finally
         {
@@ -218,11 +221,29 @@
             return;
         }
 
-        var term = string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Term : Translation.SuggestedTerm;
-        var cardRequest = new CardRequest(term, Level, Examples);
+        var cardRequest = new CardRequest(ActualTerm, Level, Examples);
         await WeatherApi.SaveNewCard(cardRequest);
 
         IsSaved = true;
+    }
+
+    private async Task LoadMoreExamples()
+    {
+        try
+        {
+            IsExamplesLoading = true;
+            
+            var res = await  WeatherApi.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+
+            Translation = Translation with { Translations = [..Translation.Translations, ..res] };
+            var examples = await WeatherApi.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage);
+
+            Examples = [..Examples, ..examples];
+        }
+        finally
+        {
+            IsExamplesLoading = false;
+        }
     }
 
 }

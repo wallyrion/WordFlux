@@ -99,9 +99,9 @@ public static class AiSystemMessages
                                                """;
 
     public const string giveAlternatives = """
-                                            There is a $term = '{{$term}}' and existing translations for it: {{$existingTranslations}}.
-                                            Give me alternative translations for '{{$term}}' in the same language as existing translations and return response in JSON, for examples: {"translations": ["to long for", "to yearn for"]}
-                                            Exclude translations that are already in {{$existingTranslations}} and double check you do not provide duplicates
+                                            There is a $term = '{{$term}}' in '{{$srcLang}}' and existing translations for it: $existingTranslations = {{$existingTranslations}} in '{{$destLang}}'.
+                                            Give me alternative translations for $term in {{$destLang}} and return response in JSON, for examples: {"translations": ["to long for", "to yearn for"]}
+                                            Exclude $existingTranslations from the result. Double check you do not provide duplicates
                                            """;
     
     

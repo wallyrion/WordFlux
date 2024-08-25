@@ -32,6 +32,22 @@ public class OpenAiGenerator
                          {"translations":["to encourage"], "suggested_term": "поощрять", "srcL": "en-US", "outL": "ru-RU"}
                          """
         }
+    }); 
+    private readonly KernelFunction _alternativesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = AiSystemMessages.giveAlternatives,
+        InputVariables = [
+            new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
+            new() { Name = "existingTranslations", Description = "Existing translations for the term" } ,
+            new() { Name = "srclang", Description = "language of the original term" } ,
+            new() { Name = "destLang", Description = "language of the translations" } 
+        ],
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         {"translations":["to encourage"]}
+                         """
+        }
     });   
     private readonly KernelFunction _giveMotivationalPhraseFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
@@ -241,11 +257,43 @@ public class OpenAiGenerator
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
-            Temperature = 0.2
+            Temperature = 0.5
         }) { { "term", term } };
         
         var result = await _translationsFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
 
+        
+        _logger.LogInformation("Got translated results {result}", result.Content);
+        
+        if (result == null || result.Content == null)
+        {
+            return null;
+        }
+
+        var content = JsonSerializer.Deserialize<TranslationResultNew>(result.Content);
+
+        if (content == null)
+        {
+            return null;
+        }
+
+        var response = new SimpleTranslationResult(content.SuggestedTerm, content.Translations, content.SourceLanguage, content.OutputLanguage);
+
+        return response;
+    }
+
+    [Experimental("SKEXP0010")]
+    public async Task<SimpleTranslationResult?> GetAlternativeTranslations(string term, string sourceLanguage, string destinationLanguage, IEnumerable<string> translations)
+    {
+        _logger.LogInformation("Getting alternative translations for term {Term}", term);
+        
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            Temperature = 0.5
+        }) { { "term", term }, { "srcLang", sourceLanguage }, { "destLang", destinationLanguage }, { "existingTranslations", JsonSerializer.Serialize(translations) } };
+        
+        var result = await _alternativesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
         
         _logger.LogInformation("Got translated results {result}", result.Content);
         

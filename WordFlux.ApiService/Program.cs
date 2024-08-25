@@ -201,6 +201,13 @@ app.MapGet("/translations", async (ApplicationDbContext dbContext, ILogger<Progr
     return respose;
 });
 
+app.MapPost("/translations/alternatives", async (OpenAiGenerator translation, GetTranslationExamples request) =>
+{
+    var respose = await translation.GetAlternativeTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage, request.Translations);
+
+    return respose?.Translations ?? [];
+});
+
 app.MapGet("/motivation", async (ApplicationDbContext dbContext, ILogger<Program> logger, OpenAiGenerator translation) =>
 {
     var response = await translation.GetMotivationalPhrase();

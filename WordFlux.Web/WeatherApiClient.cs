@@ -86,6 +86,15 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return r2!;
     }
     
+    public async Task<List<string>> GetAlternatives(string term, List<string> translations, string sourceLanguage, string destinationLanguage)
+    {
+        var request = new GetTranslationExamples(term, translations, sourceLanguage, destinationLanguage);
+        var r = await httpClient.PostAsJsonAsync("/translations/alternatives", request);
+        var r2 = await r.Content.ReadFromJsonAsync<List<string>>();
+
+        return r2!;
+    }
+    
     
     public async Task<byte[]> GetAudio(string term)
     {
@@ -132,7 +141,6 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         await httpClient.PostAsJsonAsync($"/cards?userId={myId}", card);
     }
     
-    
     public async Task UpdateCard(CardRequest card, Guid cardId)
     {
         var myId = await storage.GetMyId();
@@ -152,7 +160,7 @@ public record WeatherForecast(Guid Id, DateTime CreatedAt, int TemperatureC);
 
 public record TranslationResponse(string Term, List<TranslationItem> Translations, string Level, string? SuggestedTerm);
 public record TranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity, string Level);
-public record SimpleTranslationResult(string SuggestedTerm, List<string> Translations, string SourceLanguage, string DestinationLanguage);
+public record SimpleTranslationResult(string? SuggestedTerm, List<string> Translations, string SourceLanguage, string DestinationLanguage);
 
 public record CardRequest(string Term, string Level, List<TranslationItem> Translations);
 public record GetLevelResponse(string Level);
