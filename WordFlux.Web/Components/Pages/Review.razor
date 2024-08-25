@@ -197,6 +197,8 @@
     {
         IsShowTranslation = false;
         CurrentCard = NextCard;
+        UpdateLearningStrategy();
+        
         StateHasChanged();
         await UpdateTimeToNextReview();
         
@@ -214,9 +216,6 @@
         else
         {
             TimeToNextReview = null;
-
-            var r = Random.Shared.NextSingle();
-            IsShowTranslationAsBaseTerm = r < 0.4;
         }
 
     }
@@ -224,12 +223,19 @@
     protected override async Task OnInitializedAsync()
     {
         CurrentCard = await WeatherApi.GetNextCard();
+        UpdateLearningStrategy();
+        
         NextCard = await WeatherApi.GetNextCard(1);
         await UpdateTimeToNextReview();
 
         IsLoading = false;
     }
 
+    private void UpdateLearningStrategy()
+    {
+        IsShowTranslationAsBaseTerm = Random.Shared.NextSingle() < 0.4;
+    }
+    
     private async Task DeleteCard()
     {
         await WeatherApi.DeleteCard(CurrentCard!.Id);
@@ -245,4 +251,6 @@
         
         await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
     }
+
+    
 }
