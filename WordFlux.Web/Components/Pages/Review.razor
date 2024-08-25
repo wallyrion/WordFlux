@@ -109,7 +109,13 @@
 
                     </div>
 
-                    <TranslationExamples OnTermSearch="SearchForTerm" Translations="CurrentCard.Translations" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation"/>
+                    <TranslationExamples 
+                        Term="@CurrentCard.Term"
+                        OnTermSearch="SearchForTerm" 
+                        Translations="CurrentCard.Translations" 
+                        OnMakePrimary="MakePrimary"
+                        OnRemoveTranslation="RemoveTranslation"
+                        OnAddMyTranslation="AddMyTranslation"/>
                 }
 
                 else
@@ -233,4 +239,10 @@
         await UpdateTimeToNextReview();
     }
 
+    private async Task AddMyTranslation(TranslationItem item)
+    {
+        CurrentCard!.Translations.Insert(0, item);
+        
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
 }
