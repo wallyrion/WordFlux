@@ -98,14 +98,16 @@ public static class AiSystemMessages
                                                Consider example2 for input 'term' = "my" and 'translations' = ["мой", "моя"]: {"translations": [{"tr": "мой", "l": "A1", "p": "90", "e_or": "This is *my* house", "e_tr": "Это *мой* дом"}, {"tr": "моя", "l": "A1", "p": "80", "e_or": "This is *my* car", "e_tr": "Это *моя* машина"}]
                                                """;
 
-    public const string giveAlternatives = """
+    public const string GiveAlternativesPrompt = """
                                             There is a $term = '{{$term}}' in '{{$srcLang}}' and existing translations for it: $existingTranslations = {{$existingTranslations}} in '{{$destLang}}'.
                                             Give me alternative translations for $term in {{$destLang}} and return response in JSON, for examples: {"translations": ["to long for", "to yearn for"]}
                                             Exclude $existingTranslations from the result. Double check you do not provide duplicates
                                            """;
     
     
-    public const string giveMotivationPhase = """
+    public const string GiveMotivationPrompt = """
                                             Give me some rangom quote or motivational phrase. It can be one or several sentences.
                                            """;
+    
+    
 }

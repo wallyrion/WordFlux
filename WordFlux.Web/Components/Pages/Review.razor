@@ -1,5 +1,6 @@
 ﻿@page "/review"
 @using Humanizer
+@using WordFlux.Contracts
 @using WordFlux.Web.Components.Shared
 @inject WeatherApiClient WeatherApi
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
@@ -152,12 +153,12 @@
         return b => b.AddMarkupContent(0, htmlString);
     }
 
-    async Task SearchForTerm(TranslationItem item)
+    async Task SearchForTerm(CardTranslationItem item)
     {
         Navigation.NavigateTo("/?term=" + item.Term);
     }
 
-    async Task MakePrimary(TranslationItem item)
+    async Task MakePrimary(CardTranslationItem item)
     {
         CurrentCard!.Translations.Remove(item);
         CurrentCard.Translations.Insert(0, item);
@@ -165,7 +166,7 @@
         await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
     }
 
-    async Task RemoveTranslation(TranslationItem item)
+    async Task RemoveTranslation(CardTranslationItem item)
     {
         CurrentCard!.Translations.Remove(item);
 
@@ -248,7 +249,7 @@
         await UpdateTimeToNextReview();
     }
 
-    private async Task AddMyTranslation(TranslationItem item)
+    private async Task AddMyTranslation(CardTranslationItem item)
     {
         CurrentCard!.Translations.Insert(0, item);
         

@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.ApiService.UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Web.UnitTests", "WordFlux.Web.UnitTests\WordFlux.Web.UnitTests.csproj", "{033C12E0-F4F7-4A19-9F61-5EF3BC261415}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Contracts", "WordFlux.Contracts\WordFlux.Contracts.csproj", "{1555E911-B822-49A8-9BE6-14589EB8DAE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

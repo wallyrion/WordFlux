@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WordFlux.Contracts\WordFlux.Contracts.csproj" />
     <ProjectReference Include="..\WordFlux.ServiceDefaults\WordFlux.ServiceDefaults.csproj" />
   </ItemGroup>
 

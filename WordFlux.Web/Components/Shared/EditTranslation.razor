@@ -1,4 +1,5 @@
-﻿@inject WeatherApiClient HttpClient
+﻿@using WordFlux.Contracts
+@inject WeatherApiClient HttpClient
 
 
 <div class="card mt-2">
@@ -29,13 +30,13 @@
 
 @code {
 
-    [Parameter] public EventCallback<TranslationItem> OnAddMyTranslation { get; set; }
+    [Parameter] public EventCallback<CardTranslationItem> OnAddMyTranslation { get; set; }
     [Parameter] public string? Term { get; set; }
 
     private string? CustomExampleOriginal { get; set; }
     private string? CustomExampleTranslated { get; set; }
     private string? TranslationInput { get; set; }
-    private TranslationItem? CustomTranslation { get; set; }
+    private CardTranslationItem? CustomTranslation { get; set; }
 
 
     public async Task GetExampleForCustomTranslation()
