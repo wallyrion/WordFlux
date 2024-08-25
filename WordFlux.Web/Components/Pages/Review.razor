@@ -66,10 +66,10 @@
                 }
 
                 <div class="card-body">
-                    <h5 class="card-title">@CurrentCard.Term</h5>
+                    <h5 class="card-title">@(IsShowTranslationAsBaseTerm ? CurrentCard.Translations.First().Term : CurrentCard.Term)</h5>
                     @if (IsShowTranslation)
                     {
-                        <p class="card-text">@CurrentCard.Translations.First().Term</p>
+                        <p class="card-text">@(IsShowTranslationAsBaseTerm ? CurrentCard.Term : CurrentCard.Translations.First().Term)</p>
                     }
                 </div>
 
@@ -133,6 +133,7 @@
     CardDto? NextCard { get; set; }
     bool IsLoading { get; set; } = true;
     bool IsShowTranslation { get; set; }
+    bool IsShowTranslationAsBaseTerm { get; set; }
     bool IsRequestInProgress { get; set; }
     TimeSpan? TimeToNextReview { get; set; }
     string Motivation { get; set; } = "There is no better time to learn than now";
@@ -207,6 +208,9 @@
         else
         {
             TimeToNextReview = null;
+
+            var r = Random.Shared.NextSingle();
+            IsShowTranslationAsBaseTerm = r < 0.4;
         }
 
     }
