@@ -1,5 +1,4 @@
 ﻿@using System.Text.RegularExpressions
-@using WordFlux.Web.Models
 @inject WeatherApiClient HttpClient
 
 <div class="mt-4">
@@ -72,48 +71,11 @@
 </div>
 
 
-<div class="card mt-1">
-    <div class="card-header">
-        <div class="input-group mb-3">
-            <textarea @bind="TranslationInput" @bind:event="oninput" class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
-            <button class="btn btn-outline-secondary" type="button" @onclick="GetExampleForCustomTranslation">
-                <i class="bi bi-check2-circle"></i>
-            </button>
-        </div>
-
-
-    </div>
-    <div class="card-body">
-
-        @*<textarea @bind-Value:event="oninput" @bind-Value="Model.ExampleTranslated" class="form-control" placeholder="Example translated" aria-label="translation"></textarea>*@
-        <textarea  @bind="CustomExampleTranslated" @bind:event="oninput"  class="form-control" placeholder="Example translated" aria-label="translation-translated"></textarea>
-        <textarea  @bind="CustomExampleOriginal" @bind:event="oninput" class="form-control mt-1" placeholder="Example original" aria-label="translation-original"></textarea>
-    </div>
-
-
-    <div class="container-fluid">
-        <button type="button" class="btn btn-primary m-2" @onclick="AddMyTranslation">Add my translation</button>
-    </div>
-</div>
-
-
-@*<div class="card-body">
-        <p class="card-text">@StringToHtml(translation.value.ExampleTranslated)</p>
-        <blockquote class="blockquote mb-0">
-            <footer class="blockquote-footer">@StringToHtml(translation.value.ExampleOriginal)</footer>
-        </blockquote>
-    </div>*@
-
-
-
-
 @code {
-    private int currentCount = 0;
 
     [Parameter] public EventCallback<TranslationItem> OnTermSearch { get; set; }
     [Parameter] public EventCallback<TranslationItem> OnMakePrimary { get; set; }
     [Parameter] public EventCallback<TranslationItem> OnRemoveTranslation { get; set; }
-    [Parameter] public EventCallback<TranslationItem> OnAddMyTranslation { get; set; }
     [Parameter] public List<TranslationItem>? Translations { get; set; }
     [Parameter] public string? Term { get; set; }
 
@@ -156,48 +118,6 @@
         string result = Regex.Replace(text, pattern, "<strong>$1</strong>");
 
         return result;
-    }
-
-    public async Task GetExampleForCustomTranslation()
-    {
-        if (string.IsNullOrWhiteSpace(TranslationInput))
-        {
-            return;
-        }
-
-        CustomTranslation = (await HttpClient.GetTranslationExamples(Term, [TranslationInput], "", "")).FirstOrDefault();
-
-        CustomExampleOriginal = CustomTranslation?.ExampleOriginal;
-        CustomExampleTranslated = CustomTranslation?.ExampleTranslated;
-
-        StateHasChanged();
-    }
-
-    private void IncrementCount()
-    {
-        currentCount++;
-    }
-
-    async Task AddMyTranslation()
-    {
-        if (string.IsNullOrWhiteSpace(TranslationInput))
-        {
-            return;
-        }
-
-        await OnAddMyTranslation.InvokeAsync(CustomTranslation);
-        TranslationInput = null;
-        CustomExampleOriginal = null;
-        CustomExampleTranslated = null;
-    }
-
-    /*
-    [SupplyParameterFromForm]
-    public CustomTranslation? Model { get; set; } = new();
-    */
-
-    private void Submit()
-    {
     }
 
 }

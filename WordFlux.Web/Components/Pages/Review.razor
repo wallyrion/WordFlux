@@ -114,8 +114,15 @@
                         OnTermSearch="SearchForTerm" 
                         Translations="CurrentCard.Translations" 
                         OnMakePrimary="MakePrimary"
-                        OnRemoveTranslation="RemoveTranslation"
-                        OnAddMyTranslation="AddMyTranslation"/>
+                        OnRemoveTranslation="RemoveTranslation"/>
+                    
+                    <div class="d-flex justify-content-center mt-2">
+                        <button class="btn btn-outline-dark">Load more</button>
+                    </div>
+
+                    <EditTranslation
+                        Term="@CurrentCard.Term"
+                        OnAddMyTranslation="AddMyTranslation" />
                 }
 
                 else

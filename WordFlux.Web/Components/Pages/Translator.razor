@@ -95,7 +95,13 @@
     }
     @if (Examples.Count > 0)
     {
-        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm" OnAddMyTranslation="AddMyTranslation"/>
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
+          
+        <div class="d-flex justify-content-center">
+            <button class="btn btn-outline-dark">Load more</button>
+        </div>
+
+        <EditTranslation OnAddMyTranslation="AddMyTranslation" Term="@ActualTerm" />
     }
 
 

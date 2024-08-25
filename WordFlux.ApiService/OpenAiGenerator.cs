@@ -75,7 +75,8 @@ public class OpenAiGenerator
     private readonly KernelFunction _detectLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
-                   Detect language of the {{$src}} and {{$dest}} and map to the JSON object: {"srcLang": "en-US", "destLang": "ru-RU"} 
+                   Detect language and map to the JSON object: {"srcLang": "language of {{$src}} (e.g. en-US)", "destLang": "language of {{$dest}}"}
+                   Only these languages are possible: ["en-US", "ru-RU"] 
                    """,
         InputVariables = [
             new() { Name = "src" }, 
@@ -129,7 +130,6 @@ public class OpenAiGenerator
     [Experimental("SKEXP0010")]
     public async Task<(string srcLang, string destLang)?> DetectLanguage(string src, string dest)
     {
-        
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
