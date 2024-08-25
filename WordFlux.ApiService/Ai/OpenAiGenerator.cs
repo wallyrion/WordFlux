@@ -121,15 +121,15 @@ public class OpenAiGenerator
     }
     
     [Experimental("SKEXP0010")]
-    public async Task<SimpleTranslationResponse?> GetTranslations(string term)
+    public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
     {
-        _logger.LogInformation("Getting translations for term {term}", term);
+        _logger.LogInformation("Getting translations for term {Term}", term);
         
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
             Temperature = 0.5
-        }) { { "term", term } };
+        }) { { "term", term }, { "languages", JsonSerializer.Serialize(languages) } };
         
         var result = await AiFunctions.TranslationsFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
 
