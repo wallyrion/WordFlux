@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using WordFlux.ApiService.Domain;
 
-namespace WordFlux.ApiService.DbConfigurations;
+namespace WordFlux.ApiService.Persistence.DbConfigurations;
 
 internal sealed class CardConfiguration : IEntityTypeConfiguration<Card>
 {

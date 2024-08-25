@@ -1,4 +1,5 @@
 ﻿@using System.Text.RegularExpressions
+@using WordFlux.Contracts
 @inject WeatherApiClient HttpClient
 
 <div class="mt-4">
@@ -73,33 +74,33 @@
 
 @code {
 
-    [Parameter] public EventCallback<TranslationItem> OnTermSearch { get; set; }
-    [Parameter] public EventCallback<TranslationItem> OnMakePrimary { get; set; }
-    [Parameter] public EventCallback<TranslationItem> OnRemoveTranslation { get; set; }
-    [Parameter] public List<TranslationItem>? Translations { get; set; }
+    [Parameter] public EventCallback<CardTranslationItem> OnTermSearch { get; set; }
+    [Parameter] public EventCallback<CardTranslationItem> OnMakePrimary { get; set; }
+    [Parameter] public EventCallback<CardTranslationItem> OnRemoveTranslation { get; set; }
+    [Parameter] public List<CardTranslationItem>? Translations { get; set; }
     [Parameter] public string? Term { get; set; }
 
     private string? CustomExampleOriginal { get; set; }
     private string? CustomExampleTranslated { get; set; }
     private string? TranslationInput { get; set; }
-    private TranslationItem? CustomTranslation { get; set; }
+    private CardTranslationItem? CustomTranslation { get; set; }
 
-    async Task SearchTerm(TranslationItem item)
+    async Task SearchTerm(CardTranslationItem item)
     {
         await OnTermSearch.InvokeAsync(item);
     }
 
-    async Task RemoveTranslation(TranslationItem item)
+    async Task RemoveTranslation(CardTranslationItem item)
     {
         await OnRemoveTranslation.InvokeAsync(item);
     }
 
-    async Task MakePrimary(TranslationItem item)
+    async Task MakePrimary(CardTranslationItem item)
     {
         await OnMakePrimary.InvokeAsync(item);
     }
 
-    static string GetFireColor(TranslationItem item)
+    static string GetFireColor(CardTranslationItem item)
         => $"{item.Popularity switch { > 90 => "text-danger", > 70 => "text-warning", > 40 => "text-success", _ => "text-primary" }}";
 
     static RenderFragment StringToHtml(string htmlString)

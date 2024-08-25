@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WordFlux.ApiService.DbConfigurations;
+using WordFlux.ApiService.Domain;
+using WordFlux.ApiService.Persistence.DbConfigurations;
 
 namespace WordFlux.ApiService;
 
@@ -13,22 +14,3 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfiguration(new CardConfiguration());
     }
 }
-
-
-public class Card
-{
-    public Guid Id { get;  set; }
-    public DateTime CreatedAt { get; set; }
-    public List<CardTranslationItem> Translations { get; set; } = null!;
-    public string Term { get; set; } = null!;
-    public Guid CreatedBy { get; set; }
-    public DateTime NextReviewDate { get; set; }
-    public TimeSpan ReviewInterval { get; set; }
-    public string Level { get; set; } = null!;
-}
-
-/*public interface IEntity
-{
-    Guid Id { get; init; }
-    DateTime CreatedAt { get; init; }
-}*/
