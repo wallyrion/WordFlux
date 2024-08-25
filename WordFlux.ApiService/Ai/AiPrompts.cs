@@ -72,21 +72,20 @@ public static class AiSystemMessages
         """;*/
 
     public const string GiveTranslations = """
-                                              There is a $term = '{{$term}}'.
-                                              if $term is in English, translate $term into russian. 
-                                              If $term is in Russian, translate $term into english.
+                                              You are translator. There is a $term = '{{$term}}' that can be ONLY in these languages: {{$languages}}
+                                              Determine the original language and translate it to another.
                                               If $term has typo, try to fix a typo and put corrected value into suggested_term.
                                               If $term has no grammar mistakes, do not include suggested_term into json.
                                               Provide up to 4 translations, but most proper translations must be first.
                                               $term may contain a note (clarification) that should be considered as a clue for the context. (example_output1)
-                                              Indicate the input and output language in the response in srcL and outL fields.
+                                              Provide original and translated language in the response in srcL and outL fields respectively.
                                               Response must be in JSON.
                                               example_output1: {"translations":["bow"], "srcL": "en-US", "outL": "ru-RU"} for input '$term' = 'лук (для стрельбы)'
                                               example_output2: {"suggested_term": "поощрять", "translations":["to encourage", "to promote", "to reward"], "srcL": "ru-RU", "outL": "en-US"} for input '$term' = 'поощрать'
                                               example_output3: {"suggested_term": "Tell me where I was wrong?", "translations":["Подскажи, где я был неправ?"], "srcL": "en-US", "outL": "ru-RU"} for input '$term' = 'Tall me where was I wrong?'
                                               """;
 
-    public const string translationExamples = """
+    public const string GiveTranslationExamples = """
                                                There is a $term = '{{$term}}' and list of translation_items for it: {{$translations}} in {{$destLang}}.
                                                For each translation_item you should give example of usage and map to the object:
                                                {"tr": "translation_item in {{$destLang}}. You should not change it.", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of usages for *translation_item*. Should be in {{$destLang}}.", "e_or": "'e_tr' field but translated back to {{$srcLang}}."}

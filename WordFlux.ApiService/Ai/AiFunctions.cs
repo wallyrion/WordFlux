@@ -7,7 +7,10 @@ public class AiFunctions
     public static readonly KernelFunction TranslationsFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.GiveTranslations,
-        InputVariables = [new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" }],
+        InputVariables = [
+            new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
+            new() { Name = "languages", Description = "Possible languages" }
+        ],
         OutputVariable = new OutputVariable
         {
             JsonSchema = """
@@ -54,7 +57,7 @@ public class AiFunctions
     
     public static readonly KernelFunction GiveExamplesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
-        Template = AiSystemMessages.translationExamples,
+        Template = AiSystemMessages.GiveTranslationExamples,
         InputVariables = [
             new() { Name = "term", Description = "the original phrase or word that is translated" }, 
             new() { Name = "translations", Description = "Existing translations for the term" } ,

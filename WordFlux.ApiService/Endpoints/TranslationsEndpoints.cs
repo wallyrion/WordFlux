@@ -21,9 +21,9 @@ public static class TranslationsEndpoints
         });
         
         
-        app.MapGet("/translations", async (string term, OpenAiGenerator translation) =>
+        app.MapGet("/translations", async (string term, OpenAiGenerator translation, string nativeLanguage, string studyingLanguage) =>
         {
-            var response = await translation.GetTranslations(term);
+            var response = await translation.GetTranslations(term, [nativeLanguage, studyingLanguage]);
 
             if (response == null)
             {

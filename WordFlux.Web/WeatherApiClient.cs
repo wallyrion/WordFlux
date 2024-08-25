@@ -87,17 +87,17 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     public async Task<string> GetAudioLink(string term)
     {
         // get audio from the server
-
         var response =  (await httpClient.GetFromJsonAsync<GetAudioLinkResponse>(($"/audio/link?term={term}")));
 
-        
         return response.Link;
     }
     
     
     public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term)
     {
-        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}"))!;
+        var languages = await storage.GetMyLanguages();
+        
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={languages.native}&studyingLanguage={languages.studing}"))!;
     }
     public async Task<string> GetLevel(string term)
     {
