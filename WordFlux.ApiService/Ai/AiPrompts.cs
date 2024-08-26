@@ -89,8 +89,8 @@ public static class AiSystemMessages
     public const string GiveTranslationExamples = """
                                                There is a $term = '{{$term}}' and list of translation_items for it: {{$translations}} in {{$destLang}}.
                                                For each translation_item you should give example of usage and map to the object:
-                                               {"tr": "translation_item in {{$destLang}}. You should not change it.", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of usages for *translation_item*. Should be in {{$destLang}}.", "e_or": "'e_tr' field but translated back to {{$srcLang}}."}
-                                               Mapped objects should be in the same order and same count as original 'translations' array.
+                                               {"tr": "translation_item in {{$destLang}}. You should not change it.", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of usages for *translation_item*. Should be in {{$destLang}}.", "e_or": "'e_tr' field but translated back to {{$srcLang}}. Make sure it is correct context of the $term"}
+                                               Mapped objects should be in the same order and same count as original 'translation_items' array.
                                                Highlight term with '*' in 'e_tr' and 'e_or' example fields.
                                                'e_tr' should be in {{$destLang}} and 'e_or' should be in {{$srcLang}}.
                                                Response must be in JSON format in the following template:
