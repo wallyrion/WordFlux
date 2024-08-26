@@ -9,7 +9,8 @@ public class AiFunctions
         Template = AiSystemMessages.GiveTranslations,
         InputVariables = [
             new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
-            new() { Name = "languages", Description = "Possible languages" }
+            new() { Name = "lang1", Description = "Possible language 1" },
+            new() { Name = "lang2", Description = "Possible language 2" }
         ],
         OutputVariable = new OutputVariable
         {

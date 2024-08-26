@@ -24,18 +24,14 @@
         <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
     </div>
 
-
-    @if (Translation != null && Translation.Translations != null)
-    {
-        <div class="container-fluid m-2">
-            @foreach (var item in Translation.Translations)
-            {
-                <h5 class="d-inline me-1">
-                    <span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span>
-                </h5>
-            }
-        </div>
-    }
+    <div class="container-fluid m-2">
+        @foreach (var item in TranslationCheeps)
+        {
+            <h5 class="d-inline me-1">
+                <span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span>
+            </h5>
+        }
+    </div>
 
     <button type="button" class="btn btn-outline-secondary me-1 @EnabledState()" @onclick="Reset">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
@@ -126,6 +122,8 @@
     string? Level { get; set; }
     List<CardTranslationItem> Examples { get; set; } = [];
 
+    IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term);
+    
     protected override async Task OnInitializedAsync()
     {
         if (!string.IsNullOrWhiteSpace(Term))
@@ -187,7 +185,6 @@
             StateHasChanged();
 
             Level = await WeatherApi.GetLevel(Term);
-            ;
             StateHasChanged();
 
             Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);

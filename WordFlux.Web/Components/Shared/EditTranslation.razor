@@ -2,7 +2,7 @@
 @inject WeatherApiClient HttpClient
 
 
-<div class="card mt-2">
+<div class="card mt-2 mb-5">
     <div class="card-header">
         <div class="input-group mb-3">
             <textarea @bind="TranslationInput" @bind:event="oninput" class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
@@ -17,7 +17,7 @@
 
         @*<textarea @bind-Value:event="oninput" @bind-Value="Model.ExampleTranslated" class="form-control" placeholder="Example translated" aria-label="translation"></textarea>*@
         <textarea  @bind="CustomExampleTranslated" @bind:event="oninput"  class="form-control" placeholder="Example translated" aria-label="translation-translated"></textarea>
-        <textarea  @bind="CustomExampleOriginal" @bind:event="oninput" class="form-control mt-1" placeholder="Example original" aria-label="translation-original"></textarea>
+        <textarea  @bind="CustomExampleOriginal" @bind:event="oninput" style="color: #4e555b" class="form-control mt-1" placeholder="Example original" aria-label="translation-original"></textarea>
     </div>
 
 

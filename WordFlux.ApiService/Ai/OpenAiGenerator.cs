@@ -129,7 +129,7 @@ public class OpenAiGenerator
         {
             ResponseFormat = "json_object",
             Temperature = 0.5
-        }) { { "term", term }, { "languages", JsonSerializer.Serialize(languages) } };
+        }) { { "term", term }, { "lang1", languages[0] }, { "lang2", languages[1] } };
         
         var result = await AiFunctions.TranslationsFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
 

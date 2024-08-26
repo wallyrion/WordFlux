@@ -72,8 +72,9 @@ public static class AiSystemMessages
         """;*/
 
     public const string GiveTranslations = """
-                                              You are translator. There is a $term = '{{$term}}' that can be ONLY in these languages: {{$languages}}
-                                              Determine the original language and translate it to another.
+                                              You are translator. There is a $term = '{{$term}}'
+                                              If input $term is in {{$lang1}}, give translations for it in {{$lang2}}
+                                              If input $term is in {{$lang2}}, give translations for it in {{$lang1}}
                                               If $term has typo, try to fix a typo and put corrected value into suggested_term.
                                               If $term has no grammar mistakes, do not include suggested_term into json.
                                               Provide up to 4 translations, but most proper translations must be first.
