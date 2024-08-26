@@ -36,8 +36,6 @@ public class OpenAiGenerator
             return null;
         }
         
-        _logger.LogInformation("Got result {result}", result.Content);
-
         var content = JsonSerializer.Deserialize<DetectLanguageResponse>(result.Content);
 
         if (content == null)
@@ -51,8 +49,6 @@ public class OpenAiGenerator
     [Experimental("SKEXP0010")]
     public async Task<List<TranslationItem>> GetExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage)
     {
-        _logger.LogInformation("Getting examples for term {Term} and translations {@Translations}", term, translations);
-        
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
@@ -68,8 +64,6 @@ public class OpenAiGenerator
             return [];
         }
         
-        _logger.LogInformation("Got result {result}", result.Content);
-
         var content = JsonSerializer.Deserialize<TranslationExampleResult>(result.Content);
 
         if (content == null)
@@ -123,8 +117,6 @@ public class OpenAiGenerator
     [Experimental("SKEXP0010")]
     public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
     {
-        _logger.LogInformation("Getting translations for term {Term}", term);
-        
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
@@ -133,8 +125,6 @@ public class OpenAiGenerator
         
         var result = await AiFunctions.TranslationsFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
 
-        _logger.LogInformation("Got translated results {result}", result.Content);
-        
         if (result == null || result.Content == null)
         {
             return null;
@@ -155,8 +145,6 @@ public class OpenAiGenerator
     [Experimental("SKEXP0010")]
     public async Task<SimpleTranslationResponse?> GetAlternativeTranslations(string term, string sourceLanguage, string destinationLanguage, IEnumerable<string> translations)
     {
-        _logger.LogInformation("Getting alternative translations for term {Term}", term);
-        
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
@@ -164,8 +152,6 @@ public class OpenAiGenerator
         }) { { "term", term }, { "srcLang", sourceLanguage }, { "destLang", destinationLanguage }, { "existingTranslations", JsonSerializer.Serialize(translations) } };
         
         var result = await AiFunctions.GiveAlternativesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
-        
-        _logger.LogInformation("Got translated results {result}", result.Content);
         
         if (result == null || result.Content == null)
         {

@@ -56,7 +56,7 @@
 
     async Task AddMyTranslation()
     {
-        if (string.IsNullOrWhiteSpace(TranslationInput))
+        if (string.IsNullOrWhiteSpace(TranslationInput) || CustomTranslation == null)
         {
             return;
         }

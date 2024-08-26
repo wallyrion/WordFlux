@@ -41,7 +41,7 @@ public class AiFunctions
     {
         Template = """
                    Detect language and map to the JSON object: {"srcLang": "language of {{$src}} (e.g. en-US)", "destLang": "language of {{$dest}}"}
-                   Only these languages are possible: ["en-US", "ru-RU"] 
+                   Only these languages are possible: ["en-US", "ru-RU"]. src and dest can't be in the same language
                    """,
         InputVariables = [
             new() { Name = "src" }, 

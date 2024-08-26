@@ -122,7 +122,7 @@
     string? Level { get; set; }
     List<CardTranslationItem> Examples { get; set; } = [];
 
-    IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term);
+    IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term.Trim('\n', ' '));
     
     protected override async Task OnInitializedAsync()
     {
