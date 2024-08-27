@@ -88,14 +88,14 @@ public static class AiSystemMessages
 
     public const string GiveTranslationExamples = """
                                                There is a $term = '{{$term}}' and list of translation_items for it: {{$translations}} in {{$destLang}}.
-                                               For each translation_item you should give example of usage and map to the object:
-                                               {"tr": "translation_item in {{$destLang}}. You should not change it.", "l": "level of complexity of translation from A0 to C2", "p": "integer Value 0-100 estimate how often this translation is used.", "e_tr": "example of usages for *translation_item*. Should be in {{$destLang}}.", "e_or": "'e_tr' field but translated back to {{$srcLang}}. Make sure it is correct context of the $term"}
+                                               For each translation_item give example of usage and map to object:
+                                               {"tr": "translation_item, should not be changed", "l": "level of translation_item from A0 to C2", "p": "integer Value 0-100 estimate the popularity", "e_or": "Example of usage of *$term*. in the specified context. Must be in {{$srcLang}}.", "e_tr": "example of usages for *translation_item*. Should be in {{$destLang}}."}
                                                Mapped objects should be in the same order and same count as original 'translation_items' array.
-                                               Highlight term with '*' in 'e_tr' and 'e_or' example fields.
-                                               'e_tr' should be in {{$destLang}} and 'e_or' should be in {{$srcLang}}.
+                                               Highlight term with '*'.
+                                               'e_or' and 'e_tr' fields must have the same example message but 'e_or' contain $term (in {{$srcLang}}) and 'e_tr' contain *translation_item* ({{$destLang}}
                                                Response must be in JSON format in the following template:
-                                               Consider example1 for input 'term' = "кошка" and 'translations' = ["cat", "feline"]: {"translations": [{"tr": "cat", "l": "A1", "p": "98", "e_tr": "This *cat* is very playful", "e_or": "Эта *кошка* очень игривая"}, {"tr": "feline", "l": "B2", "p": "30", "e_tr": "His *feline* reflexes allowed him to catch the ball.", "e_or": "Его *кошачья* реакция позволила ему поймать мяч"}]
-                                               Consider example2 for input 'term' = "my" and 'translations' = ["мой", "моя"]: {"translations": [{"tr": "мой", "l": "A1", "p": "90", "e_or": "This is *my* house", "e_tr": "Это *мой* дом"}, {"tr": "моя", "l": "A1", "p": "80", "e_or": "This is *my* car", "e_tr": "Это *моя* машина"}]
+                                               example1 for input 'term' = "кошка" and 'translations' = ["cat", "feline"]: {"translations": [{"tr": "cat", "l": "A1", "p": "98", "e_tr": "This *cat* is very playful", "e_or": "Эта *кошка* очень игривая"}, {"tr": "feline", "l": "B2", "p": "30", "e_tr": "His *feline* reflexes allowed him to catch the ball.", "e_or": "Его *кошачья* реакция позволила ему поймать мяч"}]
+                                               example2 for input 'term' = "my" and 'translations' = ["мой", "моя"]: {"translations": [{"tr": "мой", "l": "A1", "p": "90", "e_or": "This is *my* house", "e_tr": "Это *мой* дом"}, {"tr": "моя", "l": "A1", "p": "80", "e_or": "This is *my* car", "e_tr": "Это *моя* машина"}]
                                                """;
 
     public const string GiveAlternativesPrompt = """
