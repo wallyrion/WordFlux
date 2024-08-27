@@ -86,9 +86,11 @@ public static class CardsEndpoints
                 return Results.NotFound();
             }
 
-            var nextReviewDate = DateTime.UtcNow + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 10000));
+            var reviewInternal = existingCard.ReviewInterval / 2;
+            var nextReviewDate = DateTime.UtcNow + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 10000)) + reviewInternal;
 
             existingCard.NextReviewDate = nextReviewDate;
+            existingCard.ReviewInterval = reviewInternal;
             await dbContext.SaveChangesAsync();
 
             return Results.Ok();
