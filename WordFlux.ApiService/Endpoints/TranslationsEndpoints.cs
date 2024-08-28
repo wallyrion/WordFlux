@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.Ai;
+using WordFlux.ApiService.Services;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Endpoints;
@@ -21,7 +22,7 @@ public static class TranslationsEndpoints
         });
         
         
-        app.MapGet("/translations", async (string term, OpenAiGenerator translation, string nativeLanguage, string studyingLanguage) =>
+        app.MapGet("/translations", async (string term, ITranslationService translation, string nativeLanguage, string studyingLanguage) =>
         {
             var response = await translation.GetTranslations(term, [nativeLanguage, studyingLanguage]);
 
@@ -40,21 +41,9 @@ public static class TranslationsEndpoints
             return response?.Translations ?? [];
         });
         
-        app.MapPost("/translations/examples", async (GetTranslationExamplesRequest request, OpenAiGenerator ai) =>
+        app.MapPost("/translations/examples", async (GetTranslationExamplesRequest request, ITranslationService translation) =>
         {
-            if (string.IsNullOrEmpty(request.SourceLanguage) || string.IsNullOrEmpty(request.DestinationLanguage))
-            {
-                (string srcLang, string destLang)? detectedLanguages = await ai.DetectLanguage(request.Term, request.Translations.First());
-        
-                if (detectedLanguages == null)
-                {
-                    return Results.BadRequest("Could not detect languages");
-                }
-        
-                request = request with {SourceLanguage = detectedLanguages.Value.srcLang, DestinationLanguage = detectedLanguages.Value.destLang};
-            }
-    
-            var response = await ai.GetExamples(request.Term, request.Translations, request.SourceLanguage, request.DestinationLanguage);
+            var response = await translation.GetExamples(request);
 
             return Results.Ok(response);
         });

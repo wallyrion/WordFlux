@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 using WordFlux.ApiService.Ai;
+using WordFlux.ApiService.Services;
 
 namespace WordFlux.ApiService;
 
@@ -17,6 +18,8 @@ public static class OpenAiDependencyInjection
             configuration["OpenAIKey"]!);
         
         services.AddSingleton<OpenAiGenerator>();
+        //services.AddSingleton<ITranslationService, AzureAiTranslationService>();
+        services.AddSingleton<ITranslationService, OpenAiTranslationService>();
         
         return services;
 
