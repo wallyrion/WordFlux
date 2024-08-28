@@ -14,6 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOutputCache();
 
+builder.Services.AddCors(cors =>
+{
+    cors.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
+
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
     Console.WriteLine("Using Azure Key Vault");
@@ -30,6 +35,7 @@ builder.Services.AddHostedService<MigrationHostedService>();
 builder.Services.AddOpenAi(builder.Configuration);
 
 var app = builder.Build();
+app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseOutputCache();
