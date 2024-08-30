@@ -51,7 +51,7 @@ public static class CardsEndpoints
     
             if (nextCard == null)
             {
-                return Results.Ok(new NextReviewCardTimeResponse (TimeSpan.MaxValue));
+                return Results.Ok(new NextReviewCardTimeResponse (null));
             }
     
             return Results.Ok(new NextReviewCardTimeResponse (nextCard.NextReviewDate - DateTime.UtcNow));

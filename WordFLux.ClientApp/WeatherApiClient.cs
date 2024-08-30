@@ -1,7 +1,8 @@
-using WordFlux.Contracts;
-using WordFlux.Web.Storage;
+using System.Net.Http.Json;
+using WordFLux.ClientApp.Models;
+using WordFLux.ClientApp.Storage;
 
-namespace WordFlux.Web;
+namespace WordFLux.ClientApp;
 
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {

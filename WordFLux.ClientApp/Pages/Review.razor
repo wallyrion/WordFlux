@@ -1,0 +1,311 @@
+﻿@page "/review"
+@using WordFLux.ClientApp.Extensions
+@using WordFLux.ClientApp.Models
+@using WordFLux.ClientApp.Shared
+@inject WeatherApiClient WeatherApi
+@inject NavigationManager Navigation
+
+<PageTitle>Review yourself</PageTitle>
+
+<div class="container mx-auto">
+
+    @if (IsLoading)
+    {
+        <p>
+            <em>Loading...</em>
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only"></span>
+            </div>
+        </p>
+    }
+    else
+    {
+        if (CurrentCard == null)
+        {
+            <div class="card text-center">
+                <div class="card-header">
+                    Nothing to learn at this moment. <a href="/">Create new cards</a>
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p>@Motivation</p>
+                        <footer class="blockquote-footer">OpenAI</footer>
+                    </blockquote>
+                </div>
+                <div class="card-footer d-flex justify-content-center align-items-center">
+                    <button class="btn btn-outline-info me-3" @onclick="OnInitializedAsync">
+                        <i class="bi bi-bootstrap-reboot"></i>
+                    </button>
+                    @if (TimeToNextReview != null)
+                    {
+                        <span>Next review in <strong>@(GetNextReviewTime()). </strong> </span>    
+                    }
+                </div>
+            </div>
+        }
+
+        else
+        {
+            <div class="card text-center position-relative">
+                <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@CurrentCard.Level</span>
+
+                @if (IsShowTranslation)
+                {
+                    <div class="dropdown">
+
+                        <button class="btn dropdown-toggle position-absolute end-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           
+                        </button>
+
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" role="button" @onclick="DeleteCard">Delete</a>
+                            </li>
+                        </ul>
+                    </div>
+                }
+
+                <div class="card-body">
+                    <h5 class="card-title">@(IsShowTranslationAsBaseTerm ? CurrentCard.Translations.First().Term : CurrentCard.Term)</h5>
+                    @if (IsShowTranslation)
+                    {
+                        <p class="card-text">@(IsShowTranslationAsBaseTerm ? CurrentCard.Term : CurrentCard.Translations.First().Term)</p>
+                    }
+                </div>
+
+                @if (IsShowTranslation)
+                {
+                    var currentProgress = CurrentCard.GetProgressRate();
+                    <div class="card-footer">
+                        <div class="progress" role="progressbar" aria-label="Default striped example" aria-valuenow="@currentProgress" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar @(currentProgress >= 100 ? "bg-success" : "progress-bar-striped")" style="width: @currentProgress%;"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div>
+                @if (IsShowTranslation)
+                {
+                    <div class="row justify-content-center mt-2 mb-2">
+                        <div class="col-5 col-lg-2">
+                            <button type="button" class="btn btn-warning w-100" disabled="@IsRequestInProgress" @onclick="Reject">
+                                Learning...
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-diamond-fill" viewBox="0 0 16 16">
+                                    <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L4.047 3.339 8 7.293l3.954-3.954L9.049.435zm3.61 3.611L8.708 8l3.954 3.954 2.904-2.905c.58-.58.58-1.519 0-2.098l-2.904-2.905zm-.706 8.614L8 8.708l-3.954 3.954 2.905 2.904c.58.58 1.519.58 2.098 0l2.905-2.904zm-8.614-.706L7.292 8 3.339 4.046.435 6.951c-.58.58-.58 1.519 0 2.098z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="col-5 col-lg-2">
+                            <button type="button" class="btn btn-success w-100" disabled="@IsRequestInProgress" @onclick="Approve">
+                                I know this
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+
+                    </div>
+
+                    <TranslationExamples 
+                        Term="@CurrentCard.Term"
+                        OnTermSearch="SearchForTerm" 
+                        Translations="CurrentCard.Translations" 
+                        OnMakePrimary="MakePrimary"
+                        OnRemoveTranslation="RemoveTranslation"/>
+                    
+                    <EditTranslation
+                        Term="@CurrentCard.Term"
+                        OnAddMyTranslation="AddMyTranslation" />
+                }
+
+                else
+                {
+                    <div class="row justify-content-center mt-2 mb-2">
+                        <div class="col-5 col-lg-2">
+                            <button type="button" class="btn btn-outline-primary w-100" @onclick="ShowTranslation">Show translation</button>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+    }
+
+
+</div>
+
+@code {
+    CardDto? CurrentCard { get; set; }
+    CardDto? NextCard { get; set; }
+    bool IsLoading { get; set; }
+    bool IsShowTranslation { get; set; }
+    bool IsShowTranslationAsBaseTerm { get; set; }
+    bool IsRequestInProgress { get; set; }
+    TimeSpan? TimeToNextReview { get; set; }
+    string Motivation { get; set; } = "There is no better time to learn than now";
+
+    RenderFragment StringToHtml(string htmlString)
+    {
+        return b => b.AddMarkupContent(0, htmlString);
+    }
+
+    async Task SearchForTerm(CardTranslationItem item)
+    {
+        Navigation.NavigateTo("/?term=" + item.Term);
+    }
+
+    async Task MakePrimary(CardTranslationItem item)
+    {
+        CurrentCard!.Translations.Remove(item);
+        CurrentCard.Translations.Insert(0, item);
+
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    async Task RemoveTranslation(CardTranslationItem item)
+    {
+        CurrentCard!.Translations.Remove(item);
+
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    private async Task Approve()
+    {
+        IsRequestInProgress = true;
+        await WeatherApi.ApproveCard(CurrentCard!.Id);
+        await LoadNext();
+
+        IsRequestInProgress = false;
+    }
+
+    private async Task Reject()
+    {
+        IsRequestInProgress = true;
+
+        await WeatherApi.RejectCard(CurrentCard!.Id);
+        await LoadNext();
+        
+        IsRequestInProgress = false;
+    }
+    
+    void ShowTranslation()
+    {
+        IsShowTranslation = true;
+    }
+
+    private async Task LoadNext()
+    {
+        IsShowTranslation = false;
+        CurrentCard = NextCard;
+        UpdateLearningStrategy();
+        
+        StateHasChanged();
+        await UpdateTimeToNextReview();
+        
+        NextCard = await WeatherApi.GetNextCard(1);
+        
+    }
+
+    private async Task UpdateTimeToNextReview()
+    {
+        if (CurrentCard == null)
+        {
+            TimeToNextReview = await WeatherApi.GetNextReviewTime();
+            Motivation = await WeatherApi.GetMotivation();
+        }
+        else
+        {
+            TimeToNextReview = null;
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        CurrentCard = await WeatherApi.GetNextCard();
+        UpdateLearningStrategy();
+        
+        NextCard = await WeatherApi.GetNextCard(1);
+        await UpdateTimeToNextReview();
+
+        IsLoading = false;
+    }
+
+    private string GetNextReviewTime()
+    {
+        if (TimeToNextReview == null)
+        {
+            return "";
+        }
+
+        var time = TimeToNextReview.Value;
+        
+        if (time < TimeSpan.FromSeconds(1))
+        {
+            return "a few moments";
+        }
+
+        if (time <= TimeSpan.FromMinutes(1))
+        {
+            return $"{time.Seconds} second{AppendS(time.Seconds)}";
+        }
+        
+        if (time <= TimeSpan.FromHours(1))
+        {
+            return $"{time.Minutes} minute{AppendS(time.Minutes)}";
+        }
+        
+        if (time <= TimeSpan.FromDays(1))
+        {
+            return $"{time.Hours} hour{AppendS(time.Hours)}";
+        }
+        
+        if (time <= TimeSpan.FromDays(30))
+        {
+            return $"{time.Days} day{AppendS(time.Days)}";
+        }
+        
+        if (time <= TimeSpan.FromDays(365))
+        {
+            var months = time.Days / 30;
+            return $"{months} month{AppendS(months)}";
+        }
+        
+        var years = time.Days / 365;
+        return $"{years} year{AppendS(years)}";
+
+        static string AppendS(int quantity)
+        {
+            return quantity > 1 ? "s" : "";
+        }
+    }
+    
+    private void UpdateLearningStrategy()
+    {
+        IsShowTranslationAsBaseTerm = Random.Shared.NextSingle() < 0.4;
+    }
+    
+    private async Task DeleteCard()
+    {
+        await WeatherApi.DeleteCard(CurrentCard!.Id);
+
+        await LoadNext();
+        
+        await UpdateTimeToNextReview();
+    }
+
+    private async Task AddMyTranslation(CardTranslationItem item)
+    {
+        CurrentCard!.Translations.Insert(0, item);
+        
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    
+}

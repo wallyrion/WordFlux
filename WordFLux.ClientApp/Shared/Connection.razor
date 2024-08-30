@@ -1,0 +1,52 @@
+﻿@using WordFLux.ClientApp.Services
+@implements IDisposable
+@inject IJSRuntime JsRuntime;
+@inject ConnectionHealthManager ConnectionHealthManager
+@inject TranslationsSyncService TranslationsSync
+@if (IsOnline)
+{
+    @Online
+}
+else
+{
+    @Offline
+}
+
+@code {
+
+    [Parameter]
+    public RenderFragment Online { get; set; }
+
+    [Parameter]
+    public RenderFragment Offline { get; set; }
+
+    public bool IsOnline { get; set; }
+
+    [JSInvokable("Connection.StatusChanged")]
+    public void OnConnectionStatusChanged(bool isOnline)
+    {
+        if (IsOnline != isOnline)
+        {
+            IsOnline = isOnline;
+        }
+
+        StateHasChanged();
+        ConnectionHealthManager.StatusChanged(isOnline);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("Connection => OnInitializedAsync");
+        Task.Run(async () => await TranslationsSync.WaitForEventAndSyncTranslations());
+
+        await base.OnInitializedAsync();
+
+        await JsRuntime.InvokeVoidAsync("Connection.Initialize", DotNetObjectReference.Create(this));
+        
+    }
+
+    public void Dispose()
+    {
+        JsRuntime.InvokeVoidAsync("Connection.Dispose");
+    }
+}

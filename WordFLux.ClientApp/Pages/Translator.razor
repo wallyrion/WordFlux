@@ -1,0 +1,270 @@
+﻿@page "/"
+@using WordFLux.ClientApp.Models
+@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Shared
+@inject WeatherApiClient WeatherApi
+@inject NavigationManager Navigation
+@inject ConnectionHealthManager ConnectionHealthManager
+@implements IDisposable
+
+<PageTitle>Home</PageTitle>
+
+@if (!IsOnline)
+{
+    <div class="container">
+        <div>
+            Looks you are offline. You can
+            <a href="/offline/translator">
+                <span>go to offline page </span>
+            </a> to add items that will be automatically added to your dictionary later.
+        </div>
+    </div>
+}
+
+@if (IsOnline)
+{
+    <div class="container">
+
+    @if (Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) && !Translation.SuggestedTerm.Equals(Term, StringComparison.InvariantCultureIgnoreCase))
+    {
+        <div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@Translation.SuggestedTerm </span></div>
+    }
+
+
+    <div class="mb-3 position-relative">
+
+        @if (Level != null)
+        {
+            <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Level</span>
+        }
+        <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
+    </div>
+
+    <div class="container-fluid m-2">
+        @foreach (var item in TranslationCheeps)
+        {
+            <h5 class="d-inline me-1">
+                <span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span>
+            </h5>
+        }
+    </div>
+
+    <button type="button" class="btn btn-outline-secondary me-1 @EnabledState()" @onclick="Reset">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+    </button>
+
+    @if (IsLoading)
+    {
+        <button class="btn btn-outline-info @EnabledState()" type="button" disabled>
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span role="status">Loading...</span>
+        </button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-outline-info @EnabledState()" @onclick="TryItOut">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+            </svg>
+            <span > Try it!</span>
+        </button>
+    }
+    @if (Translation is { Translations: not null })
+    {
+        @if (IsSaved)
+        {
+            <button type="button" class="btn btn-warning ms-1 disabled">
+                ✔️
+                <span class=""> Saved to cards</span>
+            </button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-outline-warning ms-1" disabled="@(IsLoading || IsExamplesLoading)" @onclick="SaveToCards">
+                ✔️
+                <span class=""> Save to cards</span>
+            </button>
+        }
+    }
+
+
+    <div class="mt-1">
+        <AudioFromText Term="@ActualTerm"/>
+    </div>
+
+    @if (Examples.Count > 0)
+    {
+        <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
+
+        <div class="d-flex justify-content-center mt-1 mb-3">
+            <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>
+        </div>
+    }
+
+    @if (IsExamplesLoading)
+    {
+        <div class="d-flex justify-content-center text-center mt-5">
+            <div class="me-2">Getting usage examples</div>
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only"></span>
+            </div>
+        </div>
+    }
+
+    @if (Translation != null)
+    {
+        <EditTranslation OnAddMyTranslation="AddMyTranslation" Term="@ActualTerm"/>
+    }
+
+</div>
+
+}
+
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "term")]
+    public string? Term { get; set; }
+
+    public bool IsOnline => ConnectionHealthManager.IsOnline;
+    public string? ActualTerm => Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
+
+    bool IsLoading { get; set; }
+    bool IsExamplesLoading { get; set; }
+    bool IsSaved { get; set; }
+
+    SimpleTranslationResponse? Translation { get; set; }
+    string? Level { get; set; }
+    List<CardTranslationItem> Examples { get; set; } = [];
+
+    IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term.Trim('\n', ' '));
+
+    protected override async Task OnInitializedAsync()
+    {
+        ConnectionHealthManager.OnStatusChanged += () => InvokeAsync(StateHasChanged);
+
+        if (!string.IsNullOrWhiteSpace(Term))
+        {
+            await TryItOut();
+        }
+    }
+
+    async Task SearchForTerm(CardTranslationItem item)
+    {
+        Term = item.Term;
+
+        await TryItOut();
+    }
+
+    async Task MakePrimary(CardTranslationItem item)
+    {
+        Examples.Remove(item);
+        Examples.Insert(0, item);
+    }
+
+    async Task AddMyTranslation(CardTranslationItem cardTranslation)
+    {
+        Examples.Insert(0, cardTranslation);
+    }
+
+    async Task RemoveTranslation(CardTranslationItem item)
+    {
+        if (Examples.Count == 1)
+        {
+            return;
+        }
+
+        Examples.Remove(item);
+    }
+
+    async Task TryItOut()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(Term))
+            {
+                return;
+            }
+
+            IsLoading = true;
+            IsSaved = false;
+            Translation = null;
+            Level = null;
+            Examples = [];
+
+            Navigation.NavigateTo(
+                Navigation.GetUriWithQueryParameter("term", Term));
+
+            Translation = await WeatherApi.GetSimpleTranslations(Term);
+            IsLoading = false;
+            IsExamplesLoading = true;
+
+            StateHasChanged();
+
+            Level = await WeatherApi.GetLevel(Term);
+            StateHasChanged();
+
+            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+        }
+        finally
+        {
+            IsLoading = false;
+            IsExamplesLoading = false;
+        }
+    }
+
+    void Reset()
+    {
+        Term = null;
+        Translation = null;
+        Examples = [];
+
+        Navigation.NavigateTo(
+            Navigation.GetUriWithQueryParameter("term", (string?)null));
+    }
+
+    // example: "This is a *bold* text"
+
+    string EnabledState() => IsLoading ? "disabled" : "";
+
+    async Task SaveToCards()
+    {
+        if (Translation == null)
+        {
+            return;
+        }
+
+        var cardRequest = new CardRequest(ActualTerm, Level, Examples);
+        await WeatherApi.SaveNewCard(cardRequest);
+
+        IsSaved = true;
+    }
+
+    private async Task LoadMoreExamples()
+    {
+        try
+        {
+            IsExamplesLoading = true;
+
+            var res = await WeatherApi.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+
+            Translation = Translation with { Translations = [..Translation.Translations, ..res] };
+            var examples = await WeatherApi.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage);
+
+            Examples = [..Examples, ..examples];
+        }
+        finally
+        {
+            IsExamplesLoading = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        ConnectionHealthManager.OnStatusChanged -= StateHasChanged;
+    }
+
+}

@@ -1,0 +1,71 @@
+﻿@using WordFLux.ClientApp.Models
+@inject WeatherApiClient HttpClient
+
+
+<div class="card mt-2 mb-5">
+    <div class="card-header">
+        <div class="input-group mb-3">
+            <textarea @bind="TranslationInput" @bind:event="oninput" class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
+            <button class="btn btn-outline-secondary" type="button" @onclick="GetExampleForCustomTranslation">
+                <i class="bi bi-check2-circle"></i>
+            </button>
+        </div>
+
+
+    </div>
+    <div class="card-body">
+
+        @*<textarea @bind-Value:event="oninput" @bind-Value="Model.ExampleTranslated" class="form-control" placeholder="Example translated" aria-label="translation"></textarea>*@
+        <textarea  @bind="CustomExampleTranslated" @bind:event="oninput"  class="form-control" placeholder="Example translated" aria-label="translation-translated"></textarea>
+        <textarea  @bind="CustomExampleOriginal" @bind:event="oninput" style="color: #4e555b" class="form-control mt-1" placeholder="Example original" aria-label="translation-original"></textarea>
+    </div>
+
+
+    <div class="container-fluid">
+        <button type="button" class="btn btn-primary m-2" @onclick="AddMyTranslation">Add my translation</button>
+    </div>
+</div>
+
+
+
+@code {
+
+    [Parameter] public EventCallback<CardTranslationItem> OnAddMyTranslation { get; set; }
+    [Parameter] public string? Term { get; set; }
+
+    private string? CustomExampleOriginal { get; set; }
+    private string? CustomExampleTranslated { get; set; }
+    private string? TranslationInput { get; set; }
+    private CardTranslationItem? CustomTranslation { get; set; }
+
+
+    public async Task GetExampleForCustomTranslation()
+    {
+        if (string.IsNullOrWhiteSpace(TranslationInput))
+        {
+            return;
+        }
+
+        CustomTranslation = (await HttpClient.GetTranslationExamples(Term, [TranslationInput], "", "")).FirstOrDefault();
+
+        CustomExampleOriginal = CustomTranslation?.ExampleOriginal;
+        CustomExampleTranslated = CustomTranslation?.ExampleTranslated;
+
+        StateHasChanged();
+    }
+
+    async Task AddMyTranslation()
+    {
+        if (string.IsNullOrWhiteSpace(TranslationInput) || CustomTranslation == null)
+        {
+            return;
+        }
+
+        await OnAddMyTranslation.InvokeAsync(CustomTranslation);
+        TranslationInput = null;
+        CustomExampleOriginal = null;
+        CustomExampleTranslated = null;
+    }
+
+
+}
