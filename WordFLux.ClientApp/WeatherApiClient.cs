@@ -28,7 +28,7 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return (await httpClient.GetFromJsonAsync<CardDto>($"/cards/next?userId={myId}&skip={skip}"))!;
     }
     
-    public async Task<TimeSpan> GetNextReviewTime()
+    public async Task<TimeSpan?> GetNextReviewTime()
     {
         var myId = await storage.GetMyId();
         

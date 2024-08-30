@@ -131,9 +131,11 @@ public class TranslationsSyncService(ILogger<TranslationsSyncService> logger, IL
 
         var examples = await apiClient.GetTranslationExamples(term, translations.Translations, translations.SourceLanguage,
             translations.DestinationLanguage);
-
+        
         var normalizedTerm = string.IsNullOrWhiteSpace(translations.SuggestedTerm) ? term : translations.SuggestedTerm;
-        await apiClient.SaveNewCard(new CardRequest(normalizedTerm, "Unknown", examples));
+        var level = await apiClient.GetLevel(normalizedTerm);
+        
+        await apiClient.SaveNewCard(new CardRequest(normalizedTerm, level, examples));
     }
 }
 

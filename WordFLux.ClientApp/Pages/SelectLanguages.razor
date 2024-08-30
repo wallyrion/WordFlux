@@ -1,0 +1,72 @@
+﻿@page "/lang"
+@using WordFlux.Web.Storage
+@inject LocalStorage Storage
+<PageTitle>Choose languages</PageTitle>
+
+<div class="container">
+
+    <div class="input-group mb-3">
+        <label class="input-group-text" for="selectNative">Your native language:</label>
+        <select class="form-select" id="selectNative" @onchange="SelectNative">
+            <option selected="@(NativeLanguage == null)">None</option>
+            @foreach (var option in LanguageOptions)
+            {
+                <option selected="@(option.Code == NativeLanguage)" value="@option.Code">@option.Name</option>
+            }
+        </select>
+    </div>
+    <div class="input-group mb-3">
+        <label class="input-group-text" for="selectStudying">Language you study:</label>
+        <select class="form-select" id="selectStudying" @onchange="SelectStudying">
+            <option selected="@(StudyingLanguage == null)">None</option>
+            @foreach (var option in LanguageOptions)
+            {
+                <option selected="@(option.Code == StudyingLanguage)" value="@option.Code">@option.Name</option>
+            }
+        </select>
+    </div>
+
+
+</div>
+
+
+@code {
+
+    static readonly List<LanguageOption> LanguageOptions =
+    [
+        new("Russian", "ru-RU"),
+        new("Ukrainian", "uk-UA"),
+        new("English", "en-US"),
+        new("Croatian", "hr-HR"),
+        new("Spain", "es-ES"),
+    ];
+
+    string? NativeLanguage { get; set; }
+    string? StudyingLanguage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var langs = await Storage.GetMyLanguages();
+
+        NativeLanguage = langs.native;
+        StudyingLanguage = langs.studing;
+
+        await base.OnInitializedAsync();
+    }
+
+    record LanguageOption(string Name, string Code);
+
+    private async Task SelectNative(ChangeEventArgs obj)
+    {
+        var langCode = obj.Value as string;
+
+        await Storage.SaveNativeLanguage(langCode!);
+    }
+    private async Task SelectStudying(ChangeEventArgs obj)
+    {
+        var langCode = obj.Value as string;
+
+        await Storage.SaveStudyingLanguage(langCode!);
+    }
+
+}
