@@ -1,5 +1,6 @@
 ﻿using WordFLux.ClientApp.Models;
-using WordFlux.Web;
+
+namespace WordFLux.ClientApp.Extensions;
 
 public static class CardExtension
 {
@@ -52,9 +53,9 @@ public static class CardExtension
                 var upperInterval = intervals[i + 1];
 
                 double progressRate = lowerInterval.Progress +
-                    (upperInterval.Progress - lowerInterval.Progress) *
-                    (card.ReviewInterval.TotalMinutes - lowerInterval.Interval.TotalMinutes) /
-                    (upperInterval.Interval.TotalMinutes - lowerInterval.Interval.TotalMinutes);
+                                      (upperInterval.Progress - lowerInterval.Progress) *
+                                      (card.ReviewInterval.TotalMinutes - lowerInterval.Interval.TotalMinutes) /
+                                      (upperInterval.Interval.TotalMinutes - lowerInterval.Interval.TotalMinutes);
 
                 return progressRate;
             }

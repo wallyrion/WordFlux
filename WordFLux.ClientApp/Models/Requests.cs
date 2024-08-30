@@ -1,4 +1,4 @@
-﻿namespace WordFlux.Contracts;
+﻿namespace WordFLux.ClientApp.Models;
 
 public record CardTranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity, string Level);
 

@@ -1,6 +1,6 @@
 {
-  "name": "BlazorApp1",
-  "short_name": "BlazorApp1",
+  "name": "WordFlux",
+  "short_name": "WordFlux",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

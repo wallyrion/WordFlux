@@ -1,8 +1,7 @@
 ﻿using Blazored.LocalStorage;
-using WordFlux.Contracts;
-using WordFlux.Web;
+using WordFLux.ClientApp.Models;
 
-namespace BlazorApp1.Services;
+namespace WordFLux.ClientApp.Services;
 
 public class TranslationsSyncService(ILogger<TranslationsSyncService> logger, ILocalStorageService localStorageService, InMemoryMessageQueue queue, IServiceProvider serviceCollection, ConnectionHealthManager healthManager)
 {

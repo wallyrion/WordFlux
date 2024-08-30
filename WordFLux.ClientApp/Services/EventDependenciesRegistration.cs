@@ -1,6 +1,6 @@
 ﻿using System.Threading.Channels;
 
-namespace BlazorApp1.Services;
+namespace WordFLux.ClientApp.Services;
 
 public enum Type
 {

@@ -1,4 +1,4 @@
-﻿namespace BlazorApp1.Services;
+﻿namespace WordFLux.ClientApp.Services;
 
 public class ConnectionHealthManager(InMemoryMessageQueue messageQueue, ILogger<ConnectionHealthManager> logger)
 {

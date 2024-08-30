@@ -1,6 +1,6 @@
 ﻿using Blazored.LocalStorage;
 
-namespace WordFlux.Web.Storage;
+namespace WordFLux.ClientApp.Storage;
 
 public class LocalStorage
 {
