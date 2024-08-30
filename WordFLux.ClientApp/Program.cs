@@ -21,6 +21,6 @@ builder.Services.AddSingleton<InMemoryMessageQueue>();
 // https://localhost:7443/
 // https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7443/") });
 
 await builder.Build().RunAsync();
