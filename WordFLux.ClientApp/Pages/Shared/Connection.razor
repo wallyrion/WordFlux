@@ -1,7 +1,7 @@
 ﻿@using WordFLux.ClientApp.Services
 @implements IDisposable
 @inject IJSRuntime JsRuntime;
-@inject ConnectionHealthManager ConnectionHealthManager
+@inject ConnectionHealthService ConnectionHealthService
 @inject TranslationsSyncService TranslationsSync
 @if (IsOnline)
 {
@@ -31,7 +31,7 @@ else
         }
 
         StateHasChanged();
-        ConnectionHealthManager.StatusChanged(isOnline);
+        ConnectionHealthService.StatusChanged(isOnline);
     }
 
     protected override async Task OnInitializedAsync()

@@ -97,7 +97,7 @@ public static class CardsEndpoints
         });
         
         
-        app.MapPost("/cards", async (ApplicationDbContext dbContext, CardRequest request, Guid userId) =>
+        app.MapPost("/cards", async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, Guid userId) =>
         {
             var card = new Card
             {
@@ -106,13 +106,16 @@ public static class CardsEndpoints
                 Term = request.Term,
                 Translations = request.Translations,
                 CreatedBy = userId,
-                NextReviewDate = DateTime.MinValue,
+                NextReviewDate = DateTime.UtcNow,
                 ReviewInterval = TimeSpan.FromMinutes(2),
                 Level = request.Level
             };
 
+            await Task.Delay(1000);
             dbContext.Cards.Add(card);
             await dbContext.SaveChangesAsync();
+            
+            logger.LogInformation("Saving card for term = {Term}", request.Term);
         });
         
         

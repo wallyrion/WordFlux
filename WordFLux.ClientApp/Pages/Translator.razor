@@ -1,10 +1,9 @@
 ﻿@page "/"
 @using WordFLux.ClientApp.Models
 @using WordFLux.ClientApp.Services
-@using WordFLux.ClientApp.Shared
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
-@inject ConnectionHealthManager ConnectionHealthManager
+@inject ConnectionHealthService ConnectionHealthService
 @implements IDisposable
 
 <PageTitle>Home</PageTitle>
@@ -129,7 +128,7 @@
     [SupplyParameterFromQuery(Name = "term")]
     public string? Term { get; set; }
 
-    public bool IsOnline => ConnectionHealthManager.IsOnline;
+    public bool IsOnline => ConnectionHealthService.IsOnline;
     public string? ActualTerm => Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
 
     bool IsLoading { get; set; }
@@ -144,7 +143,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ConnectionHealthManager.OnStatusChanged += () => InvokeAsync(StateHasChanged);
+        ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
 
         if (!string.IsNullOrWhiteSpace(Term))
         {
@@ -264,7 +263,7 @@
 
     public void Dispose()
     {
-        ConnectionHealthManager.OnStatusChanged -= StateHasChanged;
+        ConnectionHealthService.OnStatusChanged -= StateHasChanged;
     }
 
 }

@@ -1,14 +1,24 @@
 ﻿@page "/review"
 @using WordFLux.ClientApp.Extensions
 @using WordFLux.ClientApp.Models
-@using WordFLux.ClientApp.Shared
+@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Pages.Shared
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 
 <PageTitle>Review yourself</PageTitle>
 
 <div class="container mx-auto">
+    <div>
+        <div>
+            current card id = @CurrentCard?.Id
+        </div>
 
+        <div>
+            Next card id = @NextCard?.Id
+        </div>
+    </div>
+    
     @if (IsLoading)
     {
         <p>

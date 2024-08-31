@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using WordFLux.ClientApp.Models;
 using WordFLux.ClientApp.Storage;
 
-namespace WordFLux.ClientApp;
+namespace WordFLux.ClientApp.Services;
 
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {

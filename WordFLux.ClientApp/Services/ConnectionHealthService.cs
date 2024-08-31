@@ -1,6 +1,6 @@
 ﻿namespace WordFLux.ClientApp.Services;
 
-public class ConnectionHealthManager(InMemoryMessageQueue messageQueue, ILogger<ConnectionHealthManager> logger)
+public class ConnectionHealthService(InMemoryMessageQueue messageQueue, ILogger<ConnectionHealthService> logger)
 {
     public bool IsOnline { get; private set; }
 

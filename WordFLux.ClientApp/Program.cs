@@ -15,7 +15,7 @@ builder.Services.AddTransient<LocalStorage>();
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<WeatherApiClient>();
-builder.Services.AddSingleton<ConnectionHealthManager>();
+builder.Services.AddSingleton<ConnectionHealthService>();
 builder.Services.AddSingleton<InMemoryMessageQueue>();
 
 // https://localhost:7443/
