@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.Domain;
+using WordFlux.ApiService.Persistence;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Endpoints;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WordFlux.ApiService.Persistence;
 
 namespace WordFlux.ApiService;
 
@@ -19,6 +20,9 @@ internal sealed class MigrationHostedService(IServiceProvider serviceProvider, I
             await context.Database.MigrateAsync(cancellationToken);
             logger.LogInformation("Database migrated");
         }
+        
+        await SeedData.InitializeAsync(scope.ServiceProvider);
+
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

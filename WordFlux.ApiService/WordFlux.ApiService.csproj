@@ -25,6 +25,8 @@
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.17.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+
   </ItemGroup>
 
   <ItemGroup>
