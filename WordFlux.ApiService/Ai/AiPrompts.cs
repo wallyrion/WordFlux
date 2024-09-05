@@ -81,6 +81,7 @@ public static class AiSystemMessages
                                               $term may contain a note (clarification) that should be considered as a clue for the context. (example_output1)
                                               Provide original and translated language in the response in srcL and outL fields respectively.
                                               Response must be in JSON.
+                                              Below examples are english and russian just for examples. You must consider only {{$lang1}} and {{$lang2}}
                                               example_output1: {"translations":["bow"], "srcL": "en-US", "outL": "ru-RU"} for input '$term' = 'лук (для стрельбы)'
                                               example_output2: {"suggested_term": "поощрять", "translations":["to encourage", "to promote", "to reward"], "srcL": "ru-RU", "outL": "en-US"} for input '$term' = 'поощрать'
                                               example_output3: {"suggested_term": "Tell me where I was wrong?", "translations":["Подскажи, где я был неправ?"], "srcL": "en-US", "outL": "ru-RU"} for input '$term' = 'Tall me where was I wrong?'
