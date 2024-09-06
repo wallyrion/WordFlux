@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech;
@@ -12,9 +13,7 @@ using WordFlux.ApiService.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthentication(IdentityConstants.BearerScheme)
-    .AddBearerToken()
-    .AddIdentityCookies();
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
 
 builder.Services.AddAuthorizationBuilder();
 builder.Services.AddIdentityCore<AppUser>()
@@ -22,14 +21,12 @@ builder.Services.AddIdentityCore<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
 
-builder.Services.AddCors(
+/*builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
-        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:5001", 
-                builder.Configuration["FrontendUrl"] ?? "https://localhost:5002"])
+        policy => policy.AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()));
+            .AllowAnyHeader()));*/
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
@@ -37,8 +34,7 @@ builder.Services.AddOutputCache();
 builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
-        policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? "https://localhost:5001", 
-                builder.Configuration["FrontendUrl"] ?? "https://localhost:5002"])
+        policy => policy.WithOrigins([builder.Configuration["FrontendUrl"] ?? "https://localhost:7153"])
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()));
@@ -75,7 +71,27 @@ app.UseAuthorization();
 
 app.UseOutputCache();
 
+app.MapGet("/roles", (ClaimsPrincipal user) =>
+{
+    if (user.Identity is not null && user.Identity.IsAuthenticated)
+    {
+        var identity = (ClaimsIdentity)user.Identity;
+        var roles = identity.FindAll(identity.RoleClaimType)
+            .Select(c => 
+                new
+                {
+                    c.Issuer, 
+                    c.OriginalIssuer, 
+                    c.Type, 
+                    c.Value, 
+                    c.ValueType
+                });
 
+        return TypedResults.Json(roles);
+    }
+
+    return Results.Unauthorized();
+}).RequireAuthorization();
 app
     .MapAudioEndpoints()
     .MapCardsEndpoints()
