@@ -5,8 +5,9 @@
 
 <div class="container">
     <AuthorizeView>
-        <p>Hello, @context.User.Identity?.Name! You're authenticated.</p>
-        <a class="btn btn-primary" href="/logout">Log out</a>
+        <p>Hello, you're authenticated as <span class="fw-bold">@context.User.Identity?.Name!</span> </p>
+        <a class="btn btn-outline-danger" href="/logout">Log out</a>
+
     </AuthorizeView>
 </div>
 

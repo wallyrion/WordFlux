@@ -9,14 +9,11 @@
         <Authorized>
             <div class="alert alert-success">You're logged in as @context.User.Identity?.Name.</div>
             <div>
-                <a class="btn btn-primary" href="/logout">Log out</a>
+                <a class="btn btn-outline-danger" href="/logout">Log out</a>
             </div>
         </Authorized>
         <NotAuthorized>
-
             <h1>Login</h1>
-
-
             @if (errors)
             {
                 @foreach (var error in errorList)
@@ -36,6 +33,10 @@
 
                 <button type="button" class="btn btn-primary" @onclick="DoLoginAsync">Login</button>
             </form>
+            
+            <div class="mt-5">
+                Do not have account yet? <a class="btn btn-link" href="/register">Register</a>
+            </div>
 
 
         </NotAuthorized>

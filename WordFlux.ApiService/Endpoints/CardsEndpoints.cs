@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.CognitiveServices.Speech.Transcription;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -12,13 +15,15 @@ public static class CardsEndpoints
 {
     public static WebApplication MapCardsEndpoints(this WebApplication app)
     {
-        app.MapGet("/cards", async (ApplicationDbContext dbContext, Guid userId) =>
+        /*app.MapGet("/cards", async (ApplicationDbContext dbContext, Guid userId) =>
         {
             return await dbContext.Cards.Where(c => c.CreatedBy == userId).ToListAsync();
-        });
+        }).RequireAuthorization();*/
 
-        app.MapDelete("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, Guid userId, Guid cardId) =>
+        app.MapDelete("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+            
             var card = await dbContext.Cards.Where(c => c.CreatedBy == userId && c.Id == cardId).FirstOrDefaultAsync();
 
             if (card == null)
@@ -30,21 +35,25 @@ public static class CardsEndpoints
             await dbContext.SaveChangesAsync();
 
             return Results.Ok();
-        });
+        }).RequireAuthorization();
         
-        app.MapGet("/cards/next", async (ApplicationDbContext dbContext, Guid userId, int? skip = 0) =>
+        app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, int? skip = 0) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+            
             skip ??= 0;
 
             return await dbContext.Cards
                 .Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow)
                 .OrderBy(x => x.NextReviewDate)
                 .Skip(skip.Value).FirstOrDefaultAsync();
-        });
+        }).RequireAuthorization();
 
         
-        app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, Guid userId) =>
+        app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+            
             var nextCard = await dbContext.Cards
                 .Where(c => c.CreatedBy == userId)
                 .OrderBy(x => x.NextReviewDate)
@@ -56,10 +65,12 @@ public static class CardsEndpoints
             }
     
             return Results.Ok(new NextReviewCardTimeResponse (nextCard.NextReviewDate - DateTime.UtcNow));
-        });
+        }).RequireAuthorization();
         
-        app.MapPost("/cards/{cardId:guid}/approve", async (ApplicationDbContext dbContext, Guid cardId, Guid userId) =>
+        app.MapPost("/cards/{cardId:guid}/approve", async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
             var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
 
             if (existingCard == null)
@@ -75,11 +86,13 @@ public static class CardsEndpoints
             await dbContext.SaveChangesAsync();
 
             return Results.Ok();
-        });
+        }).RequireAuthorization();
         
         
-        app.MapPost("/cards/{cardId:guid}/reject", async (ApplicationDbContext dbContext, Guid cardId, Guid userId) =>
+        app.MapPost("/cards/{cardId:guid}/reject", async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
             var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
 
             if (existingCard == null)
@@ -95,11 +108,13 @@ public static class CardsEndpoints
             await dbContext.SaveChangesAsync();
 
             return Results.Ok();
-        });
+        }).RequireAuthorization();
         
         
-        app.MapPost("/cards", async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, Guid userId) =>
+        app.MapPost("/cards", async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
             var card = new Card
             {
                 CreatedAt = DateTime.UtcNow,
@@ -117,11 +132,13 @@ public static class CardsEndpoints
             await dbContext.SaveChangesAsync();
             
             logger.LogInformation("Saving card for term = {Term}", request.Term);
-        });
+        }).RequireAuthorization();
         
         
-        app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid userId, Guid cardId) =>
+        app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid cardId,  ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
             var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
 
             if (existingCard == null)
@@ -136,7 +153,7 @@ public static class CardsEndpoints
             await dbContext.SaveChangesAsync();
 
             return Results.Ok();
-        });
+        }).RequireAuthorization();
         
         return app;
     }
