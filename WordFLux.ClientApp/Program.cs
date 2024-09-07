@@ -29,12 +29,15 @@ builder.Services.AddSingleton<InMemoryMessageQueue>();
 // https://localhost:7443/
 // https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/
 
-builder.Services.AddHttpClient<WeatherApiClient>(b => b.BaseAddress = new Uri("https://localhost:7443/"))
+var apiUrl = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/";
+
+
+builder.Services.AddHttpClient<WeatherApiClient>(b => b.BaseAddress = new Uri(apiUrl))
     .AddHttpMessageHandler<CookieHandler>();
 
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7443/") });
+//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiUrl) });
 builder.Services.AddHttpClient(
         "Auth",
-        opt => opt.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? "https://localhost:7443"))
+        opt => opt.BaseAddress = new Uri(apiUrl))
     .AddHttpMessageHandler<CookieHandler>();
 await builder.Build().RunAsync();

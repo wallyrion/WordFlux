@@ -10,6 +10,7 @@ using WordFlux.ApiService;
 using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
 using WordFlux.ApiService.Persistence;
+using static System.Net.WebRequestMethods;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,12 @@ builder.Services.AddIdentityCore<AppUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 /*builder.Services.AddCors(
     options => options.AddPolicy(
@@ -33,8 +40,8 @@ builder.AddServiceDefaults();
 builder.Services.AddOutputCache();
 builder.Services.AddCors(
     options => options.AddPolicy(
-        "wasm",
-        policy => policy.WithOrigins([builder.Configuration["FrontendUrl"] ?? "https://localhost:7153"])
+    "wasm",
+        policy => policy.WithOrigins([builder.Configuration["FrontendUrl"] ?? "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net"])
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()));
