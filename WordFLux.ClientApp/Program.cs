@@ -14,7 +14,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddTransient<CookieHandler>();
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, TokenAuthenticationStateProvider>();
+builder.Services.AddScoped<TokenProvider>();
+builder.Services.AddTransient<TokenHandler>();
 builder.Services.AddScoped(
     sp => (IAccountManagement)sp.GetRequiredService<AuthenticationStateProvider>());
 
@@ -33,11 +35,11 @@ var apiUrl = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerap
 
 
 builder.Services.AddHttpClient<WeatherApiClient>(b => b.BaseAddress = new Uri(apiUrl))
-    .AddHttpMessageHandler<CookieHandler>();
+    .AddHttpMessageHandler<TokenHandler>();
 
 //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiUrl) });
 builder.Services.AddHttpClient(
         "Auth",
         opt => opt.BaseAddress = new Uri(apiUrl))
-    .AddHttpMessageHandler<CookieHandler>();
+    .AddHttpMessageHandler<TokenHandler>();
 await builder.Build().RunAsync();

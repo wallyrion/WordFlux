@@ -21,7 +21,7 @@ internal sealed class MigrationHostedService(IServiceProvider serviceProvider, I
             logger.LogInformation("Database migrated");
         }
         
-        await SeedData.InitializeAsync(scope.ServiceProvider);
+       // await SeedData.InitializeAsync(scope.ServiceProvider);
 
     }
 

@@ -1,16 +1,18 @@
 using System.Net.Http.Json;
 using System.Security.Claims;
-using System.Text.Json;
-using Microsoft.AspNetCore.Components.Authorization;
-using BlazorWasmAuth.Identity.Models;
 using System.Text;
+using System.Text.Json;
+using BlazorWasmAuth.Identity;
+using BlazorWasmAuth.Identity.Models;
+using Microsoft.AspNetCore.Components.Authorization;
+using WordFLux.ClientApp.Services;
 
-namespace BlazorWasmAuth.Identity
+namespace WordFLux.ClientApp.Identity
 {
     /// <summary>
     /// Handles state for cookie-based auth.
     /// </summary>
-    public class CookieAuthenticationStateProvider : AuthenticationStateProvider, IAccountManagement
+    public class TokenAuthenticationStateProvider : AuthenticationStateProvider, IAccountManagement
     {
         /// <summary>
         /// Map the JavaScript-formatted properties to C#-formatted classes.
@@ -37,12 +39,17 @@ namespace BlazorWasmAuth.Identity
         private readonly ClaimsPrincipal Unauthenticated =
             new(new ClaimsIdentity());
 
+        private readonly TokenProvider _tokenProvider;
+
         /// <summary>
         /// Create a new instance of the auth provider.
         /// </summary>
         /// <param name="httpClientFactory">Factory to retrieve auth client.</param>
-        public CookieAuthenticationStateProvider(IHttpClientFactory httpClientFactory)
-            => _httpClient = httpClientFactory.CreateClient("Auth");
+        public TokenAuthenticationStateProvider(IHttpClientFactory httpClientFactory, TokenProvider tokenProvider)
+        {
+            _tokenProvider = tokenProvider;
+            _httpClient = httpClientFactory.CreateClient("Auth");
+        }
 
         /// <summary>
         /// Register a new user.
@@ -133,6 +140,7 @@ namespace BlazorWasmAuth.Identity
                 if (result.IsSuccessStatusCode)
                 {
                     var authResponse = await result.Content.ReadFromJsonAsync<AuthResponse>();
+                    await _tokenProvider.SetAuthTokensAsync(authResponse!);
                     
                     // need to refresh auth state
                     NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
@@ -219,7 +227,7 @@ namespace BlazorWasmAuth.Identity
                     }
 
                     // set the principal
-                    var id = new ClaimsIdentity(claims, nameof(CookieAuthenticationStateProvider));
+                    var id = new ClaimsIdentity(claims, nameof(TokenAuthenticationStateProvider));
                     user = new ClaimsPrincipal(id);
                     _authenticated = true;
                 }
@@ -232,6 +240,7 @@ namespace BlazorWasmAuth.Identity
 
         public async Task LogoutAsync()
         {
+            await _tokenProvider.ClearTokensAsync();
             const string Empty = "{}";
             var emptyContent = new StringContent(Empty, Encoding.UTF8, "application/json");
             await _httpClient.PostAsync("logout", emptyContent);
@@ -255,3 +264,6 @@ namespace BlazorWasmAuth.Identity
 
     }
 }
+
+
+public record AuthResponse(string AccessToken, string RefreshToken);

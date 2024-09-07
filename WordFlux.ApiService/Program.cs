@@ -1,8 +1,12 @@
 using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -14,19 +18,20 @@ using static System.Net.WebRequestMethods;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddAuthorizationBuilder();
-builder.Services.AddIdentityCore<AppUser>()
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => {
+    options.BearerTokenExpiration = TimeSpan.FromDays(1);
+});
+//builder.Services.AddAuthorizationBuilder();
+/*builder.Services.AddIdentityCore<AppUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddApiEndpoints();
+    .AddDefaultTokenProviders()
+    .AddApiEndpoints();*/
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
 
 /*builder.Services.AddCors(
     options => options.AddPolicy(
