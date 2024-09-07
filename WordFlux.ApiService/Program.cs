@@ -71,6 +71,18 @@ app.UseAuthorization();
 
 app.UseOutputCache();
 
+app.MapPost("/logout", async (SignInManager<AppUser> signInManager, [FromBody] object empty) =>
+{
+    if (empty is not null)
+    {
+        await signInManager.SignOutAsync();
+
+        return Results.Ok();
+    }
+
+    return Results.Unauthorized();
+}).RequireAuthorization();
+
 app.MapGet("/roles", (ClaimsPrincipal user) =>
 {
     if (user.Identity is not null && user.Identity.IsAuthenticated)

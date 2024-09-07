@@ -3,5 +3,4 @@
 public class AppUser : IdentityUser
 {
     public IEnumerable<IdentityRole>? Roles { get; set; }
-    
 }
