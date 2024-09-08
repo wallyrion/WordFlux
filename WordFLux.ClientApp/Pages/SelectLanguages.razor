@@ -25,6 +25,12 @@
             }
         </select>
     </div>
+    
+    
+    <div>
+        <p>My id:</p>
+        <p>@MyId</p>
+    </div>
 
 
 </div>
@@ -43,9 +49,13 @@
 
     string? NativeLanguage { get; set; }
     string? StudyingLanguage { get; set; }
+    
+    Guid? MyId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        MyId = await Storage.GetMyId();
+        
         var langs = await Storage.GetMyLanguages();
 
         NativeLanguage = langs.native;

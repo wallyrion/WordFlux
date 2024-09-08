@@ -47,11 +47,9 @@ public class AzureAiTranslationService(OpenAiGenerator aiGenerator) : ITranslati
 
     public async Task<List<TranslationItem>> GetExamples(GetTranslationExamplesRequest request)
     {
-
-        
         if (string.IsNullOrEmpty(request.SourceLanguage) || string.IsNullOrEmpty(request.DestinationLanguage))
         {
-            (string srcLang, string destLang)? detectedLanguages = await _aiGenerator.DetectLanguage(request.Term, request.Translations.First());
+            (string srcLang, string destLang)? detectedLanguages = await _aiGenerator.DetectLanguages(request.Term, request.Translations.First());
         
             if (detectedLanguages == null)
             {

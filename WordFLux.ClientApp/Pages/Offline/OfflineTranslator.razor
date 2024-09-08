@@ -1,10 +1,9 @@
 ﻿@page "/offline/translator"
-@inject WeatherApiClient WeatherApi
-@inject NavigationManager Navigation
 @inject TranslationsSyncService TranslationSyncService
 @using WordFLux.ClientApp.Models
 @using WordFLux.ClientApp.Services
 @implements IDisposable
+@attribute [Authorize]
 
 <PageTitle>Home</PageTitle>
 

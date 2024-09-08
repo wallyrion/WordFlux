@@ -1,6 +1,6 @@
 {
-  "name": "WordFlux",
-  "short_name": "WordFlux",
+  "name": "WordFlux.ClientApp",
+  "short_name": "WordFlux.ClientApp",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

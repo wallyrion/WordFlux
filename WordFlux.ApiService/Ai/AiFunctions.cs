@@ -9,13 +9,14 @@ public class AiFunctions
         Template = AiSystemMessages.GiveTranslations,
         InputVariables = [
             new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
-            new() { Name = "lang1", Description = "Possible language 1" },
-            new() { Name = "lang2", Description = "Possible language 2" }
+            new() { Name = "inputLang", Description = "Language of the input" },
+            new() { Name = "translationsLang", Description = "Language of the possible translations" },
+            new() { Name = "translationsCount", Description = "Number of possible translations" }
         ],
         OutputVariable = new OutputVariable
         {
             JsonSchema = """
-                         {"translations":["to encourage"], "suggested_term": "поощрять", "srcL": "en-US", "outL": "ru-RU"}
+                         {"translations":["to encourage"]}
                          """
         }
     }); 
@@ -37,7 +38,27 @@ public class AiFunctions
         }
     });   
     
+    
     public static readonly KernelFunction DetectLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = """
+                   Detect language of input: |{{$input}}| and map to the JSON object: {"language": "language of input (e.g. en-US)"}
+                   Only these languages are possible: [{{$possibleLanguages}}].
+                   If input has typo, try to fix a typo and put corrected value into suggested_term. If no typo, skip suggested_term field
+                   """,
+        InputVariables = [
+            new() { Name = "input" }, 
+            new() { Name = "possibleLanguages" }, 
+        ],
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         {"language": "en-US"}
+                         """
+        }
+    });
+    
+    public static readonly KernelFunction DetectLanguagesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
                    Detect language and map to the JSON object: {"srcLang": "language of {{$src}} (e.g. en-US)", "destLang": "language of {{$dest}}"}

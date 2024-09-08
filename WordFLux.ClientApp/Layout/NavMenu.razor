@@ -22,22 +22,48 @@
                 <span><i class="bi bi-at"></i></span>Translator
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link ps-1" href="review">
-                <span><i class="bi bi-bookmark-star"></i></span> Review
-            </NavLink>
-        </div>
+
         <div class="nav-item px-3">
             <NavLink class="nav-link ps-1" href="lang">
                 <span><i class="bi bi-flag"></i></span> Choose language
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link ps-1" href="offline/translator">
-                <span><i class="bi bi-basket3"></i></span>Basket
-            </NavLink>
-        </div>
+
+        <AuthorizeView>
+
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link ps-1" href="review">
+                        <span><i class="bi bi-bookmark-star"></i></span> Review
+                    </NavLink>
+                </div>
+                
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link ps-1" href="offline/translator">
+                        <span><i class="bi bi-basket3"></i></span>Basket
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link ps-1" href="profile">
+                        <span><i class="bi bi-person-circle"></i></span>My profile
+                    </NavLink>
+                </div>
+            </Authorized>
+       
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link ps-1" href="login">
+                        <span><i class="bi bi-box-arrow-in-right"></i></span>Log in
+                    </NavLink>
+
+                </div>
+            </NotAuthorized>
+            
+            
+        </AuthorizeView>
     </nav>
 </div>
 

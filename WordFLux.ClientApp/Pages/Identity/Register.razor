@@ -1,0 +1,117 @@
+@page "/register"
+@using BlazorWasmAuth.Identity
+@inject IAccountManagement Acct
+
+<PageTitle>Register</PageTitle>
+
+<div class="container">
+
+    <h1>Register</h1>
+
+    <AuthorizeView>
+        <Authorized>
+            <div class="alert alert-success">You're logged in as @context.User.Identity?.Name.</div>
+            <div>
+                <a class="btn btn-outline-danger" href="/logout">Log out</a>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            @if (success)
+            {
+                <div class="alert alert-success">You successfully registered. Now you can <a href="login">login</a>.</div>
+            }
+            else
+            {
+                if (errors)
+                {
+                    foreach (var error in errorList)
+                    {
+                        <div class="alert alert-danger">@error</div>
+                    }
+                }
+
+                <form>
+                    <div class="mb-3">
+                        <input autofocus required type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter your email address" @bind-value="email">
+                        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    <div class="mb-3">
+                        <input required type="password" class="form-control" id="password" @bind-value="password" placeholder="Enter your password">
+                    </div>
+
+                    <div class="mb-3">
+                        <input required type="password" class="form-control" id="confirmPassword" @bind-value="confirmPassword" placeholder="Re-enter your password">
+                    </div>
+
+
+                    <button type="button" class="btn btn-primary" @onclick="DoRegisterAsync">Register</button>
+                </form>
+            
+                <div class="mt-5">
+                    Have account already? <a class="btn btn-link" href="/login">Login</a>
+                </div>
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+
+@code {
+    private bool success, errors;
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string confirmPassword = string.Empty;
+    private string[] errorList = [];
+
+    public async Task DoRegisterAsync()
+    {
+        success = errors = false;
+        errorList = [];
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            errors = true;
+            errorList = ["Email is required."];
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            errors = true;
+            errorList = ["Password is required."];
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(confirmPassword))
+        {
+            errors = true;
+            errorList = ["Please confirm your password."];
+
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            errors = true;
+            errorList = ["Passwords don't match."];
+
+            return;
+        }
+
+        var result = await Acct.RegisterAsync(email, password);
+
+        if (result.Succeeded)
+        {
+            success = true;
+            email = password = confirmPassword = string.Empty;
+        }
+        else
+        {
+            errors = true;
+            errorList = result.ErrorList;
+        }
+    }
+
+}

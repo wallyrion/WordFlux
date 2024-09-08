@@ -1,0 +1,89 @@
+@page "/login"
+@using BlazorWasmAuth.Identity
+@inject IAccountManagement Acct
+
+<PageTitle>Login</PageTitle>
+
+<div class="container">
+    <AuthorizeView>
+        <Authorized>
+            <div class="alert alert-success">You're logged in as @context.User.Identity?.Name.</div>
+            <div>
+                <a class="btn btn-outline-danger" href="/logout">Log out</a>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <h1>Login</h1>
+            @if (errors)
+            {
+                @foreach (var error in errorList)
+                {
+                    <div class="alert alert-danger">@error</div>
+                }
+            }
+
+            <form>
+                <div class="mb-3">
+                    <input required type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter your email address" @bind-value="email">
+                    <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                </div>
+                <div class="mb-3">
+                    <input required type="password" class="form-control" id="password" @bind-value="password" placeholder="Enter your password">
+                </div>
+
+                <button type="button" class="btn btn-primary" @onclick="DoLoginAsync">Login</button>
+            </form>
+            
+            <div class="mt-5">
+                Do not have account yet? <a class="btn btn-link" href="/register">Register</a>
+            </div>
+
+
+        </NotAuthorized>
+    </AuthorizeView>
+
+</div>
+
+
+@code {
+    private bool success, errors;
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string[] errorList = [];
+
+    public async Task DoLoginAsync()
+    {
+        success = errors = false;
+        errorList = [];
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            errors = true;
+            errorList = ["Email is required."];
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            errors = true;
+            errorList = ["Password is required."];
+
+            return;
+        }
+
+        var result = await Acct.LoginAsync(email, password);
+
+        if (result.Succeeded)
+        {
+            success = true;
+            email = password = string.Empty;
+        }
+        else
+        {
+            errors = true;
+            errorList = result.ErrorList;
+        }
+    }
+
+}
