@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,10 +22,4 @@
     </ItemGroup>
 
 
-    <ItemGroup>
-      <Content Update="wwwroot\staticwebapp.config.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
-    
 </Project>
