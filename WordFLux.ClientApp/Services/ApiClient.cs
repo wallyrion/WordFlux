@@ -1,11 +1,18 @@
 using System.Net.Http.Json;
 using WordFLux.ClientApp.Models;
+using WordFLux.ClientApp.Pages;
 using WordFLux.ClientApp.Storage;
 
 namespace WordFLux.ClientApp.Services;
 
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {
+
+    public async Task SubscribeToNotification(SelectLanguages.NotificationSubscription subscription)
+    {
+        await httpClient.PostAsJsonAsync("/notifications", subscription);
+    }
+    
     public async Task<List<CardDto>> GetCards()
     {
         var myId = await storage.GetMyId();

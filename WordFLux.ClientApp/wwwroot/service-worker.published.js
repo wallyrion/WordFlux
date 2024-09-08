@@ -6,6 +6,21 @@ self.addEventListener('install', event => event.waitUntil(onInstall(event)));
 self.addEventListener('activate', event => event.waitUntil(onActivate(event)));
 self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
 
+
+console.log("adding push listener (prod)")
+
+self.addEventListener('push', event => {
+    //const payload = event.data.json();
+    event.waitUntil(
+        self.registration.showNotification('Exam time', {
+            body: "New card appeared!",
+            icon: 'icon-512.png',
+            vibrate: [100, 50, 100],
+            data: { url: "https://google.com"}
+        })
+    );
+});
+
 const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
 const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/ ];
