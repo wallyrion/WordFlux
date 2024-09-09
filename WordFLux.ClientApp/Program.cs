@@ -33,12 +33,22 @@ builder.Services.AddSingleton<InMemoryMessageQueue>();
 
 var apiUrl = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/";
 
-builder.Services.AddHttpClient<WeatherApiClient>(b => b.BaseAddress = new Uri(apiUrl))
+builder.Services.AddHttpClient<WeatherApiClient>((provider, client) =>
+    {
+        var configuration = provider.GetRequiredService<IConfiguration>();
+        var url = configuration["BackendUrl"];
+        client.BaseAddress = new Uri(url!);
+    })
     .AddHttpMessageHandler<TokenHandler>();
 
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiUrl) });
 builder.Services.AddHttpClient(
-        "Auth",
-        opt => opt.BaseAddress = new Uri(apiUrl))
+        // need to squash auth http client into default.
+        
+        "Auth", (provider, client) =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var url = configuration["BackendUrl"];
+            client.BaseAddress = new Uri(url!);
+        })
     .AddHttpMessageHandler<TokenHandler>();
 await builder.Build().RunAsync();
