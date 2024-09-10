@@ -37,6 +37,11 @@
             {
                 <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Level</span>
             }
+            
+            
+            <span class="audio-button"><AudioFromText Term="@ActualTerm"/></span>
+
+
             <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
         </div>
 
@@ -100,11 +105,7 @@
                 </NotAuthorized>
             </AuthorizeView>
         }
-
-
-        <div class="mt-1">
-            <AudioFromText Term="@ActualTerm"/>
-        </div>
+        
 
         @if (Examples.Count > 0)
         {

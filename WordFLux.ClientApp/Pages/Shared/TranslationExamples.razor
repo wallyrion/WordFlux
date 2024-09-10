@@ -58,9 +58,23 @@
 
             </div>
             <div class="card-body">
-                <p class="card-text">@StringToHtml(translation.value.ExampleTranslated)</p>
+                <p class="card-text">
+                    <span class="position-relative">
+                        @StringToHtml(translation.value.ExampleTranslated)
+                        <span class="audio">
+                            <AudioFromText Term="@translation.value.ExampleTranslated"></AudioFromText>
+                        </span>
+                    </span>
+                </p>
                 <blockquote class="blockquote mb-0">
-                    <footer class="blockquote-footer">@StringToHtml(translation.value.ExampleOriginal)</footer>
+                    <footer class="blockquote-footer">
+                        <span class="position-relative">
+                            @StringToHtml(translation.value.ExampleOriginal)
+                            <span class="audio">
+                                <AudioFromText Term="@translation.value.ExampleOriginal"></AudioFromText>
+                            </span>
+                        </span>
+                    </footer>
                 </blockquote>
             </div>
         </div>

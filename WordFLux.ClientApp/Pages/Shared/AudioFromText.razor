@@ -2,6 +2,13 @@
 @inject IJSRuntime JS
 @inject WeatherApiClient HttpClient
 
+<i class="bi bi-music-note" @onclick="PlaySound2" style="cursor: pointer"></i>
+
+<audio id="sound" class="d-none" autoplay src="@SoundUrl" controls style="max-width: 500px; width: 100%;">
+    Your browser does not support the HTML audio tag.
+</audio>
+
+@*
 <div class="row align-items-center">
     <!-- Button Column -->
     <div class="col-auto">
@@ -12,13 +19,14 @@
     <!-- Audio Player Column -->
     @if(SoundUrl != null)
     {
-    <div class="col">
+    <div class="col d-none">
         <audio id="sound" autoplay src="@SoundUrl" controls style="max-width: 500px; width: 100%;">
             Your browser does not support the HTML audio tag.
         </audio>
     </div>
     }
 </div>
+*@
 
 
 @code {
@@ -29,7 +37,6 @@
     {
         SoundUrl = null;
     }
-
 
     private async Task PlaySound2()
     {
@@ -43,17 +50,15 @@
             SoundUrl = null;
             StateHasChanged();
         }
-      
+
         SoundUrl = await HttpClient.GetAudioLink(Term);
-        
-        
-        
+
         // Put the bytes in a memory stream
         /*var stream = new MemoryStream(audioResult);
         // Play the audio file
         using var streamRef = new DotNetStreamReference(stream: stream);
 
-        
+
         var url = await JS.InvokeAsync<string>("CreateBlob", streamRef);*/
         //await JS.InvokeVoidAsync("RevokeUrl", SoundUrl);
 
@@ -69,4 +74,5 @@
         StateHasChanged();
         //isPlaySound = true;*/
     }
+
 }
