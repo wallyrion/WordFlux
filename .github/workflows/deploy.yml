@@ -1,8 +1,4 @@
 on:
-  pull_request:
-    branches:
-      - main
-  
   push:
     branches:
       - main
@@ -76,13 +72,6 @@ jobs:
           publish-profile: ${{ secrets.WORDFLUX_API_PUBLISH_PROFILE }}
           images: ${{ env.wordflux_api_image }}
 
-#      - name: Trigger Azure WebHook
-#        if: env.WEBHOOK_URL != ''
-#        run: |
-#          curl -X POST $WEBHOOK_URL
-#        env:
-#          WEBHOOK_URL: ${{ secrets.AZURE_WEBHOOK_URL_TWITPOSTER }}
-#        shell: bashraform@v3
   confirm_deployment_API:
     needs: deploy_api
     runs-on: ubuntu-latest
