@@ -59,7 +59,7 @@ builder.Services.AddCors(
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
     Console.WriteLine("Using Azure Key Vault");
-    builder.Configuration.AddAzureKeyVaultSecrets("secrets");
+    //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
 
 builder.Services.AddSingleton<NotificationsStore>();
