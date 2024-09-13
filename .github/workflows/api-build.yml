@@ -12,9 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-api:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
@@ -35,6 +34,21 @@ jobs:
 
       - name: Build - TwitPoster
         run: dotnet build --no-restore ./WordFlux.ApiService -c Release
+    
+  build-clientapp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore dependencies - TwitPoster
+        run: dotnet restore ./WordFLux.ClientApp --locked-mode
+
+      - name: Build - TwitPoster
+        run: dotnet build --no-restore ./WordFLux.ClientApp -c Release
 
   #    - name: Test - TwitPoster
   #      env:
