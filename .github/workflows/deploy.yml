@@ -40,7 +40,7 @@ jobs:
       - name: Verify appsettings.json
         run: cat ./WordFlux.ApiService/appsettings.json
 
-      - name: Build - TwitPoster
+      - name: Build - Api
         run: dotnet build --no-restore ./WordFlux.ApiService -c Release
 
       - name: Login to Docker Hub
@@ -53,7 +53,7 @@ jobs:
         run: dotnet publish ./WordFlux.ApiService /t:PublishContainer -r linux-x64
         
       - name: change image tag
-        run: docker tag twitposter ${{ env.wordflux_api_image }}
+        run: docker tag wordflux-apiservice ${{ env.wordflux_api_image }}
 
       - name: Docker Push
         run: docker push ${{ env.wordflux_api_image }}
