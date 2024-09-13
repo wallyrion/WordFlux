@@ -1,0 +1,130 @@
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+# Set up permissions for deploying with secretless Azure federated credentials
+# https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  wordflux_api_image: 'oleksiikorniienko/wordflux:${{github.sha}}'
+
+
+jobs:
+  build_api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore dependencies - API
+        run: dotnet restore ./WordFlux.ApiService --locked-mode
+
+      - name: Replace CurrentImageTag in appsettings.json
+        run: |
+          GITHUB_SHA_SHORT=${{ github.sha }}
+          sed -i 's/"CurrentImageTag": "latest"/"CurrentImageTag": "'${GITHUB_SHA_SHORT}'"/' ./WordFlux.ApiService/appsettings.json
+
+      - name: Verify appsettings.json
+        run: cat ./WordFlux.ApiService/appsettings.json
+
+      - name: Build - Api
+        run: dotnet build --no-restore ./WordFlux.ApiService -c Release
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: publish image
+        run: dotnet publish ./WordFlux.ApiService /t:PublishContainer -r linux-x64
+        
+      - name: change image tag
+        run: docker tag wordflux-apiservice ${{ env.wordflux_api_image }}
+
+      - name: Docker Push
+        run: docker push ${{ env.wordflux_api_image }}
+        
+        
+  deploy_api:
+    needs: [build_api] 
+    outputs:
+      API_URL: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}/swagger/index.html
+
+    steps:
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          publish-profile: ${{ secrets.WORDFLUX_API_PUBLISH_PROFILE }}
+          images: ${{ env.wordflux_api_image }}
+
+  confirm_deployment_API:
+    needs: deploy_api
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+    
+    steps:
+      - name: Check Deployment Health
+        id: check-health
+        run: |
+          API_URL="${{ needs.deploy_api.outputs.API_URL }}"
+          IMAGE_TAG="${{ github.sha }}"
+
+          echo "Starting deployment health check..."
+          echo "API_URL: $API_URL"
+          echo "Expected IMAGE_TAG: $IMAGE_TAG"
+
+          for i in {1..30}; do
+            echo "Checking health of the deployed application... Attempt $i"
+            response=$(curl -s -H "Content-Type: application/json" $API_URL/health)
+            echo "Response: $response"
+
+            if echo "$response" | jq -e ".imageTag == \"$IMAGE_TAG\"" > /dev/null; then
+              echo "Deployment verification succeeded: imageTag matches."
+              exit 0
+            fi
+
+            echo "Deployment verification failed: imageTag does not match. Retrying in 10 seconds..."
+            sleep 10
+          done
+
+          echo "Deployment verification failed: imageTag did not match after 30 attempts."
+          exit 1
+        shell: bash
+  
+  
+  build-clientapp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore dependencies - ClientApp
+        run: dotnet restore ./WordFLux.ClientApp --locked-mode
+
+      - name: Build - ClientAPp
+        run: dotnet build --no-restore ./WordFLux.ClientApp -c Release
+
+
+  #    - name: Test - TwitPoster
+  #      env:
+  #        ASPNETCORE_ENVIRONMENT: Production
+  #      run: dotnet test --no-build --verbosity normal ./WordFlux.ApiService -c Release

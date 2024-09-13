@@ -40,13 +40,13 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).
             .AllowAnyHeader()));*/
 
 // Add service defaults & Aspire components.
-builder.AddServiceDefaults();
+//builder.AddServiceDefaults();
 builder.Services.AddOutputCache();
 builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
         policy => policy.WithOrigins([
-                builder.Configuration["FrontendUrl"] ?? "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net"
+                "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net", "https://wordflux.azurewebsites.net"
             ])
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -58,8 +58,12 @@ builder.Services.AddCors(
 
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
-    Console.WriteLine("Using Azure Key Vault");
-    builder.Configuration.AddAzureKeyVaultSecrets("secrets");
+    //Console.WriteLine("Using Azure Key Vault");
+    //var secretsUrl = builder.Configuration["Secrets:Url"];
+    
+    //builder.Configuration.AddAzureKeyVault(new Uri(secretsUrl!), new ClientSecretCredential(secrets.TenantId, secrets.ClientId, secrets.ClientSecret));
+
+    //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
 
 builder.Services.AddSingleton<NotificationsStore>();
@@ -164,6 +168,9 @@ app.MapPost("/send-test-notifications", async ([FromServices] NotificationsStore
         }
     }
 });
+
+app.MapGet("/health", (IConfiguration configuration) => new { ImageTag =  configuration["CurrentImageTag"] });
+
 
 app.MapPost("/notifications/clear", async ([FromServices] NotificationsStore store, ILogger<Program> logger) =>
 {
