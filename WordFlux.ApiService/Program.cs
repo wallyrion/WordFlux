@@ -41,6 +41,9 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).
 
 // Add service defaults & Aspire components.
 //builder.AddServiceDefaults();
+
+
+
 builder.Services.AddOutputCache();
 builder.Services.AddCors(
     options => options.AddPolicy(

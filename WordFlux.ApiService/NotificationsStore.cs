@@ -21,7 +21,7 @@ public class TestBackgroundService(IServiceProvider services, NotificationsStore
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
 
             await using var scope = services.CreateAsyncScope();
 
@@ -53,7 +53,7 @@ public class TestBackgroundService(IServiceProvider services, NotificationsStore
             return;
         }
 
-        if (notificationsStore.UserNotificationsHistory.TryGetValue(userId, out var lastUserNotificationDate) && DateTime.UtcNow - lastUserNotificationDate < TimeSpan.FromMinutes(1))
+        if (notificationsStore.UserNotificationsHistory.TryGetValue(userId, out var lastUserNotificationDate) && DateTime.UtcNow - lastUserNotificationDate < TimeSpan.FromMinutes(30))
         {
             return;
         }
