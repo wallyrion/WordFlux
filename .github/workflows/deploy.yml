@@ -62,7 +62,7 @@ jobs:
   deploy_api:
     needs: [build_api] 
     outputs:
-      WORDFLUX_URL: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      API_URL: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     runs-on: ubuntu-latest
     environment:
       name: prod
@@ -83,6 +83,41 @@ jobs:
 #        env:
 #          WEBHOOK_URL: ${{ secrets.AZURE_WEBHOOK_URL_TWITPOSTER }}
 #        shell: bashraform@v3
+  confirm_deployment_API:
+    needs: deploy_api
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+    
+    steps:
+      - name: Check Deployment Health
+        id: check-health
+        run: |
+          API_URL="${{ needs.deploy_api.outputs.API_URL }}"
+          IMAGE_TAG="${{ github.sha }}"
+
+          echo "Starting deployment health check..."
+          echo "API_URL: $API_URL"
+          echo "Expected IMAGE_TAG: $IMAGE_TAG"
+
+          for i in {1..30}; do
+            echo "Checking health of the deployed application... Attempt $i"
+            response=$(curl -s -H "Content-Type: application/json" $API_URL/health)
+            echo "Response: $response"
+
+            if echo "$response" | jq -e ".imageTag == \"$IMAGE_TAG\"" > /dev/null; then
+              echo "Deployment verification succeeded: imageTag matches."
+              exit 0
+            fi
+
+            echo "Deployment verification failed: imageTag does not match. Retrying in 10 seconds..."
+            sleep 10
+          done
+
+          echo "Deployment verification failed: imageTag did not match after 30 attempts."
+          exit 1
+        shell: bash
+  
   
   build-clientapp:
     runs-on: ubuntu-latest
