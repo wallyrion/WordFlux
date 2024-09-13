@@ -33,6 +33,7 @@ builder.Services.AddSingleton<InMemoryMessageQueue>();
 
 var apiUrl = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/";
 
+
 builder.Services.AddHttpClient<WeatherApiClient>((provider, client) =>
     {
         var configuration = provider.GetRequiredService<IConfiguration>();

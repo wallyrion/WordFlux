@@ -20,7 +20,7 @@ env:
 
 
 jobs:
-  build-api:
+  build_api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +29,7 @@ jobs:
         with:
           dotnet-version: '8.x'
 
-      - name: Restore dependencies - TwitPoster
+      - name: Restore dependencies - API
         run: dotnet restore ./WordFlux.ApiService --locked-mode
 
       - name: Replace CurrentImageTag in appsettings.json
@@ -57,6 +57,31 @@ jobs:
 
       - name: Docker Push
         run: docker push ${{ env.wordflux_api_image }}
+        
+        
+  deploy_api:
+    outputs:
+      WORDFLUX_URL: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}/swagger/index.html
+
+    steps:
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          publish-profile: ${{ secrets.WORDFLUX_API_PUBLISH_PROFILE }}
+          images: ${{ env.wordflux_api_image }}
+
+#      - name: Trigger Azure WebHook
+#        if: env.WEBHOOK_URL != ''
+#        run: |
+#          curl -X POST $WEBHOOK_URL
+#        env:
+#          WEBHOOK_URL: ${{ secrets.AZURE_WEBHOOK_URL_TWITPOSTER }}
+#        shell: bashraform@v3
   
   build-clientapp:
     runs-on: ubuntu-latest

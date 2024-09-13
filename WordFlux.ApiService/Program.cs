@@ -165,6 +165,9 @@ app.MapPost("/send-test-notifications", async ([FromServices] NotificationsStore
     }
 });
 
+app.MapGet("/health", (IConfiguration configuration) => new { ImageTag =  configuration["CurrentImageTag"] });
+
+
 app.MapPost("/notifications/clear", async ([FromServices] NotificationsStore store, ILogger<Program> logger) =>
 {
     store.Notifications = [];
