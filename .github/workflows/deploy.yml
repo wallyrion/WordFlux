@@ -51,6 +51,12 @@ jobs:
 
       - name: publish image
         run: dotnet publish ./WordFlux.ApiService /t:PublishContainer -r linux-x64
+        
+      - name: change image tag
+        run: docker tag twitposter ${{ env.wordflux_api_image }}
+
+      - name: Docker Push
+        run: docker push ${{ env.wordflux_api_image }}
   
   build-clientapp:
     runs-on: ubuntu-latest
@@ -67,11 +73,6 @@ jobs:
       - name: Build - TwitPoster
         run: dotnet build --no-restore ./WordFLux.ClientApp -c Release
 
-      - name: change image tag
-        run: docker tag twitposter ${{ env.wordflux_api_image }}
-
-      - name: Docker Push
-        run: docker push ${{ env.wordflux_api_image }}
 
   #    - name: Test - TwitPoster
   #      env:
