@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Azure.Security.KeyVault" Version="8.1.0" />
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.1.0" />
     <PackageReference Include="Azure.AI.Translation.Text" Version="1.0.0" />
     <PackageReference Include="DeepL.net" Version="1.9.0" />

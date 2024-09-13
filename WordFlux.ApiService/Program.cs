@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -46,7 +47,7 @@ builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
         policy => policy.WithOrigins([
-                builder.Configuration["FrontendUrl"] ?? "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net"
+                "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net", "https://wordflux.azurewebsites.net"
             ])
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -58,7 +59,11 @@ builder.Services.AddCors(
 
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
-    Console.WriteLine("Using Azure Key Vault");
+    //Console.WriteLine("Using Azure Key Vault");
+    //var secretsUrl = builder.Configuration["Secrets:Url"];
+    
+    //builder.Configuration.AddAzureKeyVault(new Uri(secretsUrl!), new ClientSecretCredential(secrets.TenantId, secrets.ClientId, secrets.ClientSecret));
+
     //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
 
