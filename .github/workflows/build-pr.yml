@@ -1,0 +1,56 @@
+on:
+  pull_request: 
+    branches:
+      - main
+  workflow_dispatch:
+
+
+# Set up permissions for deploying with secretless Azure federated credentials
+# https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore dependencies - TwitPoster
+        run: dotnet restore ./WordFlux.ApiService --locked-mode
+
+      - name: Replace CurrentImageTag in appsettings.json
+        run: |
+          GITHUB_SHA_SHORT=${{ github.sha }}
+          sed -i 's/"CurrentImageTag": "latest"/"CurrentImageTag": "'${GITHUB_SHA_SHORT}'"/' ./WordFlux.ApiService/appsettings.json
+
+      - name: Verify appsettings.json
+        run: cat ./WordFlux.ApiService/appsettings.json
+
+      - name: Build - TwitPoster
+        run: dotnet build --no-restore ./WordFlux.ApiService -c Release
+    
+  build-clientapp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore dependencies - TwitPoster
+        run: dotnet restore ./WordFLux.ClientApp --locked-mode
+
+      - name: Build - TwitPoster
+        run: dotnet build --no-restore ./WordFLux.ClientApp -c Release
+
+  #    - name: Test - TwitPoster
+  #      env:
+  #        ASPNETCORE_ENVIRONMENT: Production
+  #      run: dotnet test --no-build --verbosity normal ./WordFlux.ApiService -c Release
