@@ -60,6 +60,7 @@ jobs:
         
         
   deploy_api:
+    needs: [build_api] 
     outputs:
       WORDFLUX_URL: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     runs-on: ubuntu-latest
