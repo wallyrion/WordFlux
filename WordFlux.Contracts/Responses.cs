@@ -6,3 +6,6 @@ public record GetMotivationResponse(string Phrase);
 
 public record GetLevelResponse(string Level);
 public record GetAudioLinkResponse(string Link);
+
+public record AutocompleteResponse(string DetectedLanguage, List<AutocompleteItem> Items);
+public record AutocompleteItem(string Term, string TermTranslated);

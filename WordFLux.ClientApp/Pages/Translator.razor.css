@@ -1,5 +1,5 @@
 .audio-button {
-    top: 25px;
+   /* top: 60px;*/
     transform: translate(-50%, -50%);
     background: #e1e9f7;
     border-radius: 50%;
@@ -11,4 +11,15 @@
 
 .audio-button:hover {
     background: #1b6ec2;
+}
+
+.clear-button {
+    transform: translate(50%, 100%);
+    right: 0;
+    top: 0;
+}
+
+.clear-button:hover {
+    color: red;
+    cursor: pointer;
 }

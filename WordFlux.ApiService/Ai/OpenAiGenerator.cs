@@ -18,6 +18,62 @@ public class OpenAiGenerator
         _logger = logger;
     }
 
+    
+    [Experimental("SKEXP0010")]
+    public async Task<(string detectedLanguage, List<(string, string)> autocompletes)?> GetAutocompleteWithTranslations(string term, string lang1, string lang2)
+    {
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            Temperature = 1
+        }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
+
+        var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+
+        if (result == null || result.Content == null)
+        {
+            _logger.LogError("Got null result");
+
+            return null;
+        }
+
+        var content = JsonSerializer.Deserialize<AutocompleteWithTranslationsResult>(result.Content);
+
+        if (content == null)
+        {
+            return null;
+        }
+
+        return (content.DetectedLanguage, content.Autocompletes.Select(x => (x.AutocompleteResult, x.TranslatedAutocompleteResult)).ToList());
+    }
+    [Experimental("SKEXP0010")]
+    public async Task<(string detectedLanguage, List<string> autocompletes)?> GetAutocomplete(string term, string lang1, string lang2)
+    {
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            Temperature = 1
+        }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
+
+        var result = await AiFunctions.AutocompleteFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+
+        if (result == null || result.Content == null)
+        {
+            _logger.LogError("Got null result");
+
+            return null;
+        }
+
+        var content = JsonSerializer.Deserialize<AutocompleteResult>(result.Content);
+
+        if (content == null)
+        {
+            return null;
+        }
+
+        return (content.DetectedLanguage, content.Autocompletes);
+    }
+    
     [Experimental("SKEXP0010")]
     public async Task<(string srcLang, string destLang)?> DetectLanguages(string src, string dest)
     {
@@ -275,4 +331,28 @@ file class TranslationResultNew
     [JsonPropertyName("srcL")] public string SourceLanguage { get; set; } = null!;
 
     [JsonPropertyName("outL")] public string OutputLanguage { get; set; } = null!;
+}
+
+file class AutocompleteWithTranslationsResult
+{
+    [JsonPropertyName("autocompletes")] public List<AutocompleteTranslationItem> Autocompletes { get; set; }
+    [JsonPropertyName("lang")] public string DetectedLanguage { get; set; }
+
+  
+}
+
+file class AutocompleteResult
+{
+    [JsonPropertyName("autocompletes")] public List<string> Autocompletes { get; set; }
+    [JsonPropertyName("lang")] public string DetectedLanguage { get; set; }
+  
+}
+
+file class AutocompleteTranslationItem
+{
+    [JsonPropertyName("term")] 
+    public string AutocompleteResult { get; set; } 
+        
+    [JsonPropertyName("term_translated")] 
+    public string TranslatedAutocompleteResult { get; set; } 
 }

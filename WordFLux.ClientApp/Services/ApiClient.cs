@@ -2,6 +2,15 @@ using System.Net.Http.Json;
 using WordFLux.ClientApp.Models;
 using WordFLux.ClientApp.Pages;
 using WordFLux.ClientApp.Storage;
+using WordFlux.Contracts;
+using CardRequest = WordFLux.ClientApp.Models.CardRequest;
+using CardTranslationItem = WordFLux.ClientApp.Models.CardTranslationItem;
+using GetAudioLinkResponse = WordFLux.ClientApp.Models.GetAudioLinkResponse;
+using GetLevelResponse = WordFLux.ClientApp.Models.GetLevelResponse;
+using GetMotivationResponse = WordFLux.ClientApp.Models.GetMotivationResponse;
+using GetTranslationExamplesRequest = WordFLux.ClientApp.Models.GetTranslationExamplesRequest;
+using NextReviewCardTimeResponse = WordFLux.ClientApp.Models.NextReviewCardTimeResponse;
+using SimpleTranslationResponse = WordFLux.ClientApp.Models.SimpleTranslationResponse;
 
 namespace WordFLux.ClientApp.Services;
 
@@ -43,6 +52,29 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return res.TimeToNextReview;
     }
     
+    public async Task<GetAutocompleteResponse> SearchForCompletions(string term)
+    {
+        var request = new GetAutocompleteRequest(term, "ru", "en");
+        
+        var response = await httpClient.PostAsJsonAsync($"/translations/autocomplete", request);
+
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<GetAutocompleteResponse>())!;
+    }
+    
+    public async Task<AutocompleteResponse> SearchForCompletionsWithTranslations(string term)
+    {
+        var request = new GetAutocompleteRequest(term, "ru", "en");
+        
+        var response = await httpClient.PostAsJsonAsync($"/translations/autocomplete/with-translations", request);
+
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<AutocompleteResponse>())!;
+    }
+    
+    
     public async Task ApproveCard(Guid cardId)
     {
         var myId = await storage.GetMyId();
@@ -58,11 +90,12 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     }
     
     
-    public async Task<List<CardTranslationItem>> GetTranslationExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage)
+    public async Task<List<CardTranslationItem>> GetTranslationExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage,
+        bool useAzureAiTranslator)
     {
         logger.LogInformation("Getting FROM UI examples for term {Term} and translations {@Translations}", term, translations);
         var request = new GetTranslationExamplesRequest(term, translations, sourceLanguage, destinationLanguage);
-        var response = await httpClient.PostAsJsonAsync("/translations/examples", request);
+        var response = await httpClient.PostAsJsonAsync($"/translations/examples?useAzureAiTranslator={useAzureAiTranslator}", request);
 
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<List<CardTranslationItem>>();
@@ -101,11 +134,11 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     }
     
     
-    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term)
+    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator)
     {
         var languages = await storage.GetMyLanguages();
         
-        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={languages.native}&studyingLanguage={languages.studing}"))!;
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={languages.native}&studyingLanguage={languages.studing}&useAzureAiTranslator={useAzureAiTranslator}"))!;
     }
     public async Task<string> GetLevel(string term)
     {

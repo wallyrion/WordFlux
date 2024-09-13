@@ -127,10 +127,10 @@ public class TranslationsSyncService(
         {
             logger.LogInformation("Processing item Term = {Term}", term);
 
-            var translations = await apiClient.GetSimpleTranslations(term);
+            var translations = await apiClient.GetSimpleTranslations(term, false);
 
             var examples = await apiClient.GetTranslationExamples(term, translations.Translations, translations.SourceLanguage,
-                translations.DestinationLanguage);
+                translations.DestinationLanguage, false);
 
             var normalizedTerm = string.IsNullOrWhiteSpace(translations.SuggestedTerm) ? term : translations.SuggestedTerm;
             var level = await apiClient.GetLevel(normalizedTerm);

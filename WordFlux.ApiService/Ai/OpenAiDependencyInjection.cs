@@ -18,10 +18,22 @@ public static class OpenAiDependencyInjection
             configuration["OpenAIKey"]!);
         
         services.AddSingleton<OpenAiGenerator>();
+        services.AddKeyedSingleton<ITranslationService, AzureAiTranslationService>("AzureAiTranslator");
+        services.AddKeyedSingleton<ITranslationService, OpenAiTranslationService>("OpenAiTranslator");
         //services.AddSingleton<ITranslationService, AzureAiTranslationService>();
-        services.AddSingleton<ITranslationService, OpenAiTranslationService>();
+        //services.AddSingleton<ITranslationService, OpenAiTranslationService>();
         
         return services;
 
+    }
+
+    public static ITranslationService ResolveTranslationService(this IServiceProvider di, bool useAzureAitranslator)
+    {
+        if (useAzureAitranslator)
+        {
+            return di.GetRequiredKeyedService<ITranslationService>("AzureAiTranslator");
+        }
+        
+        return di.GetRequiredKeyedService<ITranslationService>("OpenAiTranslator");
     }
 }

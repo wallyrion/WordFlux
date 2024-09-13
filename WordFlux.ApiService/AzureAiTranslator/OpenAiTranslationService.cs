@@ -9,14 +9,52 @@ namespace WordFlux.ApiService.Ai;
 
 #pragma warning disable SKEXP0010
 
-public class AzureAiTranslationService(OpenAiGenerator aiGenerator) : ITranslationService
+public class AzureAiTranslationService : ITranslationService
+
 {
-    private readonly OpenAiGenerator _aiGenerator = aiGenerator;
+    private readonly OpenAiGenerator _aiGenerator;
 
     const string key = "";
 
-    public static readonly AzureKeyCredential credential = new(key);
-    public static readonly TextTranslationClient client = new(credential, "westeurope");
+    private readonly AzureKeyCredential _credential;
+    private readonly TextTranslationClient client;
+
+    public AzureAiTranslationService(OpenAiGenerator aiGenerator, IConfiguration configuration)
+    {
+        _aiGenerator = aiGenerator;
+        var azureAiKey = configuration["AzureAiTranslatorKey"];
+        _credential = new(azureAiKey);
+        
+        client  = new(_credential, "westeurope");
+    }
+
+    
+    /*public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
+    {
+        Response<IReadOnlyList<TranslatedTextItem>> clientResult = await client.TranslateAsync(["en", "ru"], [term]);
+
+        if (!clientResult.HasValue || clientResult.Value.Count == 0)
+        {
+            return null;
+        }
+
+        var translationResult = clientResult.Value[0];
+        var translations = translationResult.Translations.Where(x => x.TargetLanguage != translationResult.DetectedLanguage.Language).ToList();
+
+        var sourceLanguage = translationResult.DetectedLanguage.Language;
+        var targetLanguage = translations[0].TargetLanguage;
+        
+        Response<IReadOnlyList<DictionaryLookupItem>> lookupResult = await client.LookupDictionaryEntriesAsync(sourceLanguage, targetLanguage, term);
+
+        var additionalTranslations = lookupResult.Value[0].Translations.Select(x => x.DisplayTarget).Take(5).ToList();
+
+        var totalTranslations = translations.Select(x => x.Text).Concat(additionalTranslations).Distinct(new CaseInsensitiveValueComparer()).ToList();
+        
+        var response = new SimpleTranslationResponse(null, totalTranslations, sourceLanguage, targetLanguage);
+        return response;
+
+        //return await _aiGenerator.GetTranslations(term, languages);
+    }*/
     
     public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
     {

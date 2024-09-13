@@ -6,3 +6,5 @@ public record CardRequest(string Term, string Level, List<CardTranslationItem> T
 
 
 public record GetTranslationExamplesRequest(string Term, List<string> Translations, string SourceLanguage, string DestinationLanguage);
+public record GetAutocompleteRequest(string Term, string SourceLanguage, string DestinationLanguage);
+public record GetAutocompleteResponse(string DetectedLanguage, List<string> Completions);

@@ -47,7 +47,7 @@
             return;
         }
 
-        CustomTranslation = (await HttpClient.GetTranslationExamples(Term, [TranslationInput], "", "")).FirstOrDefault();
+        CustomTranslation = (await HttpClient.GetTranslationExamples(Term, [TranslationInput], "", "", false)).FirstOrDefault();
 
         CustomExampleOriginal = CustomTranslation?.ExampleOriginal;
         CustomExampleTranslated = CustomTranslation?.ExampleTranslated;

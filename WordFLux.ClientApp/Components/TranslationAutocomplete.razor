@@ -1,0 +1,136 @@
+﻿@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+
+@inject WeatherApiClient HttpClient
+
+
+@*
+<label for="exampleDataList" class="form-label">Datalist example</label>
+*@
+<input @bind="Term" @bind:event="oninput" @onfocus="Search" @bind:after="Search" class="form-control"  @onkeyup="OnKeyDown"  id="exampleDataList" @onfocusout="ResetAutoComplete" placeholder="Type to search...">
+
+@*<input @bind="Term" @bind:event="oninput" class="form-control" id="exampleDataList" @onkeyup="OnKeyDown" >*@
+
+<div>
+
+</div>
+
+<div class="list-group position-absolute z-1">
+
+    @foreach (var item in AutocompleteOptions)
+    {
+        <button @onclick="() => SelectSuggestedAutocomplete(item.Term)" type="button" class="list-group-item list-group-item-action">@item.Term → @item.TermTranslated </button>
+    }
+</div>
+
+
+
+
+@code {
+
+    private PeriodicTimer? timer = null;
+    private string text;
+    private int calls;
+    private int totalItems;
+
+    List<AutocompleteItem> AutocompleteOptions { get; set; } = [];
+    [Parameter] public string? Term { get; set; }
+    [Parameter] public EventCallback<string> OnSearch { get; set; }
+    [Parameter] public EventCallback<string> OnTermChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        /*timer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));*/
+
+        /*Task.Run(async () =>
+        {
+            while (true)
+            {
+                await timer.WaitForNextTickAsync();
+                SomeList.Add(DateTime.UtcNow.ToLongDateString());
+                await InvokeAsync(StateHasChanged);
+            }
+        });*/
+
+        base.OnInitialized();
+    }
+
+    private async Task Search()
+    {
+        await OnTermChanged.InvokeAsync(Term);
+        await DisposePeriodicTimer();
+
+        if (string.IsNullOrWhiteSpace(Term))
+        {
+            AutocompleteOptions = [];
+            return;
+        }
+
+        Task.Run(async () =>
+        {
+            timer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));
+            var tick = await timer.WaitForNextTickAsync();
+
+            Console.WriteLine("Ticking " + tick);
+            if (tick)
+            {
+                await SearchForCompletions(Term);
+                await DisposePeriodicTimer();
+            }
+        });
+    }
+
+    private async Task SearchForCompletions(string str)
+    {
+        //var completions = await HttpClient.SearchForCompletions(str);
+
+        var completions = await HttpClient.SearchForCompletionsWithTranslations(str);
+
+        if (timer != null)
+        {
+            
+            AutocompleteOptions = completions.Items;
+            //AutocompleteOptions = completions.Completions;
+            await InvokeAsync(StateHasChanged);
+        }
+
+    }
+
+    private async Task DisposePeriodicTimer()
+    {
+        timer?.Dispose();
+        timer = null;
+    }
+
+
+    private async Task SelectSuggestedAutocomplete(string item)
+    {
+        await OnSearch.InvokeAsync(item);
+        AutocompleteOptions = [];
+    }
+
+    private void ResetAutoComplete()
+    {
+        Task.Run(async () =>
+        {
+            Console.WriteLine("Reset auto complete");
+            await DisposePeriodicTimer();
+            await Task.Delay(100);
+            AutocompleteOptions = [];
+            await InvokeAsync(StateHasChanged);
+        });
+
+    }
+
+  
+
+    private async Task OnKeyDown(KeyboardEventArgs arg)
+    {
+        if (arg.Key == "Enter")
+        {
+            AutocompleteOptions = [];
+            await OnSearch.InvokeAsync(Term);
+        }
+    }
+
+}

@@ -2,6 +2,7 @@
 @using WordFLux.ClientApp.Models
 @using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Pages.Shared
+@using WordFLux.ClientApp.Components
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @inject ConnectionHealthService ConnectionHealthService
@@ -33,16 +34,55 @@
 
         <div class="mb-3 position-relative">
 
-            @if (Level != null)
-            {
-                <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Level</span>
-            }
-            
-            
-            <span class="audio-button"><AudioFromText Term="@ActualTerm"/></span>
+            <div class="d-flex justify-content-between mb-2">
+
+                <div>
+                    @if (IsLoading)
+                    {
+                        <button class="btn btn-outline-info @EnabledState()" type="button" disabled>
+                            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+                            <span role="status">Loading...</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-outline-info @EnabledState()" @onclick="TryItOut">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                            <span > Try it!</span>
+                        </button>
+                    }
+                </div>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" @bind-value="@UseAzureAiTranslator" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Use Azure AI Translator </label>
+                </div>
+
+            </div>
 
 
-            <textarea @bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>
+            @*<textarea bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>*@
+
+            <div class="position-relative">
+                <TranslationAutocomplete OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
+                <i class="bi bi-x-circle position-absolute clear-button @EnabledState()" @onclick="Reset"></i>
+
+                @if (!string.IsNullOrWhiteSpace(ActualTerm))
+                {
+                    <span class="audio-button">
+                        <AudioFromText Term="@ActualTerm"/>
+                    </span>
+                }
+
+                @if (Level != null)
+                {
+                    <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Level</span>
+                }
+
+            </div>
+
         </div>
 
         <div class="container-fluid m-2">
@@ -54,29 +94,13 @@
             }
         </div>
 
-        <button type="button" class="btn btn-outline-secondary me-1 @EnabledState()" @onclick="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-            </svg>
+        @*
+        <button type="button" class="btn btn-outline-secondary clear-button p-0 border-0 @EnabledState()" >
+            <i class="bi bi-x-circle"></i>
         </button>
+        *@
 
-        @if (IsLoading)
-        {
-            <button class="btn btn-outline-info @EnabledState()" type="button" disabled>
-                <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
-                <span role="status">Loading...</span>
-            </button>
-        }
-        else
-        {
-            <button type="button" class="btn btn-outline-info @EnabledState()" @onclick="TryItOut">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                </svg>
-                <span > Try it!</span>
-            </button>
-        }
+
         @if (Translation is { Translations: not null })
         {
             <AuthorizeView>
@@ -105,7 +129,7 @@
                 </NotAuthorized>
             </AuthorizeView>
         }
-        
+
 
         @if (Examples.Count > 0)
         {
@@ -143,6 +167,7 @@
     public bool IsOnline => ConnectionHealthService.IsOnline;
     public string? ActualTerm => Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
 
+    bool UseAzureAiTranslator { get; set; }
     bool IsLoading { get; set; }
     bool IsExamplesLoading { get; set; }
     bool IsSaved { get; set; }
@@ -209,7 +234,7 @@
             Navigation.NavigateTo(
                 Navigation.GetUriWithQueryParameter("term", Term));
 
-            Translation = await WeatherApi.GetSimpleTranslations(Term);
+            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator);
             IsLoading = false;
             IsExamplesLoading = true;
 
@@ -218,7 +243,7 @@
             Level = await WeatherApi.GetLevel(Term);
             StateHasChanged();
 
-            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
         }
         finally
         {
@@ -232,6 +257,7 @@
         Term = null;
         Translation = null;
         Examples = [];
+        Level = null;
 
         Navigation.NavigateTo(
             Navigation.GetUriWithQueryParameter("term", (string?)null));
@@ -263,7 +289,7 @@
             var res = await WeatherApi.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
 
             Translation = Translation with { Translations = [..Translation.Translations, ..res] };
-            var examples = await WeatherApi.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage);
+            var examples = await WeatherApi.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
 
             Examples = [..Examples, ..examples];
         }
@@ -276,6 +302,18 @@
     public void Dispose()
     {
         ConnectionHealthService.OnStatusChanged -= StateHasChanged;
+    }
+
+    private void TermChanged(string term)
+    {
+        Console.WriteLine("Term changed to " + term);
+        Term = term;
+    }
+
+    private async Task Search(string term)
+    {
+        Term = term;
+        await TryItOut();
     }
 
 }

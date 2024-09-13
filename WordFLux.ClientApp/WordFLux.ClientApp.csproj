@@ -22,4 +22,9 @@
     </ItemGroup>
 
 
+    <ItemGroup>
+      <ProjectReference Include="..\WordFlux.Contracts\WordFlux.Contracts.csproj" />
+    </ItemGroup>
+
+
 </Project>

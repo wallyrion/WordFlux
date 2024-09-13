@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DeepL;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -22,9 +23,10 @@ public static class TranslationsEndpoints
         });
         
         
-        app.MapGet("/translations", async (string term, ITranslationService translation, string nativeLanguage, string studyingLanguage) =>
+        app.MapGet("/translations", async (string term, IServiceProvider di, string nativeLanguage, string studyingLanguage, bool useAzureAiTranslator) =>
         {
-            var response = await translation.GetTranslations(term, [nativeLanguage, studyingLanguage]);
+            var translationService = di.ResolveTranslationService(useAzureAiTranslator);
+            var response = await translationService.GetTranslations(term, [nativeLanguage, studyingLanguage]);
 
             if (response == null)
             {
@@ -41,11 +43,45 @@ public static class TranslationsEndpoints
             return response?.Translations ?? [];
         });
         
-        app.MapPost("/translations/examples", async (GetTranslationExamplesRequest request, ITranslationService translation) =>
+        app.MapPost("/translations/examples", async (GetTranslationExamplesRequest request, IServiceProvider di, bool useAzureAiTranslator) =>
         {
-            var response = await translation.GetExamples(request);
+            var translationService = di.ResolveTranslationService(useAzureAiTranslator);
+
+            var response = await translationService.GetExamples(request);
 
             return Results.Ok(response);
+        });
+        
+        
+        app.MapPost("/translations/autocomplete/with-translations", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator) =>
+        {
+            var result = await openAiGenerator.GetAutocompleteWithTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage);
+
+            var items = result.Value.autocompletes.Select(x => new AutocompleteItem(x.Item1, x.Item2)).ToList();
+            var response = new AutocompleteResponse(result.Value.detectedLanguage, items);
+
+            return response;
+        });
+        
+        app.MapPost("/translations/autocomplete", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator) =>
+        {
+            var result = await openAiGenerator.GetAutocomplete(request.Term, request.SourceLanguage, request.DestinationLanguage);
+
+            return new GetAutocompleteResponse (result.Value.detectedLanguage, result.Value.autocompletes);
+        });
+        
+        
+        app.MapPost("/translations/deepl", async (GetAutocompleteRequest request) =>
+        {
+            var authKey = "d669e6ef-f335-4019-8dc5-df1c05c80057:fx"; // Replace with your key
+            var translator = new Translator(authKey);
+            
+            var translatedText = await translator.TranslateTextAsync(
+                request.Term,
+                LanguageCode.English,
+                LanguageCode.Russian);
+
+            return translatedText.Text;
         });
         
         
