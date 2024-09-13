@@ -67,10 +67,10 @@ jobs:
         with:
           dotnet-version: '8.x'
 
-      - name: Restore dependencies - TwitPoster
+      - name: Restore dependencies - ClientApp
         run: dotnet restore ./WordFLux.ClientApp --locked-mode
 
-      - name: Build - TwitPoster
+      - name: Build - ClientAPp
         run: dotnet build --no-restore ./WordFLux.ClientApp -c Release
 
 
