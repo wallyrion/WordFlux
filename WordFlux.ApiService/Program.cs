@@ -18,6 +18,8 @@ using WordFlux.ApiService.Endpoints;
 using WordFlux.ApiService.Persistence;
 using static System.Net.WebRequestMethods;
 
+var startedDateTime = DateTime.UtcNow;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization();
@@ -42,14 +44,13 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).
 // Add service defaults & Aspire components.
 //builder.AddServiceDefaults();
 
-
-
 builder.Services.AddOutputCache();
 builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
         policy => policy.WithOrigins([
-                "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net", "https://wordflux.azurewebsites.net", "https://wordflux-api.azurewebsites.net/", "https://green-wave-06b1faa0f.5.azurestaticapps.net/"
+                "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net", "https://wordflux.azurewebsites.net",
+                "https://wordflux-api.azurewebsites.net/", "https://green-wave-06b1faa0f.5.azurestaticapps.net/"
             ])
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -63,7 +64,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
     //Console.WriteLine("Using Azure Key Vault");
     //var secretsUrl = builder.Configuration["Secrets:Url"];
-    
+
     //builder.Configuration.AddAzureKeyVault(new Uri(secretsUrl!), new ClientSecretCredential(secrets.TenantId, secrets.ClientId, secrets.ClientSecret));
 
     //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
@@ -135,11 +136,7 @@ app
     .MapTranslationEndpoints()
     ;
 
-app.MapGet("/notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) =>
-{
-    return store.Notifications;
-});
-
+app.MapGet("/notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) => { return store.Notifications; });
 
 app.MapPost("/send-test-notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) =>
 {
@@ -147,10 +144,10 @@ app.MapPost("/send-test-notifications", async ([FromServices] NotificationsStore
     {
         var publicKey = "BLC8GOevpcpjQiLkO7JmVClQjycvTCYWm6Cq_a7wJZlstGTVZvwGFFHMYfXt6Njyvgx_GlXJeo5cSiZ1y4JOx1o";
         var privateKey = "OrubzSz3yWACscZXjFQrrtDwCKg-TGFuWhluQ2wLXDo";
-        
+
         var pushSubscription = new PushSubscription(subscription.Url, subscription.P256dh, subscription.Auth);
         logger.LogInformation("Pushing notification. Details: {@Details}", pushSubscription);
-        
+
         var vapidDetails = new VapidDetails("mailto:kornienko1296@gmail.com", publicKey, privateKey);
         var webPushClient = new WebPushClient();
 
@@ -172,22 +169,23 @@ app.MapPost("/send-test-notifications", async ([FromServices] NotificationsStore
     }
 });
 
-app.MapGet("/health", (IConfiguration configuration) => new { ImageTag =  configuration["CurrentImageTag"] });
-
-
-app.MapPost("/notifications/clear", async ([FromServices] NotificationsStore store, ILogger<Program> logger) =>
+app.MapGet("/health", (IConfiguration configuration) => new
 {
-    store.Notifications = [];
+    ImageTag = configuration["CurrentImageTag"],
+    StartedDate = startedDateTime,
+    AliveTime = DateTime.UtcNow - startedDateTime
 });
 
-app.MapPost("/notifications", async (NotificationSubscription subscription, [FromServices] NotificationsStore store, ILogger<Program> logger, 
+app.MapPost("/notifications/clear", async ([FromServices] NotificationsStore store, ILogger<Program> logger) => { store.Notifications = []; });
+
+app.MapPost("/notifications", async (NotificationSubscription subscription, [FromServices] NotificationsStore store, ILogger<Program> logger,
     ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
 {
     var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
     subscription.UserId = userId;
-    
-   store.Notifications.Add(subscription);
+
+    store.Notifications.Add(subscription);
 });
 
 app.MapDefaultEndpoints();
