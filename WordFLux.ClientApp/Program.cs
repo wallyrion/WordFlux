@@ -28,12 +28,6 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<ConnectionHealthService>();
 builder.Services.AddSingleton<InMemoryMessageQueue>();
 
-// https://localhost:7443/
-// https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/
-
-var apiUrl = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io/";
-
-
 builder.Services.AddHttpClient<WeatherApiClient>((provider, client) =>
     {
         var configuration = provider.GetRequiredService<IConfiguration>();
