@@ -20,9 +20,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFLux.ClientApp", "WordF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{BBBFC48E-A62E-45DD-8682-CF7074A657F8}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\azure-static-web-apps-green-wave-06b1faa0f.yml = .github\workflows\azure-static-web-apps-green-wave-06b1faa0f.yml
 		.github\workflows\build-pr.yml = .github\workflows\build-pr.yml
 		.github\workflows\deploy.yml = .github\workflows\deploy.yml
+		.github\workflows\azure-static-web-apps-icy-ocean-03f34ba03.yml = .github\workflows\azure-static-web-apps-icy-ocean-03f34ba03.yml
 	EndProjectSection
 EndProject
 Global
