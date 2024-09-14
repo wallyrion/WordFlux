@@ -55,7 +55,7 @@
                     }
                 </div>
 
-                <div class="form-check form-switch">
+                <div class="form-check form-switch align-self-end">
                     <input class="form-check-input" @bind-value="@UseAzureAiTranslator" type="checkbox" role="switch" id="flexSwitchCheckDefault">
                     <label class="form-check-label" for="flexSwitchCheckDefault">Use Azure AI Translator </label>
                 </div>
@@ -78,7 +78,7 @@
 
                 @if (Level != null)
                 {
-                    <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@Level</span>
+                    <span class="badge text-bg-light position-absolute start-0 translate-middle">@Level</span>
                 }
 
             </div>
@@ -175,7 +175,7 @@
     SimpleTranslationResponse? Translation { get; set; }
     string? Level { get; set; }
     List<CardTranslationItem> Examples { get; set; } = [];
-
+    CancellationTokenSource _cancellationTokenSource = new();
     IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term.Trim('\n', ' '));
 
     protected override async Task OnInitializedAsync()
@@ -234,26 +234,31 @@
             Navigation.NavigateTo(
                 Navigation.GetUriWithQueryParameter("term", Term));
 
-            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator);
+            await _cancellationTokenSource.CancelAsync();
+            _cancellationTokenSource = new();
+            
+            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator, _cancellationTokenSource.Token);
             IsLoading = false;
             IsExamplesLoading = true;
 
             StateHasChanged();
 
-            Level = await WeatherApi.GetLevel(Term);
+            Level = await WeatherApi.GetLevel(Term, _cancellationTokenSource.Token);
             StateHasChanged();
 
-            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
+            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator, _cancellationTokenSource.Token);
         }
         finally
         {
             IsLoading = false;
             IsExamplesLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    void Reset()
+    async Task Reset()
     {
+        await _cancellationTokenSource.CancelAsync();
         Term = null;
         Translation = null;
         Examples = [];

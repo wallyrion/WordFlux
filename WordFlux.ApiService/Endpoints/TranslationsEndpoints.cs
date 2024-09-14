@@ -61,7 +61,7 @@ public static class TranslationsEndpoints
             var response = new AutocompleteResponse(result.Value.detectedLanguage, items);
 
             return response;
-        });
+        }).CacheOutput(t => t.Expire(TimeSpan.FromMinutes(1)));
         
         app.MapPost("/translations/autocomplete", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator) =>
         {
@@ -71,9 +71,10 @@ public static class TranslationsEndpoints
         });
         
         
-        app.MapPost("/translations/deepl", async (GetAutocompleteRequest request) =>
+        app.MapPost("/translations/deepl", async (GetAutocompleteRequest request, IConfiguration configuration) =>
         {
-            var authKey = "d669e6ef-f335-4019-8dc5-df1c05c80057:fx"; // Replace with your key
+            
+            var authKey = configuration["DeeplAuthKey"]; // Replace with your key
             var translator = new Translator(authKey);
             
             var translatedText = await translator.TranslateTextAsync(

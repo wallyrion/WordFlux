@@ -63,15 +63,15 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return (await response.Content.ReadFromJsonAsync<GetAutocompleteResponse>())!;
     }
     
-    public async Task<AutocompleteResponse> SearchForCompletionsWithTranslations(string term)
+    public async Task<AutocompleteResponse> SearchForCompletionsWithTranslations(string term, CancellationToken token)
     {
         var request = new GetAutocompleteRequest(term, "ru", "en");
         
-        var response = await httpClient.PostAsJsonAsync($"/translations/autocomplete/with-translations", request);
+        var response = await httpClient.PostAsJsonAsync($"/translations/autocomplete/with-translations", request, cancellationToken: token);
 
         response.EnsureSuccessStatusCode();
 
-        return (await response.Content.ReadFromJsonAsync<AutocompleteResponse>())!;
+        return (await response.Content.ReadFromJsonAsync<AutocompleteResponse>(cancellationToken: token))!;
     }
     
     
@@ -91,14 +91,14 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     
     
     public async Task<List<CardTranslationItem>> GetTranslationExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage,
-        bool useAzureAiTranslator)
+        bool useAzureAiTranslator, CancellationToken token = default)
     {
         logger.LogInformation("Getting FROM UI examples for term {Term} and translations {@Translations}", term, translations);
         var request = new GetTranslationExamplesRequest(term, translations, sourceLanguage, destinationLanguage);
-        var response = await httpClient.PostAsJsonAsync($"/translations/examples?useAzureAiTranslator={useAzureAiTranslator}", request);
+        var response = await httpClient.PostAsJsonAsync($"/translations/examples?useAzureAiTranslator={useAzureAiTranslator}", request, cancellationToken: token);
 
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<List<CardTranslationItem>>();
+        var result = await response.Content.ReadFromJsonAsync<List<CardTranslationItem>>(cancellationToken: token);
 
         return result!;
     }
@@ -134,15 +134,15 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     }
     
     
-    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator)
+    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator, CancellationToken token)
     {
         var languages = await storage.GetMyLanguages();
         
-        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={languages.native}&studyingLanguage={languages.studing}&useAzureAiTranslator={useAzureAiTranslator}"))!;
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={languages.native}&studyingLanguage={languages.studing}&useAzureAiTranslator={useAzureAiTranslator}", cancellationToken: token))!;
     }
-    public async Task<string> GetLevel(string term)
+    public async Task<string> GetLevel(string term, CancellationToken token)
     {
-        var res =  (await httpClient.GetFromJsonAsync<GetLevelResponse>($"/term/level?term={term}"))!;
+        var res =  (await httpClient.GetFromJsonAsync<GetLevelResponse>($"/term/level?term={term}", cancellationToken: token))!;
 
         return res.Level;
     }

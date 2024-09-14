@@ -7,21 +7,22 @@
 @*
 <label for="exampleDataList" class="form-label">Datalist example</label>
 *@
-<input @bind="Term" @bind:event="oninput" @onfocus="Search" @bind:after="Search" class="form-control"  @onkeyup="OnKeyDown"  id="exampleDataList" @onfocusout="ResetAutoComplete" placeholder="Type to search...">
 
 @*<input @bind="Term" @bind:event="oninput" class="form-control" id="exampleDataList" @onkeyup="OnKeyDown" >*@
 
-<div>
+<div class="autocomplete-container" @onfocusout="ResetAutoComplete">
+    <input @bind="Term" @bind:event="oninput" @onfocus="Search" @bind:after="Search" class="form-control"  @onkeyup="OnKeyDown" id="exampleDataList" placeholder="Type to search...">
 
+    <div class="list-group position-absolute z-1">
+
+        @foreach (var item in AutocompleteOptions)
+        {
+             <button @onclick="() => SelectSuggestedAutocomplete(item.Term)" type="button" class="list-group-item list-group-item-action">@item.Term → @item.TermTranslated </button>
+        }
+    </div>
 </div>
 
-<div class="list-group position-absolute z-1">
 
-    @foreach (var item in AutocompleteOptions)
-    {
-        <button @onclick="() => SelectSuggestedAutocomplete(item.Term)" type="button" class="list-group-item list-group-item-action">@item.Term → @item.TermTranslated </button>
-    }
-</div>
 
 
 
@@ -37,7 +38,8 @@
     [Parameter] public string? Term { get; set; }
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<string> OnTermChanged { get; set; }
-
+    CancellationTokenSource _cancellationTokenSource = new();
+    
     protected override void OnInitialized()
     {
         /*timer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));*/
@@ -59,6 +61,7 @@
     {
         await OnTermChanged.InvokeAsync(Term);
         await DisposePeriodicTimer();
+        await _cancellationTokenSource.CancelAsync();
 
         if (string.IsNullOrWhiteSpace(Term))
         {
@@ -68,36 +71,41 @@
 
         Task.Run(async () =>
         {
-            timer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));
-            var tick = await timer.WaitForNextTickAsync();
+            Console.WriteLine("Creating new timer");
+            _cancellationTokenSource = new();
+            using var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));
+            var tick = await periodicTimer.WaitForNextTickAsync(_cancellationTokenSource.Token);
 
             Console.WriteLine("Ticking " + tick);
+
             if (tick)
             {
-                await SearchForCompletions(Term);
+                await SearchForCompletions(Term, _cancellationTokenSource.Token);
                 await DisposePeriodicTimer();
             }
+            
         });
     }
 
-    private async Task SearchForCompletions(string str)
+    private async Task SearchForCompletions(string str, CancellationToken token)
     {
         //var completions = await HttpClient.SearchForCompletions(str);
 
-        var completions = await HttpClient.SearchForCompletionsWithTranslations(str);
-
-        if (timer != null)
+        var completions = await HttpClient.SearchForCompletionsWithTranslations(str, token);
+        AutocompleteOptions = completions.Items;
+        //AutocompleteOptions = completions.Completions;
+        await InvokeAsync(StateHasChanged);
+        /*if (timer != null)
         {
             
-            AutocompleteOptions = completions.Items;
-            //AutocompleteOptions = completions.Completions;
-            await InvokeAsync(StateHasChanged);
-        }
+            
+        }*/
 
     }
 
     private async Task DisposePeriodicTimer()
     {
+        Console.WriteLine("Disposing periodic timer");
         timer?.Dispose();
         timer = null;
     }
@@ -109,16 +117,20 @@
         AutocompleteOptions = [];
     }
 
-    private void ResetAutoComplete()
+    private async Task ResetAutoComplete()
     {
-        Task.Run(async () =>
+        await _cancellationTokenSource.CancelAsync();
+        await Task.Delay(100);
+        AutocompleteOptions = [];
+        
+        /*Task.Run(async () =>
         {
             Console.WriteLine("Reset auto complete");
             await DisposePeriodicTimer();
             await Task.Delay(100);
             AutocompleteOptions = [];
             await InvokeAsync(StateHasChanged);
-        });
+        });*/
 
     }
 
