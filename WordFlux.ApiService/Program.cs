@@ -49,7 +49,7 @@ builder.Services.AddCors(
     options => options.AddPolicy(
         "wasm",
         policy => policy.WithOrigins([
-                "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net", "https://wordflux.azurewebsites.net"
+                "https://localhost:7153", "https://delightful-smoke-000aa9910-preview.centralus.5.azurestaticapps.net", "https://wordflux.azurewebsites.net", "https://wordflux-api.azurewebsites.net/"
             ])
             .AllowAnyMethod()
             .AllowAnyHeader()
