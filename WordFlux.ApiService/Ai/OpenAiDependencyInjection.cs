@@ -29,11 +29,6 @@ public static class OpenAiDependencyInjection
 
     public static ITranslationService ResolveTranslationService(this IServiceProvider di, bool useAzureAitranslator)
     {
-        if (useAzureAitranslator)
-        {
-            return di.GetRequiredKeyedService<ITranslationService>("AzureAiTranslator");
-        }
-        
-        return di.GetRequiredKeyedService<ITranslationService>("OpenAiTranslator");
+        return di.GetRequiredKeyedService<ITranslationService>(useAzureAitranslator ? "AzureAiTranslator" : "OpenAiTranslator");
     }
 }
