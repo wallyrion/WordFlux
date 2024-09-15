@@ -22,7 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build-pr.yml = .github\workflows\build-pr.yml
 		.github\workflows\deploy.yml = .github\workflows\deploy.yml
-		.github\workflows\azure-static-web-apps-icy-ocean-03f34ba03.yml = .github\workflows\azure-static-web-apps-icy-ocean-03f34ba03.yml
 	EndProjectSection
 EndProject
 Global
