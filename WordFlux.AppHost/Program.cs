@@ -29,8 +29,10 @@ if (secrets != null)
     apiService = apiService.WithReference(secrets);
 }
 
+/*
 builder.AddProject<Projects.WordFlux_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(apiService);
+    */
 
 builder.Build().Run();
