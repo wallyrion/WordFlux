@@ -96,7 +96,7 @@
 
 @code {
 
-    [Parameter] public EventCallback<CardTranslationItem> OnTermSearch { get; set; }
+    [Parameter] public EventCallback<string> OnTermSearch { get; set; }
     [Parameter] public EventCallback<CardTranslationItem> OnMakePrimary { get; set; }
     [Parameter] public EventCallback<CardTranslationItem> OnRemoveTranslation { get; set; }
     [Parameter] public List<CardTranslationItem>? Translations { get; set; }
@@ -109,7 +109,7 @@
 
     async Task SearchTerm(CardTranslationItem item)
     {
-        await OnTermSearch.InvokeAsync(item);
+        await OnTermSearch.InvokeAsync(item.Term);
     }
 
     async Task RemoveTranslation(CardTranslationItem item)

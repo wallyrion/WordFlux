@@ -12,7 +12,7 @@ public static class AudioEndpoints
     {
         app.MapGet("/audio/link", (string term) =>
         {
-            const string url = "https://apiservice.jollycliff-5a69ab58.westeurope.azurecontainerapps.io";
+            const string url = "https://wordflux-api.azurewebsites.net";
 
             return new GetAudioLinkResponse($"{url}/audio?term={Uri.EscapeDataString(term)}");
         }).CacheOutput();
