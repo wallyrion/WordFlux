@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WordFlux.ApiService\WordFlux.ApiService.csproj" />
-    <ProjectReference Include="..\WordFlux.Web\WordFlux.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

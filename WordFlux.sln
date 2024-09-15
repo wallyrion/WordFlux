@@ -8,11 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WordFlux.ServiceDefaults", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WordFlux.ApiService", "WordFlux.ApiService\WordFlux.ApiService.csproj", "{421D4F59-B920-4077-A574-18914ADC6FD4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WordFlux.Web", "WordFlux.Web\WordFlux.Web.csproj", "{64BDBB15-BFFE-48B9-AF12-F9ECD25EB4A7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.ApiService.UnitTests", "WordFlux.ApiService.UnitTests\WordFlux.ApiService.UnitTests.csproj", "{237E43CC-9940-41C0-BEB0-ACFC57603F72}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Web.UnitTests", "WordFlux.Web.UnitTests\WordFlux.Web.UnitTests.csproj", "{033C12E0-F4F7-4A19-9F61-5EF3BC261415}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Contracts", "WordFlux.Contracts\WordFlux.Contracts.csproj", "{1555E911-B822-49A8-9BE6-14589EB8DAE6}"
 EndProject
@@ -42,18 +38,10 @@ Global
 		{421D4F59-B920-4077-A574-18914ADC6FD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{421D4F59-B920-4077-A574-18914ADC6FD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{421D4F59-B920-4077-A574-18914ADC6FD4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{64BDBB15-BFFE-48B9-AF12-F9ECD25EB4A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64BDBB15-BFFE-48B9-AF12-F9ECD25EB4A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{64BDBB15-BFFE-48B9-AF12-F9ECD25EB4A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{64BDBB15-BFFE-48B9-AF12-F9ECD25EB4A7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{237E43CC-9940-41C0-BEB0-ACFC57603F72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{237E43CC-9940-41C0-BEB0-ACFC57603F72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{237E43CC-9940-41C0-BEB0-ACFC57603F72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{237E43CC-9940-41C0-BEB0-ACFC57603F72}.Release|Any CPU.Build.0 = Release|Any CPU
-		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{033C12E0-F4F7-4A19-9F61-5EF3BC261415}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1555E911-B822-49A8-9BE6-14589EB8DAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
