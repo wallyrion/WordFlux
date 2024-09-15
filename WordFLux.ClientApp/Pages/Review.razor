@@ -3,6 +3,7 @@
 @using WordFLux.ClientApp.Models
 @using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Pages.Shared
+@using WordFLux.ClientApp.Utils
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @attribute [Authorize]
@@ -39,7 +40,7 @@
                     </button>
                     @if (TimeToNextReview != null)
                     {
-                        <span>Next review in <strong>@(GetNextReviewTime()). </strong> </span>    
+                        <span>Next review in <strong>@(GetNextReviewTime()). </strong> </span>
                     }
                 </div>
             </div>
@@ -48,29 +49,46 @@
         else
         {
             <div class="card text-center position-relative">
-                <span class="badge text-bg-secondary position-absolute start-0 translate-middle">@CurrentCard.Level</span>
+                <span class="badge text-bg-light position-absolute start-0 translate-middle">@CurrentCard.Level</span>
 
                 @if (IsShowTranslation)
                 {
                     <div class="dropdown">
 
-                        <button class="btn dropdown-toggle position-absolute end-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                           
-                        </button>
+                        <button class="btn dropdown-toggle position-absolute end-0" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
 
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item" role="button" @onclick="DeleteCard">Delete</a>
                             </li>
+                            @if (TermTranslation != null)
+                            {
+                                <li>
+                                    <a class="dropdown-item" role="button" @onclick="() => SearchForTerm(TermTranslation!)">Search for '@TermTranslation.TruncateWithEllipsis()'</a>
+                                </li>
+                                <li>
+                                    <span><AudioFromText Term="@TermTranslation"/></span> '@TermTranslation.TruncateWithEllipsis()'
+                                </li>
+                            }
+                            @if (TermLearning != null)
+                            {
+                                <li>
+                                    <a class="dropdown-item" role="button" @onclick="() => SearchForTerm(TermLearning!)">Search for '@TermLearning.TruncateWithEllipsis()'</a>
+                                </li>
+                                
+                                <li>
+                                    <span><AudioFromText Term="@TermLearning"/></span> '@TermLearning.TruncateWithEllipsis()'
+                                </li>
+                            }
                         </ul>
                     </div>
                 }
 
                 <div class="card-body">
-                    <h5 class="card-title">@(IsShowTranslationAsBaseTerm ? CurrentCard.Translations.First().Term : CurrentCard.Term)</h5>
+                    <h5 class="card-title">@TermLearning</h5>
                     @if (IsShowTranslation)
                     {
-                        <p class="card-text">@(IsShowTranslationAsBaseTerm ? CurrentCard.Term : CurrentCard.Translations.First().Term)</p>
+                        <p class="card-text">@TermTranslation</p>
                     }
                 </div>
 
@@ -89,7 +107,7 @@
                 @if (IsShowTranslation)
                 {
                     <div class="row justify-content-center mt-2 mb-2">
-                        <div class="col-5 col-lg-2">
+                        <div class="col-6 col-lg-2">
                             <button type="button" class="btn btn-warning w-100" disabled="@IsRequestInProgress" @onclick="Reject">
                                 Learning...
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-diamond-fill" viewBox="0 0 16 16">
@@ -98,7 +116,7 @@
                             </button>
                         </div>
 
-                        <div class="col-5 col-lg-2">
+                        <div class="col-6 col-lg-2">
                             <button type="button" class="btn btn-success w-100" disabled="@IsRequestInProgress" @onclick="Approve">
                                 I know this
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
@@ -110,16 +128,16 @@
 
                     </div>
 
-                    <TranslationExamples 
+                    <TranslationExamples
                         Term="@CurrentCard.Term"
-                        OnTermSearch="SearchForTerm" 
-                        Translations="CurrentCard.Translations" 
+                        OnTermSearch="SearchForTerm"
+                        Translations="CurrentCard.Translations"
                         OnMakePrimary="MakePrimary"
                         OnRemoveTranslation="RemoveTranslation"/>
-                    
+
                     <EditTranslation
                         Term="@CurrentCard.Term"
-                        OnAddMyTranslation="AddMyTranslation" />
+                        OnAddMyTranslation="AddMyTranslation"/>
                 }
 
                 else
@@ -144,18 +162,17 @@
     bool IsLoading { get; set; }
     bool IsShowTranslation { get; set; }
     bool IsShowTranslationAsBaseTerm { get; set; }
+
     bool IsRequestInProgress { get; set; }
     TimeSpan? TimeToNextReview { get; set; }
     string Motivation { get; set; } = "There is no better time to learn than now";
+    string? TermLearning => IsShowTranslationAsBaseTerm ? CurrentCard?.Translations.First().Term : CurrentCard?.Term;
+    string? TermTranslation => IsShowTranslationAsBaseTerm ? CurrentCard?.Term : CurrentCard?.Translations.First().Term;
+    private AudioFromText audioComponent1;
 
-    RenderFragment StringToHtml(string htmlString)
+    void SearchForTerm(string term)
     {
-        return b => b.AddMarkupContent(0, htmlString);
-    }
-
-    async Task SearchForTerm(CardTranslationItem item)
-    {
-        Navigation.NavigateTo("/?term=" + item.Term);
+        Navigation.NavigateTo("/?term=" + term);
     }
 
     async Task MakePrimary(CardTranslationItem item)
@@ -188,10 +205,10 @@
 
         await WeatherApi.RejectCard(CurrentCard!.Id);
         await LoadNext();
-        
+
         IsRequestInProgress = false;
     }
-    
+
     void ShowTranslation()
     {
         IsShowTranslation = true;
@@ -202,12 +219,11 @@
         IsShowTranslation = false;
         CurrentCard = NextCard;
         UpdateLearningStrategy();
-        
+
         StateHasChanged();
         await UpdateTimeToNextReview();
-        
+
         NextCard = await WeatherApi.GetNextCard(1);
-        
     }
 
     private async Task UpdateTimeToNextReview()
@@ -221,7 +237,6 @@
         {
             TimeToNextReview = null;
         }
-
     }
 
     protected override async Task OnInitializedAsync()
@@ -231,7 +246,7 @@
 
         CurrentCard = await WeatherApi.GetNextCard();
         UpdateLearningStrategy();
-        
+
         NextCard = await WeatherApi.GetNextCard(1);
         await UpdateTimeToNextReview();
 
@@ -246,7 +261,7 @@
         }
 
         var time = TimeToNextReview.Value;
-        
+
         if (time < TimeSpan.FromSeconds(1))
         {
             return "a few moments";
@@ -256,29 +271,31 @@
         {
             return $"{time.Seconds} second{AppendS(time.Seconds)}";
         }
-        
+
         if (time <= TimeSpan.FromHours(1))
         {
             return $"{time.Minutes} minute{AppendS(time.Minutes)}";
         }
-        
+
         if (time <= TimeSpan.FromDays(1))
         {
             return $"{time.Hours} hour{AppendS(time.Hours)}";
         }
-        
+
         if (time <= TimeSpan.FromDays(30))
         {
             return $"{time.Days} day{AppendS(time.Days)}";
         }
-        
+
         if (time <= TimeSpan.FromDays(365))
         {
             var months = time.Days / 30;
+
             return $"{months} month{AppendS(months)}";
         }
-        
+
         var years = time.Days / 365;
+
         return $"{years} year{AppendS(years)}";
 
         static string AppendS(int quantity)
@@ -286,27 +303,26 @@
             return quantity > 1 ? "s" : "";
         }
     }
-    
+
     private void UpdateLearningStrategy()
     {
         IsShowTranslationAsBaseTerm = Random.Shared.NextSingle() < 0.4;
     }
-    
+
     private async Task DeleteCard()
     {
         await WeatherApi.DeleteCard(CurrentCard!.Id);
 
         await LoadNext();
-        
+
         await UpdateTimeToNextReview();
     }
 
     private async Task AddMyTranslation(CardTranslationItem item)
     {
         CurrentCard!.Translations.Insert(0, item);
-        
+
         await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
     }
 
-    
 }

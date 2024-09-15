@@ -188,9 +188,9 @@
         }
     }
 
-    async Task SearchForTerm(CardTranslationItem item)
+    async Task SearchForTerm(string term)
     {
-        Term = item.Term;
+        Term = term;
 
         await TryItOut();
     }

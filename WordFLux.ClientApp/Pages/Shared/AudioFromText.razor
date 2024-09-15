@@ -35,10 +35,10 @@
 
     protected override void OnParametersSet()
     {
-        SoundUrl = null;
+        //SoundUrl = null;
     }
 
-    private async Task PlaySound2()
+    public async Task PlaySound2()
     {
         if (string.IsNullOrWhiteSpace(Term))
         {
@@ -48,7 +48,7 @@
         if (SoundUrl != null)
         {
             SoundUrl = null;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
 
         SoundUrl = await HttpClient.GetAudioLink(Term);
