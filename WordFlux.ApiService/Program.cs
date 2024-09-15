@@ -51,7 +51,7 @@ builder.Services.AddCors(
         policy => policy
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowAnyOrigin()));
+            .WithOrigins("http://localhost:4200", "https://wordflux.online/", "https://icy-ocean-03f34ba03-13.westeurope.5.azurestaticapps.net/")));
 /*builder.Services.AddCors(cors =>
 {
     cors.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
