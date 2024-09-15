@@ -131,40 +131,9 @@ app
     .MapCardsEndpoints()
     .MapMotivationalEndpoints()
     .MapTranslationEndpoints()
+    .MapPushNotificationsEndpoints()
     ;
 
-app.MapGet("/notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) => { return store.Notifications; });
-
-app.MapPost("/send-test-notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) =>
-{
-    foreach (var subscription in store.Notifications)
-    {
-        var publicKey = "BLC8GOevpcpjQiLkO7JmVClQjycvTCYWm6Cq_a7wJZlstGTVZvwGFFHMYfXt6Njyvgx_GlXJeo5cSiZ1y4JOx1o";
-        var privateKey = "OrubzSz3yWACscZXjFQrrtDwCKg-TGFuWhluQ2wLXDo";
-
-        var pushSubscription = new PushSubscription(subscription.Url, subscription.P256dh, subscription.Auth);
-        logger.LogInformation("Pushing notification. Details: {@Details}", pushSubscription);
-
-        var vapidDetails = new VapidDetails("mailto:kornienko1296@gmail.com", publicKey, privateKey);
-        var webPushClient = new WebPushClient();
-
-        try
-        {
-            var payload = JsonSerializer.Serialize(new
-            {
-                message = "test message",
-                url = $"myorders/{Guid.NewGuid()}",
-            });
-
-            await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "error while sending push notificaiton. Details: {@Details}", JsonSerializer.Serialize(subscription));
-            Console.Error.WriteLine("Error sending push notification: " + ex.Message);
-        }
-    }
-});
 
 app.MapGet("/health", (IConfiguration configuration) => new
 {
@@ -173,17 +142,6 @@ app.MapGet("/health", (IConfiguration configuration) => new
     AliveTime = DateTime.UtcNow - startedDateTime
 });
 
-app.MapPost("/notifications/clear", async ([FromServices] NotificationsStore store, ILogger<Program> logger) => { store.Notifications = []; });
-
-app.MapPost("/notifications", async (NotificationSubscription subscription, [FromServices] NotificationsStore store, ILogger<Program> logger,
-    ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
-{
-    var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
-
-    subscription.UserId = userId;
-
-    store.Notifications.Add(subscription);
-});
 
 app.MapDefaultEndpoints();
 

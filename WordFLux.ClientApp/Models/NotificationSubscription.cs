@@ -1,10 +1,10 @@
-namespace WordFlux.ApiService;
+﻿namespace WordFLux.ClientApp.Models;
 
 public class NotificationSubscription
 {
     public Guid? Id { get; set; }
 
-    public Guid? UserId { get; set; }
+    public string? UserId { get; set; }
 
     public string? Url { get; set; }
 

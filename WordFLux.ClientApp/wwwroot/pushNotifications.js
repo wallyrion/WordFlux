@@ -1,10 +1,65 @@
 ﻿(function () {
     console.log("Initializing push notifications")
-    
+
     // Note: Replace with your own key pair before deploying
     const applicationServerPublicKey = 'BLC8GOevpcpjQiLkO7JmVClQjycvTCYWm6Cq_a7wJZlstGTVZvwGFFHMYfXt6Njyvgx_GlXJeo5cSiZ1y4JOx1o';
 
     window.blazorPushNotifications = {
+        getExistingSubscription: async () => {
+            const worker = await navigator.serviceWorker.getRegistration();
+            const existingSubscription = await worker.pushManager.getSubscription();
+
+            if (!existingSubscription){
+                return undefined 
+            }
+            console.log("existing subscription", existingSubscription);
+
+            return {
+                url: existingSubscription.endpoint,
+                p256dh: arrayBufferToBase64(existingSubscription.getKey('p256dh')),
+                auth: arrayBufferToBase64(existingSubscription.getKey('auth'))
+            };
+        },
+
+        unsubscribe: async () => {
+            const worker = await navigator.serviceWorker.getRegistration();
+            const existingSubscription = await worker.pushManager.getSubscription();
+
+            console.log("existing subscription", existingSubscription);
+
+            // If the subscription exists, unsubscribe
+            if (existingSubscription) {
+                const success = await existingSubscription.unsubscribe();
+                if (success) {
+                    console.log('Successfully unsubscribed from push notifications.');
+                    return true;
+                } else {
+                    console.log('Failed to unsubscribe from push notifications.');
+                    return false;
+                }
+            } else {
+                console.log('No push subscription found.');
+                return false;
+            }
+        },
+        subscribe: async () => {
+            const worker = await navigator.serviceWorker.getRegistration();
+            let existingSubscription = await worker.pushManager.getSubscription();
+
+            if (!existingSubscription) {
+                existingSubscription = await subscribe(worker);
+            }
+
+            if (!existingSubscription) {
+                return undefined;
+            }
+
+            return {
+                url: existingSubscription.endpoint,
+                p256dh: arrayBufferToBase64(existingSubscription.getKey('p256dh')),
+                auth: arrayBufferToBase64(existingSubscription.getKey('auth'))
+            };
+        },
         requestSubscription: async () => {
             const worker = await navigator.serviceWorker.getRegistration();
             const existingSubscription = await worker.pushManager.getSubscription();
@@ -17,8 +72,8 @@
                     auth: arrayBufferToBase64(newSubscription.getKey('auth'))
                 };
             }
-            
-            
+
+
             if (!existingSubscription) {
                 const newSubscription = await subscribe(worker);
                 if (newSubscription) {
@@ -28,16 +83,15 @@
                         auth: arrayBufferToBase64(newSubscription.getKey('auth'))
                     };
                 }
-            }
-            else {
+            } else {
                 var res = {
                     url: existingSubscription.endpoint,
                     p256dh: arrayBufferToBase64(existingSubscription.getKey('p256dh')),
                     auth: arrayBufferToBase64(existingSubscription.getKey('auth'))
                 };
-                
+
                 console.log("subscription result", res);
-                return  res;
+                return res;
             }
         }
     };
