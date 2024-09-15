@@ -1,11 +1,8 @@
 ﻿@page "/lang"
-@using System.Text.Json
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Storage
 @inject LocalStorage Storage
 <PageTitle>Choose languages</PageTitle>
-@inject IJSRuntime JSRuntime
 
 @inject WeatherApiClient ApiClient
 
@@ -60,8 +57,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _ = RequestNotificationSubscriptionAsync();
-
         MyId = await Storage.GetMyId();
         
         var langs = await Storage.GetMyLanguages();
@@ -70,26 +65,6 @@
         StudyingLanguage = langs.studing;
 
         await base.OnInitializedAsync();
-    }
-    
-    async Task RequestNotificationSubscriptionAsync()
-    {
-        var subscription = await JSRuntime.InvokeAsync<NotificationSubscription>("blazorPushNotifications.requestSubscription");
-
-        await ApiClient.SubscribeToNotification(subscription);
-
-        //Console.WriteLine(JsonSerializer.Serialize(subscription));
-        /*if (subscription is not null)
-        {
-            try
-            {
-               // await OrdersClient.SubscribeToNotifications(subscription);
-            }
-            catch (AccessTokenNotAvailableException ex)
-            {
-                ex.Redirect();
-            }
-        }*/
     }
     
     record LanguageOption(string Name, string Code);
@@ -108,18 +83,6 @@
     }
 
     
-    public class NotificationSubscription
-    {
-        public int? NotificationSubscriptionId { get; set; }
-
-        public string? UserId { get; set; }
-
-        public string? Url { get; set; }
-
-        public string? P256dh { get; set; }
-
-        public string? Auth { get; set; }
-    }
     
 }
 

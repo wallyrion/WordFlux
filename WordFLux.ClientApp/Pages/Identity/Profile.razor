@@ -1,16 +1,23 @@
 @page "/profile"
+@using WordFLux.ClientApp.Components
 @attribute [Authorize]
 
 <PageTitle>My profile</PageTitle>
 
 <div class="container">
     <AuthorizeView>
-        <p>Hello, you're authenticated as <span class="fw-bold">@context.User.Identity?.Name!</span> </p>
-        <a class="btn btn-outline-danger" href="/logout">Log out</a>
+        <p>
+            Hello, you're authenticated as <span class="fw-bold">@context.User.Identity?.Name!</span>
+            <a class="btn btn-outline-danger" href="/logout">Log out</a>
+        </p>
+
+
+        <div>
+            <Notifications/>
+        </div>
 
     </AuthorizeView>
 </div>
-
 
 
 @code {

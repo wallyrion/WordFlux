@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using WordFLux.ClientApp.Models;
-using WordFLux.ClientApp.Pages;
 using WordFLux.ClientApp.Storage;
 using WordFlux.Contracts;
 using CardRequest = WordFLux.ClientApp.Models.CardRequest;
@@ -17,9 +16,26 @@ namespace WordFLux.ClientApp.Services;
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {
 
-    public async Task SubscribeToNotification(SelectLanguages.NotificationSubscription subscription)
+    public async Task<NotificationSubscription> SubscribeToNotification(NotificationSubscription subscription)
     {
-        await httpClient.PostAsJsonAsync("/notifications", subscription);
+        var response = await httpClient.PostAsJsonAsync("/notifications", subscription);
+        var notificationSubscription = await response.Content.ReadFromJsonAsync<NotificationSubscription>();
+
+        return notificationSubscription!;
+    } 
+    
+    public async Task UnsubscribeFromNotifications(Guid subscriptionId)
+    {
+        await httpClient.DeleteAsync($"/notifications/{subscriptionId}");
+    }
+
+    public async Task<NotificationSubscription?> GetNotificationSubscriptionByUrl(string url)
+    {
+        var response = await httpClient.GetAsync($"/notifications-by-url?url={url}");
+        
+        var notificationSubscription = await response.Content.ReadFromJsonAsync<NotificationSubscription>();
+        
+        return notificationSubscription;
     }
     
     public async Task<List<CardDto>> GetCards()

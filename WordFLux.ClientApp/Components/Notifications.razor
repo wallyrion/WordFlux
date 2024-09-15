@@ -1,0 +1,105 @@
+﻿@using System.Text.Json
+@using WordFLux.ClientApp.Models
+@using WordFLux.ClientApp.Services
+
+@inject WeatherApiClient ApiClient
+@inject IJSRuntime JsRuntime
+
+
+@if (!string.IsNullOrWhiteSpace(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+
+<div class="form-check form-switch align-self-end">
+    <input class="form-check-input" @bind="IsCurrentDeviceSubscribedToNotifications"
+           disabled="@IsLoading"
+           @bind:after="HandleSwitchChange"
+           type="checkbox"role="switch" id="flexSwitchCheckDefault">
+    <label class="form-check-label" for="flexSwitchCheckDefault">Get notifications for this device </label>
+</div>
+
+@code {
+
+    bool IsCurrentDeviceSubscribedToNotifications { get; set; }
+    string? Error { get; set; }
+    NotificationSubscription? ExistingSubscription { get; set; }
+    bool IsLoading { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+
+        try
+        {
+            var existingSubscription = await JsRuntime.InvokeAsync<NotificationSubscription?>("blazorPushNotifications.getExistingSubscription");
+
+            if (existingSubscription != null)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(existingSubscription));
+            }
+            else
+            {
+                Console.WriteLine("No subscription yet");
+            }
+
+            if (existingSubscription == null)
+            {
+                return;
+            }
+
+            ExistingSubscription = await ApiClient.GetNotificationSubscriptionByUrl(existingSubscription!.Url!);
+
+            IsCurrentDeviceSubscribedToNotifications = ExistingSubscription != null;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task HandleSwitchChange()
+    {
+        try
+        {
+            IsLoading = true;
+
+            if (IsCurrentDeviceSubscribedToNotifications)
+            {
+                await SubscribeToNotifications();
+            }
+
+            else
+            {
+                await UnsubscribeFromNotifications();
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task UnsubscribeFromNotifications()
+    {
+        await JsRuntime.InvokeAsync<object?>("blazorPushNotifications.unsubscribe");
+        await ApiClient.UnsubscribeFromNotifications(ExistingSubscription!.Id!.Value);
+    }
+
+    private async Task SubscribeToNotifications()
+    {
+        try
+        {
+            var subscription = await JsRuntime.InvokeAsync<NotificationSubscription>("blazorPushNotifications.subscribe");
+
+            var createdSubscription = await ApiClient.SubscribeToNotification(subscription);
+            ExistingSubscription = createdSubscription;
+        }
+        catch (Exception e)
+        {
+            IsCurrentDeviceSubscribedToNotifications = false;
+            Error = $"Could not subscribe. Please refresh the page and try again. Details: {e.Message}";
+        }
+    }
+
+}
