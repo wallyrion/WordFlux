@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using WordFLux.ClientApp.Models;
 using WordFLux.ClientApp.Storage;
@@ -31,7 +32,8 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
 
     public async Task<NotificationSubscription?> GetNotificationSubscriptionByUrl(string url)
     {
-        var response = await httpClient.GetAsync($"/notifications-by-url?url={url}");
+        var encodedUrl = Uri.EscapeDataString(url);
+        var response = await httpClient.GetAsync($"/notifications-by-url?encodedUrl={encodedUrl}");
         
         var notificationSubscription = await response.Content.ReadFromJsonAsync<NotificationSubscription>();
         

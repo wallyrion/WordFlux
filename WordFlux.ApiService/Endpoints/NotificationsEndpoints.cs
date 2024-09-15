@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +13,10 @@ public static class NotificationsEndpoints
     {
         app.MapGet("/notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) => { return store.Notifications; });
 
-        app.MapGet("/notifications-by-url", async ([FromServices] NotificationsStore store, string url) =>
+        app.MapGet("/notifications-by-url", async ([FromServices] NotificationsStore store, string encodedUrl) =>
         {
+            var url = Uri.UnescapeDataString(encodedUrl);
+            
             return store.Notifications.FirstOrDefault(x => x.Url == url);
         });
 
