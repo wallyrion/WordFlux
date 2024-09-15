@@ -27,4 +27,11 @@
     </ItemGroup>
 
 
+    <ItemGroup>
+      <Content Update="staticwebapp.config.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+
 </Project>
