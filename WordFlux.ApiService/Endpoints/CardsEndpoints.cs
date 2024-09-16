@@ -113,16 +113,17 @@ public static class CardsEndpoints
         
         app.MapPost("/cards", async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
-            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+            var userIdStr = userManager.GetUserId(claimsPrincipal);
+            var userId = Guid.Parse(userIdStr!);
 
-            var defaultDeck = await dbContext.Decks.FirstOrDefaultAsync(f => f.Type == DeckType.Default);
+            var defaultDeck = await dbContext.Decks.FirstOrDefaultAsync(f => f.Type == DeckType.Default && f.UserId == userIdStr);
 
             if (defaultDeck == null)
             {
                 defaultDeck = new Deck()
                 {
                     CreatedAt = DateTime.UtcNow,
-                    UserId = userId.ToString(),
+                    UserId = userIdStr!,
                     Id = Guid.NewGuid(),
                     Type = DeckType.Default,
                     Name = "Default",
