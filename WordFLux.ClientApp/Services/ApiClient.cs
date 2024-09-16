@@ -39,11 +39,9 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return notificationSubscription;
     }
     
-    public async Task<List<CardDto>> GetCards()
+    public async Task<List<CardDto>> GetCards(Guid? deckId)
     {
-        var myId = await storage.GetMyId();
-
-        return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?userId={myId}"))!;
+        return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?deckId={deckId}"))!;
     }
     
     public async Task<string> GetMotivation()
@@ -184,5 +182,25 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     public async Task<List<DeckDto>> GetDecks()
     {
         return (await httpClient.GetFromJsonAsync<List<DeckDto>>($"/decks"))!;
+    }
+    public async Task EditDeck(string newName, Guid deckId)
+    {
+        await httpClient.PutAsJsonAsync($"/decks/{deckId}", new { Name = newName });
+    }
+    
+    public async Task<CreateDeckResponse> CreateDeck(string newName)
+    {
+        var response = await httpClient.PostAsJsonAsync($"/decks", new { Name = newName });
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<CreateDeckResponse>();
+
+        return result!;
+    }
+    
+    public async Task RemoveDeck(Guid id)
+    {
+        var response = await httpClient.DeleteAsync($"/decks/{id}");
+        response.EnsureSuccessStatusCode();
     }
 }

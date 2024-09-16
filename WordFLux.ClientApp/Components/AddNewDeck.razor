@@ -1,0 +1,32 @@
+﻿@using WordFLux.ClientApp.Services
+@inject WeatherApiClient ApiClient
+<PageTitle>Decks</PageTitle>
+
+
+<div class="input-group" disabled="@IsLoading">
+    <input @bind="DeckName" type="text" class="form-control" placeholder="How I met your mother s1e1" aria-label="New deck name">
+    <button class="btn btn-outline-dark" @onclick="Save" type="button"><i class="bi bi-floppy"></i></button>
+</div>
+
+@code
+{
+    [Parameter] public EventCallback OnStateChanged { get; set; }
+
+    bool IsLoading { get; set; }
+
+    string? DeckName { get; set; }
+    string? Error { get; set; }
+
+    private async Task Save()
+    {
+        if (string.IsNullOrEmpty(DeckName))
+        {
+            Error = "Name can't be empty";
+
+            return;
+        }
+
+        await ApiClient.CreateDeck(DeckName);
+        await OnStateChanged.InvokeAsync();
+    }
+}
