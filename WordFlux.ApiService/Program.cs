@@ -26,20 +26,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => { options.BearerTokenExpiration = TimeSpan.FromDays(1); });
-//builder.Services.AddAuthorizationBuilder();
-/*builder.Services.AddIdentityCore<AppUser>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders()
-    .AddApiEndpoints();*/
-
-/*builder.Services.AddCors(
-    options => options.AddPolicy(
-        "wasm",
-        policy => policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader()));*/
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
+{
+    options.BearerTokenExpiration = TimeSpan.FromDays(7);
+});
 
 // Add service defaults & Aspire components.
 //builder.AddServiceDefaults();
@@ -52,10 +42,7 @@ builder.Services.AddCors(
             .AllowAnyMethod()
             .AllowAnyHeader()
             .WithOrigins("https://localhost:7153", "https://wordflux.online", "https://icy-ocean-03f34ba03-13.westeurope.5.azurestaticapps.net")));
-/*builder.Services.AddCors(cors =>
-{
-    cors.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-});*/
+
 
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
