@@ -1,0 +1,102 @@
+﻿@using WordFLux.ClientApp.Models
+@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+@inject WeatherApiClient ApiClient
+<PageTitle>Decks</PageTitle>
+
+
+<tr>
+
+    @if (IsEditMode)
+    {
+        <td colspan="4">
+            <div class="input-group">
+                <input @bind="DeckName" required type="text" id="deck-edit-name-input" class="form-control" aria-label="Save or dismiss new deck's name">
+
+                <button class="btn btn-outline-dark" type="button" disabled="@IsLoading" @onclick="Save" >
+                    <i class="bi bi-floppy"></i>
+                </button>
+                <button class="btn btn-outline-danger" disabled="@IsLoading" type="button" @onclick="Dismiss" >
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
+            </div>
+        </td>
+    }
+    else
+    {
+        <td>
+            @Deck.Name
+        </td>
+        <td>@Deck.CardsCount</td>
+        <td>@Deck.CreatedAt.ToString("d")</td>
+        <td>
+            @if (Deck.Type != DeckType.Default)
+            {
+                <button class="btn" @onclick="Edit">
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+                <button class="btn" @onclick="Remove">
+                    <i class="bi bi-trash"></i>
+                </button>
+            }
+            <a class="btn btn-link" href="/decks/@Deck.Id/cards">
+                <i class="bi bi-sign-turn-slight-right"></i>
+            </a>
+        </td>
+    }
+</tr>
+
+
+@code
+{
+    [Parameter] public DeckDto Deck { get; set; } = null!;
+    [Parameter] public EventCallback OnStateChanged { get; set; }
+
+    bool IsEditMode { get; set; }
+    string? DeckName { get; set; }
+    bool IsLoading { get; set; }
+    string? Error { get; set; }
+
+    private void Edit()
+    {
+        DeckName = Deck.Name;
+        IsEditMode = true;
+    }
+
+    private void Dismiss()
+    {
+        IsEditMode = false;
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(DeckName))
+            {
+                Error = "Field can't be empty";
+
+                return;
+            }
+
+            IsLoading = true;
+            StateHasChanged();
+
+            await ApiClient.EditDeck(DeckName, Deck.Id);
+            Deck = Deck with { Name = DeckName };
+            IsEditMode = false;
+            DeckName = null;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task Remove()
+    {
+        await ApiClient.RemoveDeck(Deck.Id);
+        await OnStateChanged.InvokeAsync();
+    }
+}

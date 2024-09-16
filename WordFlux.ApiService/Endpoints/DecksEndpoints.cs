@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech.Transcription;
@@ -21,6 +22,7 @@ public static class DecksEndpoints
 
             return await dbContext.Decks
                 .Where(c => c.UserId == userId)
+                .Select(d => new DeckDto(d.Id, d.Name, d.Cards.Count, d.CreatedAt, d.Type))
                 .ToListAsync(cancellationToken);
         }).RequireAuthorization();
 
@@ -42,6 +44,48 @@ public static class DecksEndpoints
             await dbContext.SaveChangesAsync();
 
             return createdDeck;
+        }).RequireAuthorization();
+        
+        app.MapPut("/decks/{deckId:guid}", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, CreateDeckRequest request, Guid deckId) =>
+        {
+            var userId = userManager.GetUserId(claimsPrincipal)!;
+
+            var existingDeck = await dbContext.Decks.FirstOrDefaultAsync(d => d.Id == deckId && d.UserId == userId);
+
+            if (existingDeck == null)
+            {
+                return Results.NotFound();
+            }
+
+            existingDeck.Name = request.Name;
+            await dbContext.SaveChangesAsync();
+
+            return Results.NoContent();
+
+        }).RequireAuthorization();
+
+        
+        app.MapDelete("/decks/{deckId:guid}", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, Guid deckId) =>
+        {
+            var userId = userManager.GetUserId(claimsPrincipal)!;
+
+            var existingDeck = await dbContext.Decks.FirstOrDefaultAsync(d => d.Id == deckId && d.UserId == userId);
+
+            if (existingDeck == null)
+            {
+                return Results.NotFound();
+            }
+
+            if (existingDeck.Type == DeckType.Default)
+            {
+                return Results.BadRequest("Could not remove default deck");
+            }
+            
+            dbContext.Decks.Remove(existingDeck);
+            await dbContext.SaveChangesAsync();
+            
+            return Results.NoContent();
+
         }).RequireAuthorization();
 
         

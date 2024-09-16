@@ -1,0 +1,128 @@
+﻿@page "/decks/{DeckId:guid}/cards"
+@attribute [Authorize]
+@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+@inject WeatherApiClient ApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Decks</PageTitle>
+
+
+<div class="container">
+    @if (InitialStateLoading)
+    {
+        <div>
+            Loading...
+        </div>
+    }
+    else
+    {
+        @if (Deck == null)
+        {
+            <div class="alert alert-danger">
+                We couldn't found anything on this page. <span class="emoji" style="font-size: 20px">🤷‍♀️</span>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">@Deck!.Name</h5>
+                    @*<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>*@
+                    @if (Deck.Type != DeckType.Default)
+                    {
+                        <button class="btn" @onclick="Edit">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn" @onclick="Remove">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+
+    <div>
+        <div class="container mt-4">
+            <div class="row">
+                @foreach (var card in Cards)
+                {
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                    <!-- Card container with position-relative for absolute positioning of buttons -->
+                    <div class="card-container position-relative">
+                        <div class="card h-100 shadow-sm position-relative">
+                            <div class="card-body card-content">
+                                <h5 class="card-title text-primary">@card.Term</h5>
+                                <p class="card-text">@card.Translations.FirstOrDefault()?.Term</p>
+                            </div>
+                        </div>
+
+                        <!-- Button block that appears just below the card on hover -->
+                        <div class="card-buttons position-absolute w-100 start-0" >
+                            <button class="btn btn-outline-danger btn-sm p-1 m-1" @onclick="() => RemoveCard(card)" title="Remove" style="width: 32px; height: 32px;">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm p-1 m-1" @onclick="() => ShowDetails(card)" title="Details" style="width: 32px; height: 32px;">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+        }
+    }
+</div>
+
+
+@code
+{
+    [Parameter] public Guid? DeckId { get; set; }
+    DeckDto? Deck { get; set; }
+    bool InitialStateLoading { get; set; }
+    List<CardDto> Cards { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitialStateLoading = true;
+
+        if (DeckId == Guid.Empty || DeckId == null)
+        {
+            return;
+        }
+
+        Deck = (await ApiClient.GetDecks()).FirstOrDefault(d => d.Id == DeckId!.Value);
+
+        if (Deck != null)
+        {
+            await LoadCards();
+        }
+
+        InitialStateLoading = false;
+    }
+
+    private async Task Edit(MouseEventArgs obj)
+    {
+    }
+
+    private async Task LoadCards()
+    {
+        Cards = await ApiClient.GetCards(DeckId);
+    }
+
+    private async Task Remove()
+    {
+        await ApiClient.RemoveDeck(DeckId!.Value);
+        Navigation.NavigateTo("/decks");
+    }
+
+    private async Task RemoveCard(CardDto card)
+    {
+        
+    }
+
+    private async Task ShowDetails(CardDto card)
+    {
+    }
+}

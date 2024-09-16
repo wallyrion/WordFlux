@@ -1,0 +1,16 @@
+﻿.card-buttons {
+    display: none;
+    bottom: -10px; /* Bring the button block closer to the card */
+    z-index: 10; /* Ensure buttons are visible over other content */
+    background-color: white; /* Background for contrast */
+}
+
+/* Hover effect to show button block and move card up */
+.card-container:hover .card-buttons {
+    display: block;
+}
+
+.card-container:hover .card {
+    transform: translateY(-20px); /* Lift the card up */
+    transition: transform 0.3s ease; /* Smooth transition */
+}
