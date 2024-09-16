@@ -1,5 +1,6 @@
 ﻿@using WordFLux.ClientApp.Models
 @using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
 @inject WeatherApiClient HttpClient
 
 
@@ -30,7 +31,6 @@
 
 
 @code {
-
     [Parameter] public EventCallback<CardTranslationItem> OnAddMyTranslation { get; set; }
     [Parameter] public string? Term { get; set; }
 

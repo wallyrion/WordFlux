@@ -1,4 +1,6 @@
 
+using WordFlux.Contracts;
+
 namespace WordFlux.ApiService.Domain;
 
 public class Deck
@@ -10,10 +12,4 @@ public class Deck
     public AppUser User { get; set; }
     public string Name { get; set; } = null!;
     public DeckType Type { get; set; }
-}
-
-public enum DeckType
-{
-    Default,
-    Custom
 }

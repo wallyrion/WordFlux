@@ -1,9 +1,11 @@
 ﻿@page "/review"
 @using WordFLux.ClientApp.Extensions
-@using WordFLux.ClientApp.Models
 @using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFLux.ClientApp.Utils
+@using CardRequest = WordFLux.ClientApp.Models.CardRequest
+
+@using WordFlux.Contracts
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @attribute [Authorize]
@@ -127,7 +129,13 @@
 
 
                     </div>
-
+                    <div>
+                        <button type="button" class="btn ms-1 disabled">
+                            ✔️
+                            <span class=""> @CurrentCard.DeckName</span>
+                        </button>
+                    </div>
+                    
                     <TranslationExamples
                         Term="@CurrentCard.Term"
                         OnTermSearch="SearchForTerm"
