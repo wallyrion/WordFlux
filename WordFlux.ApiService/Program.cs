@@ -116,6 +116,7 @@ app.MapGet("/roles", (ClaimsPrincipal user) =>
 app
     .MapAudioEndpoints()
     .MapCardsEndpoints()
+    .MapDecksEndpoints()
     .MapMotivationalEndpoints()
     .MapTranslationEndpoints()
     .MapPushNotificationsEndpoints()

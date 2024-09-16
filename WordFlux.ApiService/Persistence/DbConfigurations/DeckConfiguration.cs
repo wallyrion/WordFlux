@@ -15,5 +15,8 @@ internal sealed class DeckConfiguration : IEntityTypeConfiguration<Deck>
             .WithMany()
             .HasForeignKey(x => x.UserId);
 
+        builder.HasMany(x => x.Cards)
+            .WithOne(x => x.Deck)
+            .HasForeignKey(x => x.DeckId);
     }
 }

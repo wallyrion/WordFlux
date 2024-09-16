@@ -14,4 +14,5 @@ public class Card
     public string Level { get; set; } = null!;
     
     public Deck Deck { get; set; } = null!;
+    public Guid DeckId { get; set; }
 }

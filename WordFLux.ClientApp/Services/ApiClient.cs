@@ -4,7 +4,6 @@ using WordFLux.ClientApp.Models;
 using WordFLux.ClientApp.Storage;
 using WordFlux.Contracts;
 using CardRequest = WordFLux.ClientApp.Models.CardRequest;
-using CardTranslationItem = WordFLux.ClientApp.Models.CardTranslationItem;
 using GetAudioLinkResponse = WordFLux.ClientApp.Models.GetAudioLinkResponse;
 using GetLevelResponse = WordFLux.ClientApp.Models.GetLevelResponse;
 using GetMotivationResponse = WordFLux.ClientApp.Models.GetMotivationResponse;
@@ -167,16 +166,12 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     
     public async Task SaveNewCard(CardRequest card)
     {
-        var myId = await storage.GetMyId();
-
-        await httpClient.PostAsJsonAsync($"/cards?userId={myId}", card);
+        await httpClient.PostAsJsonAsync($"/cards", card);
     }
     
     public async Task UpdateCard(CardRequest card, Guid cardId)
     {
-        var myId = await storage.GetMyId();
-        
-        await httpClient.PutAsJsonAsync($"/cards/{cardId}?userId={myId}", card);
+        await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
     }
     
     public async Task DeleteCard(Guid cardId)
@@ -184,5 +179,10 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         var myId = await storage.GetMyId();
         
         await httpClient.DeleteAsync($"/cards/{cardId}?userId={myId}");
+    }
+
+    public async Task<List<DeckDto>> GetDecks()
+    {
+        return (await httpClient.GetFromJsonAsync<List<DeckDto>>($"/decks"))!;
     }
 }

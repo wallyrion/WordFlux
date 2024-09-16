@@ -120,7 +120,7 @@
     private async Task ResetAutoComplete()
     {
         await _cancellationTokenSource.CancelAsync();
-        await Task.Delay(100);
+        await Task.Delay(200);
         AutocompleteOptions = [];
         
         /*Task.Run(async () =>

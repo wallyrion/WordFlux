@@ -44,9 +44,12 @@ public static class CardsEndpoints
             skip ??= 0;
 
             return await dbContext.Cards
+                .AsNoTracking()
                 .Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow)
                 .OrderBy(x => x.NextReviewDate)
-                .Skip(skip.Value).FirstOrDefaultAsync();
+                .Skip(skip.Value)
+                .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name))
+                .FirstOrDefaultAsync();
         }).RequireAuthorization();
 
         
@@ -143,7 +146,7 @@ public static class CardsEndpoints
                 NextReviewDate = DateTime.UtcNow,
                 ReviewInterval = TimeSpan.FromMinutes(2),
                 Level = request.Level,
-                Deck = defaultDeck
+                DeckId = request.DeckId == default ? defaultDeck.Id : request.DeckId,
             };
 
             dbContext.Cards.Add(card);

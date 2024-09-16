@@ -1,4 +1,5 @@
 ﻿using WordFLux.ClientApp.Models;
+using WordFlux.Contracts;
 
 namespace WordFLux.ClientApp.Extensions;
 
