@@ -113,8 +113,26 @@ public static class CardsEndpoints
         
         app.MapPost("/cards", async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
-            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+            var userIdStr = userManager.GetUserId(claimsPrincipal);
+            var userId = Guid.Parse(userIdStr!);
 
+            var defaultDeck = await dbContext.Decks.FirstOrDefaultAsync(f => f.Type == DeckType.Default && f.UserId == userIdStr);
+
+            if (defaultDeck == null)
+            {
+                defaultDeck = new Deck()
+                {
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = userIdStr!,
+                    Id = Guid.NewGuid(),
+                    Type = DeckType.Default,
+                    Name = "Default",
+                };
+
+                dbContext.Decks.Add(defaultDeck);
+                await dbContext.SaveChangesAsync();
+            }
+            
             var card = new Card
             {
                 CreatedAt = DateTime.UtcNow,
@@ -124,10 +142,10 @@ public static class CardsEndpoints
                 CreatedBy = userId,
                 NextReviewDate = DateTime.UtcNow,
                 ReviewInterval = TimeSpan.FromMinutes(2),
-                Level = request.Level
+                Level = request.Level,
+                Deck = defaultDeck
             };
 
-            await Task.Delay(1000);
             dbContext.Cards.Add(card);
             await dbContext.SaveChangesAsync();
             

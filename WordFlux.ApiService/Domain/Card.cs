@@ -12,4 +12,6 @@ public class Card
     public DateTime NextReviewDate { get; set; }
     public TimeSpan ReviewInterval { get; set; }
     public string Level { get; set; } = null!;
+    
+    public Deck Deck { get; set; } = null!;
 }

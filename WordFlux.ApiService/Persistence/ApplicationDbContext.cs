@@ -9,10 +9,12 @@ namespace WordFlux.ApiService.Persistence;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) :  IdentityDbContext<AppUser>(options)
 {
     public DbSet<Card> Cards { get; set; }
+    public DbSet<Deck> Decks { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new CardConfiguration());
+        modelBuilder.ApplyConfiguration(new DeckConfiguration());
     }
 }
