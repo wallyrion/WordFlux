@@ -7,17 +7,17 @@ using WebPush;
 
 namespace WordFlux.ApiService.Endpoints;
 
+record NotificationUrl(string Url);
+
 public static class NotificationsEndpoints
 {
     public static WebApplication MapPushNotificationsEndpoints(this WebApplication app)
     {
         app.MapGet("/notifications", async ([FromServices] NotificationsStore store, ILogger<Program> logger) => { return store.Notifications; });
 
-        app.MapGet("/notifications-by-url", async ([FromServices] NotificationsStore store, string encodedUrl) =>
+        app.MapPost("/notifications-by-url", async ([FromServices] NotificationsStore store, NotificationUrl request) =>
         {
-            var url = Uri.UnescapeDataString(encodedUrl);
-            
-            return store.Notifications.FirstOrDefault(x => x.Url == url);
+            return store.Notifications.FirstOrDefault(x => x.Url == request.Url);
         });
 
         
