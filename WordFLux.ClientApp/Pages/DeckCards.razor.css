@@ -17,15 +17,16 @@
     display: none; /* Hidden until hover */
 }
 
-/* Hover effect to show button block and move card up */
 .card:hover .card-buttons {
     display: block;
 }
 
-.card:hover {
+/* Hover effect to show button block and move card up */
+.card:not(.new-term):hover {
     transform: translateY(-20px); /* Lift the card up */
     transition: transform 0.3s ease; /* Smooth transition */
 }
+
 
 /* Make sure the cards' height adjusts automatically */
 .card {

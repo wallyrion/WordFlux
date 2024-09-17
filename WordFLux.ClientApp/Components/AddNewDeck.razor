@@ -4,9 +4,12 @@
 
 
 <div class="input-group" disabled="@IsLoading">
-    <input @bind="DeckName" type="text" class="form-control" placeholder="How I met your mother s1e1" aria-label="New deck name">
-    <button class="btn btn-outline-dark" @onclick="Save" type="button"><i class="bi bi-floppy"></i></button>
+    <form @onsubmit="Save" class="d-flex w-100">
+        <input @bind="DeckName" type="text" class="form-control" placeholder="How I met your mother s1e1" aria-label="New deck name">
+        <button class="btn btn-outline-dark" type="submit"><i class="bi bi-floppy"></i></button>
+    </form>
 </div>
+
 
 @code
 {

@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using WordFLux.ClientApp.Models;
+using WordFlux.Contracts;
 
 namespace WordFLux.ClientApp.Services;
 

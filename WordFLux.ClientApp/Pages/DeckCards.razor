@@ -32,6 +32,24 @@
                 <div class="container mt-4">
                     <div class="row">
                         <div class="grid-container">
+                            <div class="card shadow-sm position-relative new-term">
+                                <div class="card-body">
+                                    <form @onsubmit="SaveNewCard">
+                                        <input class="form-control mb-1" type="text" @bind="NewCardTerm" placeholder="Term" aria-label="input-term">
+                                        <input class="form-control mb-1" type="text" @bind="NewCardTranslation" placeholder="Translated term" aria-label="translated-input-term">
+
+                                        <button class="btn btn-outline-success" type="submit" aria-label="Save-new-card">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                
+
+                                <!-- Button block that appears just below the card on hover -->
+                               
+                            </div>
+                            
                             @foreach (var card in Cards)
                             {
                                 <div class="card shadow-sm position-relative">
@@ -42,10 +60,10 @@
 
                                     <!-- Button block that appears just below the card on hover -->
                                     <div class="card-buttons">
-                                        <button class="btn btn-outline-danger btn-sm p-1 m-1" @onclick="() => RemoveCard(card)" title="Remove">
+                                        <button class="btn btn-outline-danger m-1" @onclick="() => RemoveCard(card)" title="Remove">
                                             <i class="bi bi-trash"></i>
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm p-1 m-1" @onclick="() => ShowDetails(card)" title="Details">
+                                        <button class="btn btn-outline-secondary m-1" @onclick="() => ShowDetails(card)" title="Details">
                                             <i class="bi bi-info-circle"></i>
                                         </button>
                                     </div>
@@ -66,6 +84,9 @@
     DeckDto? Deck { get; set; }
     bool InitialStateLoading { get; set; }
     List<CardDto> Cards { get; set; } = [];
+    string? NewCardTerm { get; set; }
+    string? NewCardTranslation { get; set; }
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,5 +128,20 @@
 
     private async Task ShowDetails(CardDto card)
     {
+    }
+
+    private async Task SaveNewCard()
+    {
+        if (string.IsNullOrWhiteSpace(NewCardTerm) || string.IsNullOrWhiteSpace(NewCardTranslation))
+        {
+            return;
+        }
+
+        var cardRequest = new CardRequest(NewCardTerm, "", [new CardTranslationItem(NewCardTranslation, null!, null!, 0, null!)], Deck!.Id);
+
+        await ApiClient.SaveNewCard(cardRequest);
+        await LoadCards();
+        NewCardTerm = null;
+        NewCardTranslation = null;
     }
 }
