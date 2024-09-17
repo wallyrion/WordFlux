@@ -13,10 +13,11 @@ self.addEventListener('fetch', () => { });
 
 
 self.addEventListener('push', event => {
-    //const payload = event.data.json();
+    const payload = event.data.json();
+    console.log("payload", payload);
     event.waitUntil(
         self.registration.showNotification('Exam time', {
-            body: "New card appeared!",
+            body: payload.message,
             icon: 'icon-512.png',
             vibrate: [100, 50, 100],
             data: { url: "https://google.com"}
