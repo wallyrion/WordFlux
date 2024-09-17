@@ -204,22 +204,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationStateProvider.AuthenticationStateChanged += async task =>
-        {
-            var result = await task;
-
-            if (result.User.Identity != null)
-            {
-                await RefreshDecks();
-            }
-        };
-        
         ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
 
         if (!string.IsNullOrWhiteSpace(Term))
         {
             await TryItOut();
         }
+        
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            await RefreshDecks();
+        }
+
     }
 
     async Task RefreshDecks()
