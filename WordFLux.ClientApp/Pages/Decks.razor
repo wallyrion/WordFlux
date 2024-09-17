@@ -8,52 +8,20 @@
 
 
 <div class="container">
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Cards</th>
-            <th scope="col">Created</th>
-            <th scope="col">Actions</th>
-        </tr>
-        </thead>
-        <tbody>
+    <div class="row mb-3">
         @foreach (var deck in DeckCollection)
         {
-            <DeckTableItem OnStateChanged="RefreshDecks" Deck="deck"/>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <DeckTableItem Deck="deck"/>
+            </div>
         }
-        </tbody>
-    </table>
-
-    <div>
-        <AddNewDeck OnStateChanged="RefreshDecks"/>
     </div>
-    
-    @*<ul class="list-group">
-        @foreach (var deck in DeckCollection)
-        {
-            <li class="list-group-item">
-                <div>
-                    <div>
-                        @deck.Name
-                    </div>
-                    <div>
-                        <span>
-                            <button class="btn">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                        </span>
-                        <span>
-                            <button class="btn">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </span>
-                    </div>
-                </div>
-            </li>
-        }
 
-    </ul>*@
+    <div class="row">
+        <div class="col-12">
+            <AddNewDeck />
+        </div>
+    </div>
 </div>
 
 @code
