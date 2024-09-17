@@ -10,6 +10,7 @@
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @inject ConnectionHealthService ConnectionHealthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @implements IDisposable
 
 <PageTitle>Home</PageTitle>
@@ -203,7 +204,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Decks = (await WeatherApi.GetDecks()).Where(d => d.Type == DeckType.Custom).ToList();
+        AuthenticationStateProvider.AuthenticationStateChanged += async task =>
+        {
+            var result = await task;
+
+            if (result.User.Identity != null)
+            {
+                await RefreshDecks();
+            }
+        };
         
         ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
 
@@ -213,6 +222,11 @@
         }
     }
 
+    async Task RefreshDecks()
+    {
+        Decks = (await WeatherApi.GetDecks()).Where(d => d.Type == DeckType.Custom).ToList();
+    }
+    
     async Task SearchForTerm(string term)
     {
         Term = term;
