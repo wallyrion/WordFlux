@@ -28,7 +28,7 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
 
 builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
 {
-    options.BearerTokenExpiration = TimeSpan.FromDays(7);
+    options.BearerTokenExpiration = TimeSpan.FromMinutes(5);
 });
 
 // Add service defaults & Aspire components.

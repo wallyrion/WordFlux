@@ -26,7 +26,7 @@ namespace WordFLux.ClientApp.Identity
         /// <summary>
         /// Special auth client.
         /// </summary>
-        private readonly HttpClient _httpClient;
+        private readonly IdentityHttpClient _httpClient;
 
         /// <summary>
         /// Authentication state.
@@ -39,16 +39,9 @@ namespace WordFLux.ClientApp.Identity
         private readonly ClaimsPrincipal Unauthenticated =
             new(new ClaimsIdentity());
 
-        private readonly TokenProvider _tokenProvider;
-
-        /// <summary>
-        /// Create a new instance of the auth provider.
-        /// </summary>
-        /// <param name="httpClientFactory">Factory to retrieve auth client.</param>
-        public TokenAuthenticationStateProvider(IHttpClientFactory httpClientFactory, TokenProvider tokenProvider)
+        public TokenAuthenticationStateProvider(IdentityHttpClient identityHttpClient)
         {
-            _tokenProvider = tokenProvider;
-            _httpClient = httpClientFactory.CreateClient("Auth");
+            _httpClient = identityHttpClient;
         }
 
         /// <summary>
@@ -60,62 +53,7 @@ namespace WordFLux.ClientApp.Identity
         /// </returns>
         public async Task<FormResult> RegisterAsync(string email, string password)
         {
-            string[] defaultDetail = ["An unknown error prevented registration from succeeding."];
-
-            string userName = "Oleksii Korniienko";
-            try
-            {
-                // make the request
-                var result = await _httpClient.PostAsJsonAsync(
-                    "register", new
-                    {
-                        
-                        email,
-                        password
-                    });
-
-                // successful?
-                if (result.IsSuccessStatusCode)
-                {
-                    return new FormResult { Succeeded = true };
-                }
-
-                // body should contain details about why it failed
-                var details = await result.Content.ReadAsStringAsync();
-                var problemDetails = JsonDocument.Parse(details);
-                var errors = new List<string>();
-                var errorList = problemDetails.RootElement.GetProperty("errors");
-
-                foreach (var errorEntry in errorList.EnumerateObject())
-                {
-                    if (errorEntry.Value.ValueKind == JsonValueKind.String)
-                    {
-                        errors.Add(errorEntry.Value.GetString()!);
-                    }
-                    else if (errorEntry.Value.ValueKind == JsonValueKind.Array)
-                    {
-                        errors.AddRange(
-                            errorEntry.Value.EnumerateArray().Select(
-                                e => e.GetString() ?? string.Empty)
-                            .Where(e => !string.IsNullOrEmpty(e)));
-                    }
-                }
-
-                // return the error list
-                return new FormResult
-                {
-                    Succeeded = false,
-                    ErrorList = problemDetails == null ? defaultDetail : [.. errors]
-                };
-            }
-            catch { }
-
-            // unknown error
-            return new FormResult
-            {
-                Succeeded = false,
-                ErrorList = defaultDetail
-            };
+            return await _httpClient.RegisterAsync(email, password);
         }
 
         /// <summary>
@@ -126,37 +64,14 @@ namespace WordFLux.ClientApp.Identity
         /// <returns>The result of the login request serialized to a <see cref="FormResult"/>.</returns>
         public async Task<FormResult> LoginAsync(string email, string password)
         {
-            try
+            var response = await _httpClient.LoginAsync(email, password);
+            
+            if (response.Succeeded)
             {
-                // login with cookies
-                var result = await _httpClient.PostAsJsonAsync(
-                    "login", new
-                    {
-                        email,
-                        password
-                    });
-
-                // success?
-                if (result.IsSuccessStatusCode)
-                {
-                    var authResponse = await result.Content.ReadFromJsonAsync<AuthResponse>();
-                    await _tokenProvider.SetAuthTokensAsync(authResponse!);
-                    
-                    // need to refresh auth state
-                    NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-
-                    // success!
-                    return new FormResult { Succeeded = true };
-                }
+                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
             }
-            catch { }
 
-            // unknown error
-            return new FormResult
-            {
-                Succeeded = false,
-                ErrorList = ["Invalid email and/or password."]
-            };
+            return response;
         }
 
         /// <summary>
@@ -176,18 +91,8 @@ namespace WordFLux.ClientApp.Identity
 
             try
             {
-                
-                
                 // the user info endpoint is secured, so if the user isn't logged in this will fail
-                var userResponse = await _httpClient.GetAsync("manage/info");
-
-                // throw if user info wasn't retrieved
-                userResponse.EnsureSuccessStatusCode();
-
-                // user is authenticated,so let's build their authenticated identity
-                var userJson = await userResponse.Content.ReadAsStringAsync();
-                var userInfo = JsonSerializer.Deserialize<UserInfo>(userJson, jsonSerializerOptions);
-
+                var userInfo = await _httpClient.GetUserInfoAsync();
                 if (userInfo != null)
                 {
                     // in our system name and email are the same
@@ -203,19 +108,10 @@ namespace WordFLux.ClientApp.Identity
                             .Select(c => new Claim(c.Key, c.Value)));
 
                     // tap the roles endpoint for the user's roles
-                    var rolesResponse = await _httpClient.GetAsync("roles");
-
-                    // throw if request fails
-                    rolesResponse.EnsureSuccessStatusCode();
-
-                    // read the response into a string
-                    var rolesJson = await rolesResponse.Content.ReadAsStringAsync();
-
-                    // deserialize the roles string into an array
-                    var roles = JsonSerializer.Deserialize<RoleClaim[]>(rolesJson, jsonSerializerOptions);
+                    var roles = await _httpClient.GetRolesAsync();
 
                     // if there are roles, add them to the claims collection
-                    if (roles?.Length > 0)
+                    if (roles.Length > 0)
                     {
                         foreach (var role in roles)
                         {
@@ -240,10 +136,7 @@ namespace WordFLux.ClientApp.Identity
 
         public async Task LogoutAsync()
         {
-            await _tokenProvider.ClearTokensAsync();
-            const string Empty = "{}";
-            var emptyContent = new StringContent(Empty, Encoding.UTF8, "application/json");
-            await _httpClient.PostAsync("logout", emptyContent);
+            await _httpClient.LogoutAsync();
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
@@ -252,18 +145,7 @@ namespace WordFLux.ClientApp.Identity
             await GetAuthenticationStateAsync();
             return _authenticated;
         }
-
-        public class RoleClaim
-        {
-            public string? Issuer { get; set; }
-            public string? OriginalIssuer { get; set; }
-            public string? Type { get; set; }
-            public string? Value { get; set; }
-            public string? ValueType { get; set; }
-        }
-
     }
 }
 
 
-public record AuthResponse(string AccessToken, string RefreshToken);
