@@ -1,5 +1,6 @@
 ﻿@page "/decks"
 @attribute [Authorize]
+@using Microsoft.VisualBasic
 @using WordFLux.ClientApp.Components
 @using WordFLux.ClientApp.Services
 @using WordFlux.Contracts
@@ -8,24 +9,34 @@
 
 
 <div class="container">
-    <div class="row mb-3">
-        @foreach (var deck in DeckCollection)
-        {
-            <div class="col-md-6 col-lg-4 mb-4">
-                <DeckTableItem Deck="deck"/>
-            </div>
-        }
-    </div>
-
-    <div class="row">
-        <div class="col-12">
-            <AddNewDeck />
+    @if (IsLoading)
+    {
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="row mb-3">
+            @foreach (var deck in DeckCollection)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <DeckTableItem Deck="deck"/>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <AddNewDeck OnStateChanged="RefreshDecks"/>
+            </div>
+        </div>
+    }
 </div>
 
 @code
 {
+    bool IsLoading { get; set; }
     List<DeckDto> DeckCollection { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
@@ -35,6 +46,15 @@
 
     private async Task RefreshDecks()
     {
-        DeckCollection = await ApiClient.GetDecks();
+        try
+        {
+            IsLoading = true;
+            StateHasChanged();
+            DeckCollection = await ApiClient.GetDecks();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 }
