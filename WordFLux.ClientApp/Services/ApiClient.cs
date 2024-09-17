@@ -30,8 +30,7 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
 
     public async Task<NotificationSubscription?> GetNotificationSubscriptionByUrl(string url)
     {
-        var encodedUrl = Uri.EscapeDataString(url);
-        var response = await httpClient.GetAsync($"/notifications-by-url?encodedUrl={encodedUrl}");
+        var response = await httpClient.PostAsJsonAsync($"/notifications-by-url", new { Url = url });
         
         var notificationSubscription = await response.Content.ReadFromJsonAsync<NotificationSubscription>();
         
