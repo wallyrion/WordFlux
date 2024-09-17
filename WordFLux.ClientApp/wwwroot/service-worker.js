@@ -24,7 +24,7 @@ self.addEventListener('push', event => {
     );
 });
 
-console.log("adding push listener")
+/*console.log("adding push listener")*/
 
 
 
