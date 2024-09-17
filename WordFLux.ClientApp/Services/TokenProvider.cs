@@ -13,6 +13,7 @@ public class TokenProvider(ILocalStorageService localStorage)
     public async Task SetAuthTokensAsync(AuthResponse auth)
     {
         await localStorage.SetItemAsStringAsync(AccessTokenKey, auth.AccessToken);
+        await localStorage.SetItemAsStringAsync(RefreshTokenKey, auth.RefreshToken);
     }
     
     public async Task ClearTokensAsync()
@@ -23,5 +24,9 @@ public class TokenProvider(ILocalStorageService localStorage)
     public async Task<string?> GetAccessTokenAsync()
     {
         return await localStorage.GetItemAsStringAsync(AccessTokenKey);
+    }
+    public async Task<string?> GetRefreshTokenAsync()
+    {
+        return await localStorage.GetItemAsStringAsync(RefreshTokenKey);
     }
 }

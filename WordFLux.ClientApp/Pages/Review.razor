@@ -15,7 +15,6 @@
     @if (IsLoading)
     {
         <p>
-            <em>Loading...</em>
             <div class="spinner-border text-primary" role="status">
                 <span class="sr-only"></span>
             </div>
@@ -170,7 +169,7 @@
     bool IsShowTranslation { get; set; }
     bool IsShowTranslationAsBaseTerm { get; set; }
 
-    bool IsRequestInProgress { get; set; }
+    bool IsRequestInProgress { get; set; } = true;
     TimeSpan? TimeToNextReview { get; set; }
     string Motivation { get; set; } = "There is no better time to learn than now";
     string? TermLearning => IsShowTranslationAsBaseTerm ? CurrentCard?.Translations.First().Term : CurrentCard?.Term;
@@ -251,13 +250,18 @@
         IsLoading = true;
         StateHasChanged();
 
-        CurrentCard = await WeatherApi.GetNextCard();
+        var currentCardTask = Task.Run(() => WeatherApi.GetNextCard());
+        var nextCardTask = Task.Run(() => WeatherApi.GetNextCard(1));
+        
+        CurrentCard = await currentCardTask;
+        IsLoading = false;
         UpdateLearningStrategy();
+        StateHasChanged();
 
-        NextCard = await WeatherApi.GetNextCard(1);
+        NextCard = await nextCardTask;
         await UpdateTimeToNextReview();
 
-        IsLoading = false;
+        IsRequestInProgress = false;
     }
 
     private string GetNextReviewTime()

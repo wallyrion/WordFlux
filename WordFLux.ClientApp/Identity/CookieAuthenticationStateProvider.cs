@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using BlazorWasmAuth.Identity.Models;
 using System.Text;
+using WordFLux.ClientApp.Identity;
 
 namespace BlazorWasmAuth.Identity
 {
