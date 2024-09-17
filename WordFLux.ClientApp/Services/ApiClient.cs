@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using WordFLux.ClientApp.Models;
 using WordFLux.ClientApp.Storage;
 using WordFlux.Contracts;
-using CardRequest = WordFLux.ClientApp.Models.CardRequest;
 using GetAudioLinkResponse = WordFLux.ClientApp.Models.GetAudioLinkResponse;
 using GetLevelResponse = WordFLux.ClientApp.Models.GetLevelResponse;
 using GetMotivationResponse = WordFLux.ClientApp.Models.GetMotivationResponse;
