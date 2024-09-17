@@ -10,11 +10,10 @@
 .card-buttons {
     position: absolute;
     width: 100%;
-    start: 0;
     padding: 8px;
     z-index: 10; /* Ensure buttons are visible over other content */
     background-color: white; /* Background for contrast */
-    bottom: -10px; /* Position the button block just below the card */
+    bottom: -40px; /* Position the button block just below the card */
     display: none; /* Hidden until hover */
 }
 

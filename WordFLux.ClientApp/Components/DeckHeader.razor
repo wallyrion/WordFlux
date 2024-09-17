@@ -1,0 +1,102 @@
+﻿@attribute [Authorize]
+@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+@inject WeatherApiClient ApiClient
+@inject NavigationManager Navigation
+
+
+<div class="card deck-header">
+    <div class="card-body d-flex flex-column flex-md-row align-items-center">
+        <div class="w-100">
+            @if (IsEditMode)
+            {
+                <!-- Input group with Save and Cancel icon buttons -->
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" @bind="DeckName" placeholder="Enter new deck name" aria-label="Deck name input with two button addons">
+
+                    <!-- Save button (check icon) -->
+                    <button class="btn btn-outline-success" type="button" @onclick="SaveEdit">
+                        <i class="bi bi-check"></i>
+                    </button>
+
+                    <!-- Cancel button (x icon) -->
+                    <button class="btn btn-outline-secondary" type="button" @onclick="CancelEdit">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <!-- Display deck name and date when not in edit mode -->
+                <h5 class="card-title mb-0">@Deck.Name</h5>
+                <small class="text-muted">Created on @Deck.CreatedAt.ToString("f")</small>
+            }
+        </div>
+
+        @if (!IsEditMode && Deck.Type != DeckType.Default)
+        {
+            <!-- Push the buttons to the right and ensure they are inline using d-flex -->
+            <div class="ms-auto mt-2 mt-md-0 d-flex">
+                <!-- Edit button (pencil icon) -->
+                <button class="btn btn-outline-primary btn-sm me-1" @onclick="ToggleEditMode">
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+                <!-- Delete button (trash icon) -->
+                <button class="btn btn-outline-danger btn-sm" @onclick="Remove">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public DeckDto Deck { get; set; }
+    [Parameter] public EventCallback<DeckDto> OnDeckChanged { get; set; }
+    bool IsEditMode { get; set; }
+    string? DeckName { get; set; }
+    bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    private async Task Remove()
+    {
+        await ApiClient.RemoveDeck(Deck.Id);
+        Navigation.NavigateTo("/decks");
+    }
+
+    private void ToggleEditMode()
+    {
+        DeckName = Deck.Name;
+        IsEditMode = true;
+    }
+
+    private async Task SaveEdit()
+    {
+        if (string.IsNullOrWhiteSpace(DeckName))
+        {
+            //Error = "Field can't be empty";
+
+            return;
+        }
+
+        IsLoading = true;
+        StateHasChanged();
+
+        await ApiClient.EditDeck(DeckName, Deck.Id);
+        var changedDeck = Deck with { Name = DeckName };
+        IsEditMode = false;
+        DeckName = null;
+
+        await OnDeckChanged.InvokeAsync(changedDeck);
+    }
+
+    private void CancelEdit()
+    {
+        IsEditMode = false;
+        DeckName = null;
+    }
+}
