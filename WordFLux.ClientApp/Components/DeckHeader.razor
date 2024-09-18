@@ -4,11 +4,12 @@
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationState
+@inject IJSRuntime JS
+
 <!-- Button trigger modal -->
 
 
 <!-- Modal -->
-
 
 
 <div class="card deck-header">
@@ -39,16 +40,23 @@
             }
         </div>
 
-        @if (!IsEditMode && Deck.Type != DeckType.Default)
+        @if (!IsEditMode)
         {
             <!-- Responsive layout for buttons -->
             <div class="ms-auto mt-2 mt-md-0 d-flex flex-column align-items-start align-items-md-end w-100 w-md-auto">
                 <!-- First row: toggle switch -->
                 <div class="d-flex align-items-center">
+                    @if (Deck.IsPublic)
+                    {
+                        <a role="button" @onclick="CopyLinkToDeck" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover fs-6 me-2">copy link</a>
+                    }
+
                     <div class="form-check form-switch">
-                        <input class="form-check-input" disabled="@(!Deck.IsEditable)" checked="@Deck.IsPublic" @onchange="TogglePublic" type="checkbox" role="switch" id="flexSwitchCheckDefault">
                         <label class="form-check-label" for="flexSwitchCheckDefault">Public access</label>
+                        <input class="form-check-input" disabled="@(!Deck.IsEditable)" checked="@Deck.IsPublic" @onchange="TogglePublic" type="checkbox" role="switch" id="flexSwitchCheckDefault">
                     </div>
+
+
                 </div>
 
                 <!-- Second row: edit and delete buttons (only visible on larger screens) -->
@@ -63,11 +71,11 @@
                         <i class="bi bi-pencil-square"></i>
                     </button>*@
 
-                    <button class="btn btn-outline-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
+                    <button class="btn btn-outline-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                         <i class="bi bi-copy"></i>
                     </button>
 
-                    @if (Deck.IsEditable)
+                    @if (Deck.IsEditable && Deck.Type != DeckType.Default)
                     {
                         <button class="btn btn-outline-primary btn-sm me-1" @onclick="ToggleEditMode">
                             <i class="bi bi-pencil-square"></i>
@@ -77,8 +85,8 @@
                             <i class="bi bi-trash"></i>
                         </button>
                     }
-                    
-                   
+
+
                 </div>
             </div>
         }
@@ -86,9 +94,8 @@
 </div>
 
 
-
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog @(IsDuplicateInProgress?"disabled":"")">
+    <div class="modal-dialog @(IsDuplicateInProgress ? "disabled" : "")">
         <div class="modal-content">
             <div class="modal-body">
                 <input type="text" class="form-control" disabled="@IsDuplicateInProgress" @bind="DuplicateDeckName" placeholder="Enter new deck name" aria-label="Enter duplicate deck name">
@@ -103,8 +110,6 @@
 </div>
 
 
-
-
 @code
 {
     [Parameter] public DeckDto Deck { get; set; }
@@ -112,14 +117,13 @@
     bool IsEditMode { get; set; }
     string? DeckName { get; set; }
     bool IsLoading { get; set; }
-    
+    ElementReference _copyElement;
     string? DuplicateDeckName { get; set; }
     public bool IsDuplicateInProgress { get; set; }
     public ElementReference CloseButton { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        
     }
 
     private async Task Remove()
@@ -166,13 +170,12 @@
 
         await ApiClient.PatchDeck(Deck.Id, isPublic: isPublic);
         var newDeck = Deck with { IsPublic = isPublic };
-        
+
         await OnDeckChanged.InvokeAsync(newDeck);
     }
 
     private async Task DuplicateDeck(MouseEventArgs arg)
     {
-        
     }
 
     private async Task SaveDuplicate()
@@ -184,10 +187,16 @@
 
         IsDuplicateInProgress = true;
         StateHasChanged();
-        
+
         var newDeck = await ApiClient.DuplicateDeck(Deck.Id, DuplicateDeckName);
 
         IsDuplicateInProgress = false;
         Navigation.NavigateTo($"/decks/{newDeck.Id}/cards", true);
+    }
+
+    private async Task CopyLinkToDeck()
+    {
+        var uri = Navigation.Uri;
+        await JS.InvokeVoidAsync("clipboardCopy.copyText", uri);
     }
 }
