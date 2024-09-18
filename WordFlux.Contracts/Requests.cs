@@ -11,3 +11,5 @@ public record GetAutocompleteResponse(string DetectedLanguage, List<string> Comp
 
 public record CreateDeckRequest(string Name);
 public record PatchDeckRequest(string? Name, bool? IsPublic);
+
+public record ImportDeckRequest(string? Name, string Cards);
