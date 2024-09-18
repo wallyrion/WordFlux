@@ -126,6 +126,9 @@
 
     private async Task RemoveCard(CardDto card)
     {
+        await ApiClient.RemoveCard(card.Id);
+        
+        await LoadCards();
     }
 
     private async Task ShowDetails(CardDto card)
