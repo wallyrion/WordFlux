@@ -21,11 +21,17 @@ public static class CardsEndpoints
             {
                 var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
-                var query = dbContext.Cards.Where(c => c.CreatedBy == userId);
+                var query = dbContext.Cards.AsQueryable();
 
                 if (deckId != null)
                 {
                     query = query.Where(c => c.DeckId == deckId);
+
+                    query = query.Where(c => c.CreatedBy == userId || c.Deck.IsPublic);
+                }
+                else
+                {
+                    query = query.Where(c => c.CreatedBy == userId);
                 }
 
                 var result = await query
@@ -141,7 +147,7 @@ public static class CardsEndpoints
 
                 if (defaultDeck == null)
                 {
-                    defaultDeck = new Deck()
+                    defaultDeck = new Deck
                     {
                         CreatedAt = DateTime.UtcNow,
                         UserId = userIdStr!,
