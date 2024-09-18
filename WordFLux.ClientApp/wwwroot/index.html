@@ -39,6 +39,23 @@
 
 
     <script>
+        window.clipboardCopy = {
+            copyText: function(text, isRetry = false) {
+                navigator.clipboard.writeText(text).then(function () {
+                    alert(`Copied \"${text}\" to clipboard!`);
+                })
+                    .catch(function (error) {
+                        if (error.name === 'NotAllowedError' && error.message === "Failed to execute 'writeText' on 'Clipboard': Document is not focused." && !isRetry){
+
+                            setTimeout(() => {
+                                window.clipboardCopy.copyText(text, true)
+                            }, 200)
+                        }
+                    });
+            }
+        };
+        
+        
         let handler;
         
         window.Connection = {
