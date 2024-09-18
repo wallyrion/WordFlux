@@ -73,7 +73,7 @@ public static class AiSystemMessages
 
     public const string GiveTranslations = """
                                               You must translate this input: {{$term}} that in {{$inputLang}} language into {{$translationsLang}} language. Follow my instructions:
-                                              1. You can provide up to {{$translationsCount}} translations (in {{$translationsLang}}), but most proper translations must be first.
+                                              1. You can provide more than 1 translation, and up to {{$translationsCount}} (in {{$translationsLang}}). Most obvious translations must be on the top.
                                               2. input may contain a note (clarification) that should be considered as a clue for the context. (e.g. example_output1)
                                               3. Response must be in JSON. Consider the following examples. Examples are in en-ru but you must provide translations in {{$translationsLang}}
                                               example_output1: {"translations":["bow"]} for input = 'лук (для стрельбы)'

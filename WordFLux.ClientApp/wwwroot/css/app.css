@@ -101,3 +101,8 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+
+.pre-wrap {
+    white-space: pre-wrap;   
+}

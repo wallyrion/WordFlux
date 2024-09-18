@@ -8,7 +8,6 @@ using GetLevelResponse = WordFLux.ClientApp.Models.GetLevelResponse;
 using GetMotivationResponse = WordFLux.ClientApp.Models.GetMotivationResponse;
 using GetTranslationExamplesRequest = WordFLux.ClientApp.Models.GetTranslationExamplesRequest;
 using NextReviewCardTimeResponse = WordFLux.ClientApp.Models.NextReviewCardTimeResponse;
-using SimpleTranslationResponse = WordFLux.ClientApp.Models.SimpleTranslationResponse;
 
 namespace WordFLux.ClientApp.Services;
 
@@ -212,5 +211,17 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     {
         var response = await httpClient.DeleteAsync($"/decks/{id}");
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<ImportedDeckResponse?> ImportDeck(string? importText)
+    {
+        var escapedStr = Uri.EscapeDataString(importText);
+        
+        var response = await httpClient.PostAsJsonAsync($"/decks/import", new { Cards = escapedStr });
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<ImportedDeckResponse>();
+
+        return result;
     }
 }
