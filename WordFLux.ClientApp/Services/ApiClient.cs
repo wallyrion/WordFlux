@@ -168,7 +168,7 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
     }
     
-    public async Task DeleteCard(Guid cardId)
+    public async Task RemoveCard(Guid cardId)
     {
         var myId = await storage.GetMyId();
         

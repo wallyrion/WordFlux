@@ -322,7 +322,7 @@
 
     private async Task DeleteCard()
     {
-        await WeatherApi.DeleteCard(CurrentCard!.Id);
+        await WeatherApi.RemoveCard(CurrentCard!.Id);
 
         await LoadNext();
 
