@@ -14,7 +14,6 @@ namespace WordFLux.ClientApp.Services;
 
 public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
 {
-
     public async Task<NotificationSubscription> SubscribeToNotification(NotificationSubscription subscription)
     {
         var response = await httpClient.PostAsJsonAsync("/notifications", subscription);
@@ -181,14 +180,27 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     {
         return (await httpClient.GetFromJsonAsync<List<DeckDto>>($"/decks"))!;
     }
-    public async Task EditDeck(string newName, Guid deckId)
+    public async Task<DeckDto> GetDeck(Guid deckId)
     {
-        await httpClient.PutAsJsonAsync($"/decks/{deckId}", new { Name = newName });
+        return (await httpClient.GetFromJsonAsync<DeckDto>($"/decks/{deckId}"))!;
+    }
+    public async Task PatchDeck(Guid deckId, string? name = null, bool? isPublic = null)
+    {
+        await httpClient.PatchAsJsonAsync($"/decks/{deckId}", new { name, isPublic  });
     }
     
     public async Task<CreateDeckResponse> CreateDeck(string newName)
     {
         var response = await httpClient.PostAsJsonAsync($"/decks", new { Name = newName });
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<CreateDeckResponse>();
+
+        return result!;
+    }
+    public async Task<CreateDeckResponse> DuplicateDeck(Guid deckId, string newName)
+    {
+        var response = await httpClient.PostAsJsonAsync($"/decks/{deckId}/duplicate?duplicateName={newName}", new {});
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<CreateDeckResponse>();

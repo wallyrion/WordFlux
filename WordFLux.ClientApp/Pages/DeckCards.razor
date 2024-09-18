@@ -32,24 +32,22 @@
                 <div class="container mt-4">
                     <div class="row">
                         <div class="grid-container">
-                            <div class="card shadow-sm position-relative new-term">
-                                <div class="card-body">
-                                    <form @onsubmit="SaveNewCard">
-                                        <input class="form-control mb-1" type="text" @bind="NewCardTerm" placeholder="Term" aria-label="input-term">
-                                        <input class="form-control mb-1" type="text" @bind="NewCardTranslation" placeholder="Translated term" aria-label="translated-input-term">
+                            @if (Deck.IsEditable)
+                            {
+                                <div class="card shadow-sm position-relative new-term">
+                                    <div class="card-body">
+                                        <form @onsubmit="SaveNewCard">
+                                            <input class="form-control mb-1" type="text" @bind="NewCardTerm" placeholder="Term" aria-label="input-term">
+                                            <input class="form-control mb-1" type="text" @bind="NewCardTranslation" placeholder="Translated term" aria-label="translated-input-term">
 
-                                        <button class="btn btn-outline-success" type="submit" aria-label="Save-new-card">
-                                            <i class="bi bi-check"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                                
-                                
-
-                                <!-- Button block that appears just below the card on hover -->
-                               
-                            </div>
-                            
+                                            <button class="btn btn-outline-success" type="submit" aria-label="Save-new-card">
+                                                <i class="bi bi-check"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div> 
+                            }
+                           
                             @foreach (var card in Cards)
                             {
                                 <div class="card shadow-sm position-relative">
@@ -60,9 +58,13 @@
 
                                     <!-- Button block that appears just below the card on hover -->
                                     <div class="card-buttons">
-                                        <button class="btn btn-outline-danger m-1" @onclick="() => RemoveCard(card)" title="Remove">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                        @if (Deck.IsEditable)
+                                        {
+                                            <button class="btn btn-outline-danger m-1" @onclick="() => RemoveCard(card)" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                           
                                         <button class="btn btn-outline-secondary m-1" @onclick="() => ShowDetails(card)" title="Details">
                                             <i class="bi bi-info-circle"></i>
                                         </button>
@@ -97,7 +99,7 @@
             return;
         }
 
-        Deck = (await ApiClient.GetDecks()).FirstOrDefault(d => d.Id == DeckId!.Value);
+        Deck = await ApiClient.GetDeck(DeckId.Value);
 
         if (Deck != null)
         {

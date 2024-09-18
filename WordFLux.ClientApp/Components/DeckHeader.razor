@@ -3,10 +3,16 @@
 @using WordFlux.Contracts
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationState
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+
 
 
 <div class="card deck-header">
-    <div class="card-body d-flex flex-column flex-md-row align-items-center">
+    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start">
         <div class="w-100">
             @if (IsEditMode)
             {
@@ -35,20 +41,69 @@
 
         @if (!IsEditMode && Deck.Type != DeckType.Default)
         {
-            <!-- Push the buttons to the right and ensure they are inline using d-flex -->
-            <div class="ms-auto mt-2 mt-md-0 d-flex">
-                <!-- Edit button (pencil icon) -->
-                <button class="btn btn-outline-primary btn-sm me-1" @onclick="ToggleEditMode">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
-                <!-- Delete button (trash icon) -->
-                <button class="btn btn-outline-danger btn-sm" @onclick="Remove">
-                    <i class="bi bi-trash"></i>
-                </button>
+            <!-- Responsive layout for buttons -->
+            <div class="ms-auto mt-2 mt-md-0 d-flex flex-column align-items-start align-items-md-end w-100 w-md-auto">
+                <!-- First row: toggle switch -->
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" disabled="@(!Deck.IsEditable)" checked="@Deck.IsPublic" @onchange="TogglePublic" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Public access</label>
+                    </div>
+                </div>
+
+                <!-- Second row: edit and delete buttons (only visible on larger screens) -->
+                <div class="d-flex align-items-center mt-2">
+
+                    @*<button type="button" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>*@
+
+                    <!-- Edit button (pencil icon) -->
+                    @*<button class="btn btn-outline-primary btn-sm me-2" @onclick="ToggleEditMode">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>*@
+
+                    <button class="btn btn-outline-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
+                        <i class="bi bi-copy"></i>
+                    </button>
+
+                    @if (Deck.IsEditable)
+                    {
+                        <button class="btn btn-outline-primary btn-sm me-1" @onclick="ToggleEditMode">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <!-- Delete button (trash icon) -->
+                        <button class="btn btn-outline-danger btn-sm" @onclick="Remove">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    }
+                    
+                   
+                </div>
             </div>
         }
     </div>
 </div>
+
+
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog @(IsDuplicateInProgress?"disabled":"")">
+        <div class="modal-content">
+            <div class="modal-body">
+                <input type="text" class="form-control" disabled="@IsDuplicateInProgress" @bind="DuplicateDeckName" placeholder="Enter new deck name" aria-label="Enter duplicate deck name">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @ref="CloseButton" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" disabled="@IsDuplicateInProgress" @onclick="SaveDuplicate">Make duplicate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 @code
 {
@@ -57,9 +112,14 @@
     bool IsEditMode { get; set; }
     string? DeckName { get; set; }
     bool IsLoading { get; set; }
+    
+    string? DuplicateDeckName { get; set; }
+    public bool IsDuplicateInProgress { get; set; }
+    public ElementReference CloseButton { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        
     }
 
     private async Task Remove()
@@ -86,7 +146,7 @@
         IsLoading = true;
         StateHasChanged();
 
-        await ApiClient.EditDeck(DeckName, Deck.Id);
+        await ApiClient.PatchDeck(Deck.Id, DeckName);
         var changedDeck = Deck with { Name = DeckName };
         IsEditMode = false;
         DeckName = null;
@@ -98,5 +158,36 @@
     {
         IsEditMode = false;
         DeckName = null;
+    }
+
+    private async Task TogglePublic(ChangeEventArgs arg)
+    {
+        var isPublic = (bool)arg.Value!;
+
+        await ApiClient.PatchDeck(Deck.Id, isPublic: isPublic);
+        var newDeck = Deck with { IsPublic = isPublic };
+        
+        await OnDeckChanged.InvokeAsync(newDeck);
+    }
+
+    private async Task DuplicateDeck(MouseEventArgs arg)
+    {
+        
+    }
+
+    private async Task SaveDuplicate()
+    {
+        if (string.IsNullOrWhiteSpace(DuplicateDeckName))
+        {
+            return;
+        }
+
+        IsDuplicateInProgress = true;
+        StateHasChanged();
+        
+        var newDeck = await ApiClient.DuplicateDeck(Deck.Id, DuplicateDeckName);
+
+        IsDuplicateInProgress = false;
+        Navigation.NavigateTo($"/decks/{newDeck.Id}/cards", true);
     }
 }

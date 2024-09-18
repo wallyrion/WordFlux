@@ -10,3 +10,4 @@ public record GetAutocompleteRequest(string Term, string SourceLanguage, string 
 public record GetAutocompleteResponse(string DetectedLanguage, List<string> Completions);
 
 public record CreateDeckRequest(string Name);
+public record PatchDeckRequest(string? Name, bool? IsPublic);
