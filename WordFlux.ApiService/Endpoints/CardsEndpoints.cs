@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech.Transcription;
@@ -60,27 +61,41 @@ public static class CardsEndpoints
                 return Results.Ok();
             }).RequireAuthorization();
 
-        app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, int? skip = 0) =>
+        app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, ParsableQueryList? deckIds = null, int? skip = 0) =>
         {
             var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
             skip ??= 0;
 
-            return await dbContext.Cards
+            var query = dbContext.Cards
                 .AsNoTracking()
-                .Where(c => c.CreatedBy == userId && c.NextReviewDate < DateTime.UtcNow)
+                .Where(x => x.CreatedBy == userId && x.NextReviewDate < DateTime.UtcNow);
+
+            if (deckIds?.Ids is { Count: > 0 })
+            {
+                query = query.Where(x => deckIds.Ids.Contains(x.DeckId));
+            }
+            
+            return await query
                 .OrderBy(x => x.NextReviewDate)
                 .Skip(skip.Value)
                 .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name))
                 .FirstOrDefaultAsync();
         }).RequireAuthorization();
 
-        app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
+        app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, ParsableQueryList? deckIds = null) =>
         {
             var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
-            var nextCard = await dbContext.Cards
-                .Where(c => c.CreatedBy == userId)
+            var query = dbContext.Cards
+                .Where(c => c.CreatedBy == userId);
+            
+            if (deckIds?.Ids is { Count: > 0 })
+            {
+                query = query.Where(x => deckIds.Ids.Contains(x.DeckId));
+            }
+            
+            var nextCard = await query
                 .OrderBy(x => x.NextReviewDate)
                 .Select(x => new { x.NextReviewDate }).FirstOrDefaultAsync();
 
@@ -201,5 +216,43 @@ public static class CardsEndpoints
         }).RequireAuthorization();
 
         return app;
+    }
+}
+
+
+public class ParsableQueryList : IParsable<ParsableQueryList>
+{
+    public IReadOnlyCollection<Guid> Ids { get; private set; } = [];
+    
+    public static ParsableQueryList Parse(string s, IFormatProvider? provider)
+    {
+        var entries = s.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+        var guids = entries.Select(Guid.Parse);
+        
+        return new ParsableQueryList
+        {
+            Ids = guids.ToList()
+        };
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out ParsableQueryList result)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            result = new ParsableQueryList();
+            
+            return false;
+        }
+        
+        var entries = s.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var guids = entries.Select(Guid.Parse);
+
+        result = new ParsableQueryList
+        {
+            Ids = guids.ToList()
+        };
+        
+        return true;
     }
 }

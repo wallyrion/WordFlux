@@ -1,0 +1,124 @@
+﻿@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Storage
+@using WordFlux.Contracts
+@inject WeatherApiClient WeatherApi
+@inject NavigationManager Navigation
+@inject LocalStorage Storage
+
+
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="settingsDropdown" data-bs-auto-close="outside" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-gear-wide-connected"></i>
+    </button>
+
+    <div class="dropdown-menu" aria-labelledby="settingsDropdown">
+        <ul class="d-flex flex-column gap-1 ps-1 m-0" style="list-style: none">
+            <li>
+                <input type="checkbox" class="btn-check btn-sm" id="btn-check-deck-all" checked="@AllSelected" @onchange="ToggleAllSelection" autocomplete="off">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-deck-all">All</label>
+            </li>
+            
+            @foreach (var deck in DecksFilterCollection)
+            {
+                <li>
+                    <input type="checkbox" class="btn-check btn-sm" id="btn-check-@deck.Deck.Id" @onchange="(e) => ChangeSelectedDeck(deck.Deck.Id, e)" checked=@deck.IsSelected autocomplete="off">
+                    <label class="btn btn-outline-secondary btn-sm" for="btn-check-@deck.Deck.Id">@deck.Deck.Name</label>
+                </li>
+            }
+            @*<!-- Dynamically populated checkboxes -->
+            <li>
+                <input type="checkbox" class="btn-check btn-sm" id="btn-check-outlined" autocomplete="off">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-outlined">Single toggle</label>
+            </li>*@
+           
+            <!-- You can dynamically generate more checkboxes here -->
+        </ul>
+    </div>
+    <!-- Dropdown Menu containing checkboxes -->
+
+</div>
+
+
+@code {
+
+    List<SelectDeckDto> DecksFilterCollection { get; set; } = [];
+    bool AllSelected => DecksFilterCollection.All(x => x.IsSelected);
+    
+    [Parameter] public List<Guid> SelectedDecksIds { get; set; }
+    [Parameter] public EventCallback<List<Guid>> OnFilterDecks { get; set; }
+    [Parameter] public List<DeckDto> Decks { get; set; } = [];
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+
+        var ids = SelectedDecksIds;
+        DecksFilterCollection =
+            Decks.Select(d => new SelectDeckDto()
+            {
+                Deck = d,
+                IsSelected = ids.Contains(d.Id)
+            }).ToList();
+
+
+        if (DecksFilterCollection.All(d => !d.IsSelected))
+        {
+            DecksFilterCollection.ForEach(d => d.IsSelected = true);
+        }
+
+
+    }
+
+
+    private class SelectDeckDto
+    {
+        public DeckDto Deck { get; set; }
+        
+        public bool IsSelected { get; set; }
+     
+
+    }
+
+    private async Task ChangeSelectedDeck(Guid deckId, ChangeEventArgs obj)
+    {
+        var isSelected = (bool) obj.Value!;
+
+        var deck = DecksFilterCollection.Find(f => f.Deck.Id == deckId);
+
+        if (deck == null)
+        {
+            return;
+        }
+        
+        deck.IsSelected = isSelected;
+
+        await TriggerCallbacksAboutChanged();
+    }
+
+    private async Task ToggleAllSelection(ChangeEventArgs obj)
+    {
+        var isSelected = (bool)obj.Value!;
+
+        DecksFilterCollection = DecksFilterCollection.Select(d =>
+        {
+            d.IsSelected = isSelected;
+
+            return d;
+        }).ToList();
+
+        await TriggerCallbacksAboutChanged();
+    }
+
+    private async Task TriggerCallbacksAboutChanged()
+    {
+        if (AllSelected)
+        {
+            await OnFilterDecks.InvokeAsync([]);
+        }
+        else
+        {
+            var selected = DecksFilterCollection.Where(d => d.IsSelected).Select(d => d.Deck.Id).ToList();
+            await OnFilterDecks.InvokeAsync(selected);
+        }
+    }
+}

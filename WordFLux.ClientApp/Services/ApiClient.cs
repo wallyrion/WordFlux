@@ -47,18 +47,19 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return res.Phrase;
     }
     
-    public async Task<CardDto> GetNextCard(int skip = 0)
+    public async Task<CardDto> GetNextCard(List<Guid> selectedDecksIds, int skip = 0)
     {
-        var myId = await storage.GetMyId();
         
-        return (await httpClient.GetFromJsonAsync<CardDto>($"/cards/next?userId={myId}&skip={skip}"))!;
+        var decksParam = selectedDecksIds.Count > 0 ? $"&deckIds={string.Join(",", selectedDecksIds)}" : "";
+        
+        return (await httpClient.GetFromJsonAsync<CardDto>($"/cards/next?skip={skip}{decksParam}"))!;
     }
     
-    public async Task<TimeSpan?> GetNextReviewTime()
+    public async Task<TimeSpan?> GetNextReviewTime(List<Guid> selectedDecksIds)
     {
-        var myId = await storage.GetMyId();
-        
-        var res = (await httpClient.GetFromJsonAsync<NextReviewCardTimeResponse>($"/cards/next/time?userId={myId}"))!;
+        var decksParam = selectedDecksIds.Count > 0 ? $"?deckIds={string.Join(",", selectedDecksIds)}" : "";
+
+        var res = (await httpClient.GetFromJsonAsync<NextReviewCardTimeResponse>($"/cards/next/time{decksParam}"))!;
 
         return res.TimeToNextReview;
     }

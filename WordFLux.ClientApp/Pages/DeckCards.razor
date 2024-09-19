@@ -117,12 +117,7 @@
     {
         Cards = await ApiClient.GetCards(DeckId);
     }
-
-    private async Task Remove()
-    {
-        await ApiClient.RemoveDeck(DeckId!.Value);
-        Navigation.NavigateTo("/decks");
-    }
+    
 
     private async Task RemoveCard(CardDto card)
     {

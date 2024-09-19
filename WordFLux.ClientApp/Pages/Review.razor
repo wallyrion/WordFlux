@@ -3,8 +3,11 @@
 @using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFLux.ClientApp.Utils
+@inject LocalStorage Storage
 
 @using WordFlux.Contracts
+@using WordFLux.ClientApp.Pages.ReviewPage
+@using WordFLux.ClientApp.Storage
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @attribute [Authorize]
@@ -12,6 +15,15 @@
 <PageTitle>Review yourself</PageTitle>
 
 <div class="container mx-auto">
+
+    <div class="d-flex justify-content-end mb-2">
+        @if (Decks.Count > 0)
+        {
+            <DecksFilter Decks="Decks" OnFilterDecks="OnDeckFiltered" SelectedDecksIds="SelectedDecksIds"/>
+        }
+    </div>
+
+
     @if (IsLoading)
     {
         <p>
@@ -75,7 +87,7 @@
                                 <li>
                                     <a class="dropdown-item" role="button" @onclick="() => SearchForTerm(TermLearning!)">Search for '@TermLearning.TruncateWithEllipsis()'</a>
                                 </li>
-                                
+
                                 <li>
                                     <span><AudioFromText Term="@TermLearning"/></span> '@TermLearning.TruncateWithEllipsis()'
                                 </li>
@@ -133,7 +145,7 @@
                             <span class=""> @CurrentCard.DeckName</span>
                         </button>
                     </div>
-                    
+
                     <TranslationExamples
                         Term="@CurrentCard.Term"
                         OnTermSearch="SearchForTerm"
@@ -175,7 +187,12 @@
     string? TermLearning => IsShowTranslationAsBaseTerm ? CurrentCard?.Translations.First().Term : CurrentCard?.Term;
     string? TermTranslation => IsShowTranslationAsBaseTerm ? CurrentCard?.Term : CurrentCard?.Translations.First().Term;
     private AudioFromText audioComponent1;
-
+    
+    [SupplyParameterFromQuery(Name = "deckId")]
+    public Guid? DeckId { get; set; }
+    List<Guid> SelectedDecksIds = [];
+    List<DeckDto> Decks { get; set; } = [];
+    
     void SearchForTerm(string term)
     {
         Navigation.NavigateTo("/?term=" + term);
@@ -229,14 +246,14 @@
         StateHasChanged();
         await UpdateTimeToNextReview();
 
-        NextCard = await WeatherApi.GetNextCard(1);
+        NextCard = await WeatherApi.GetNextCard(SelectedDecksIds, 1);
     }
 
     private async Task UpdateTimeToNextReview()
     {
         if (CurrentCard == null)
         {
-            TimeToNextReview = await WeatherApi.GetNextReviewTime();
+            TimeToNextReview = await WeatherApi.GetNextReviewTime(SelectedDecksIds);
             Motivation = await WeatherApi.GetMotivation();
         }
         else
@@ -248,10 +265,32 @@
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-        StateHasChanged();
+        var deckFromQuery = DeckId;
+        
+        if (deckFromQuery != null)
+        {
+            SelectedDecksIds = [deckFromQuery.Value];
+        }
+        else
+        {
+            SelectedDecksIds = await Storage.GetLatestDecksSelection();
+        }
 
-        var currentCardTask = Task.Run(() => WeatherApi.GetNextCard());
-        var nextCardTask = Task.Run(() => WeatherApi.GetNextCard(1));
+        var decksTask = Task.Run(WeatherApi.GetDecks);
+
+        await LoadInitialState();
+        Decks = await decksTask;
+
+    }
+
+    private async Task LoadInitialState()
+    {
+        IsLoading = true;
+        IsRequestInProgress = true;
+        StateHasChanged();
+        
+        var currentCardTask = Task.Run(() => WeatherApi.GetNextCard(SelectedDecksIds));
+        var nextCardTask = Task.Run(() => WeatherApi.GetNextCard(SelectedDecksIds, 1));
         
         CurrentCard = await currentCardTask;
         IsLoading = false;
@@ -263,6 +302,8 @@
 
         IsRequestInProgress = false;
     }
+
+
 
     private string GetNextReviewTime()
     {
@@ -334,6 +375,16 @@
         CurrentCard!.Translations.Insert(0, item);
 
         await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    private async Task OnDeckFiltered(List<Guid> decks)
+    {
+        await Storage.SaveDeckSelection(decks);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("deckId", (string?)null));
+        
+        SelectedDecksIds = decks;
+
+        await LoadInitialState();
     }
 
 }
