@@ -4,6 +4,7 @@ namespace WordFLux.ClientApp.Storage;
 
 public class LocalStorage(ILocalStorageService localStorage)
 {
+    const string LatestDecksIds = "latestDecks";
     public async Task<Guid> GetMyId()
     {
         if (await localStorage.ContainKeyAsync("myId"))
@@ -33,5 +34,15 @@ public class LocalStorage(ILocalStorageService localStorage)
         var studying = await localStorage.GetItemAsync<string>("languages_studying");
 
         return (native ?? "ru-RU", studying ?? "en-US");
+    }
+
+    public async Task<List<Guid>> GetLatestDecksSelection()
+    {
+        return (await localStorage.GetItemAsync<List<Guid>>(LatestDecksIds)) ?? [] ;
+    }
+
+    public async Task SaveDeckSelection(List<Guid> decks)
+    {
+        await localStorage.SetItemAsync(LatestDecksIds, decks);
     }
 }
