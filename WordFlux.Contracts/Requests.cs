@@ -1,6 +1,6 @@
 ﻿namespace WordFlux.Contracts;
 
-public record CardTranslationItem(string Term, string ExampleTranslated, string ExampleOriginal, int Popularity, string Level);
+public record CardTranslationItem(string Term, string? ExampleTranslated = null, string? ExampleOriginal = null, int Popularity = 0, string? Level = null);
 
 public record CardRequest(string Term, string Level, List<CardTranslationItem> Translations, Guid DeckId = default);
 
