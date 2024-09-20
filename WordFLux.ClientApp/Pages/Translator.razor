@@ -117,7 +117,7 @@
                     else
                     {
                         <div class="btn-group">
-                            <button disabled="@(IsLoading || IsExamplesLoading)"  @onclick="() => SaveToCards(Guid.Empty, DefaultDeckName)" type="button" class="btn btn-outline-warning">Save to default deck</button>
+                            <button disabled="@(IsLoading || IsExamplesLoading)" @onclick="() => SaveToCards(Guid.Empty, DefaultDeckName)" type="button" class="btn btn-outline-warning">Save to default deck</button>
                             <button disabled="@(IsLoading || IsExamplesLoading)" type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="visually-hidden">Toggle Dropdown</span>
                             </button>
@@ -151,7 +151,7 @@
 
         @if (Examples.Count > 0)
         {
-            <TranslationExamples OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
+            <TranslationExamples OnReplaceTranslation="ReplaceTranslation" OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
 
             <div class="d-flex justify-content-center mt-1 mb-3">
                 <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>
@@ -180,7 +180,7 @@
 @code {
 
     const string DefaultDeckName = "Default";
-    
+
     [SupplyParameterFromQuery(Name = "term")]
     public string? Term { get; set; }
 
@@ -207,21 +207,20 @@
         {
             await TryItOut();
         }
-        
+
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
         if (state.User.Identity?.IsAuthenticated == true)
         {
             await RefreshDecks();
         }
-
     }
 
     async Task RefreshDecks()
     {
         Decks = (await WeatherApi.GetDecks()).Where(d => d.Type == DeckType.Custom).ToList();
     }
-    
+
     async Task SearchForTerm(string term)
     {
         Term = term;
@@ -353,6 +352,12 @@
     {
         Term = term;
         await TryItOut();
+    }
+
+    private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) arg)
+    {
+        var replaceIndex = Examples.FindIndex(x => ReferenceEquals(x, arg.oldItem));
+        Examples[replaceIndex] = Examples[replaceIndex] with { Term = arg.newItem.Term, ExampleOriginal = arg.newItem.ExampleOriginal, ExampleTranslated = arg.newItem.ExampleTranslated };
     }
 
 }

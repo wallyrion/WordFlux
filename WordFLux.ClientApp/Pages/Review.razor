@@ -119,7 +119,7 @@
                 @if (IsShowTranslation)
                 {
                     <div class="row justify-content-center mt-2 mb-2">
-                        <div class="col-6 col-lg-2">
+                        <div class="col-6 col-lg-2 col-md-2">
                             <button type="button" class="btn btn-warning w-100" disabled="@IsRequestInProgress" @onclick="Reject">
                                 Learning...
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-diamond-fill" viewBox="0 0 16 16">
@@ -151,6 +151,7 @@
                         OnTermSearch="SearchForTerm"
                         Translations="CurrentCard.Translations"
                         OnMakePrimary="MakePrimary"
+                        OnReplaceTranslation="ReplaceTranslation"
                         OnRemoveTranslation="RemoveTranslation"/>
 
                     <EditTranslation
@@ -385,6 +386,16 @@
         SelectedDecksIds = decks;
 
         await LoadInitialState();
+    }
+
+    private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) obj)
+    {
+        var replaceIndex = CurrentCard.Translations.FindIndex(x => ReferenceEquals(x, obj.oldItem));
+
+        CurrentCard.Translations[replaceIndex] = obj.newItem;
+        
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+
     }
 
 }

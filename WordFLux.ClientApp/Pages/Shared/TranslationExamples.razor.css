@@ -5,7 +5,49 @@
     right: -15px;
     bottom: 0;
 }
+/* Ensure the card wrapper is positioned relative */
+.card-wrapper {
+    position: relative;
+}
 
-.pre-wrap {
-    white-space: pre-wrap;
+/* Hide the action buttons by default */
+.action-buttons {
+    width: fit-content;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    background-color: #b3b3b3;
+}
+
+/* Show action buttons when the card-wrapper is hovered */
+.card-wrapper:hover .action-buttons {
+    display: block;
+    opacity: 1;
+}
+
+.action-buttons {
+    display: block;
+    opacity: 0;
+    position: absolute;
+    top: -30px; /* Start slightly above its final position */
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.9); /* Background color with slight transparency */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out; /* Add smooth transition for opacity and top */
+}
+
+/* Show action buttons when the card-wrapper is hovered */
+.card-wrapper:hover .action-buttons {
+    opacity: 1;
+    top: -50px; /* Final position above the card */
+}
+
+/* Add space above the card to make room for the action buttons */
+.card {
+    margin-top: 50px; /* Add margin to prevent overlap with the buttons above */
+    position: relative;
 }
