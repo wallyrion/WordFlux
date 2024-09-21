@@ -22,7 +22,9 @@ public static class CardsEndpoints
             {
                 var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
-                var query = dbContext.Cards.AsQueryable();
+                var query = dbContext.Cards
+                    .OrderBy(x => x.CreatedAt)
+                    .AsQueryable();
 
                 if (deckId != null)
                 {
