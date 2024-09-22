@@ -433,7 +433,7 @@
     private async Task ImageSelected(string imgUrl)
     {
         ImageUrl = imgUrl;
-        await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseImageModalButtonRef);
+        await JsRuntime.InvokeVoidAsync("modalEvents.closeByButton", CloseImageModalButtonRef);
     }
 
 }

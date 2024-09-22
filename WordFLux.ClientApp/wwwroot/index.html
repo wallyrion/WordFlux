@@ -41,7 +41,19 @@
     <script>
 
         window.modalEvents = {
-            CloseByButton: (buttonHtmlElement) => {
+
+            open: (id) => {
+                const myModal = new bootstrap.Modal(document.getElementById(id), {});
+                myModal.show();
+
+            },
+
+            close: (id) => {
+                const myModal = new bootstrap.Modal(document.getElementById(id), {});
+                myModal.hide();
+            },
+            
+            closeByButton: (buttonHtmlElement) => {
                 buttonHtmlElement.click()
                 
             },
@@ -58,10 +70,10 @@
             },*/
             
             Initialize: function (myModalEl, dotNetHelper, dotNetMethodToInvoke) {
-                console.log(myModalEl)
                 myModalEl.addEventListener('hidden.bs.modal', event => {
-                    console.log('modal was closed')
-                    dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
+                    if (event.target === myModalEl){
+                        dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
+                    }
                 })   
         }
             

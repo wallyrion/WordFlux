@@ -2,6 +2,8 @@
 @using WordFlux.Contracts
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFLux.ClientApp.Utils
+@using WordFLux.ClientApp.Pages
+@inject IJSRuntime JsRuntime
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
 
@@ -48,6 +50,13 @@
                             <i class="bi bi-search"></i>  Search for @Card.Term.TruncateWithEllipsis()
                         </button>
                         
+                    </li>    
+                    
+                    <li>
+                        <button class="btn dropdown-item btn-outline-secondary" @onclick="OpenImageModal">
+                            <i class="bi bi-card-image"></i>  Add image
+                        </button>
+                        
                     </li>
 
                 </ul>
@@ -60,6 +69,28 @@
         </div>
     }
 
+    @if (Card.ImageUrl != null)
+    {
+        <div class="d-flex justify-content-center mt-2">
+            <div class="col-12 col-md-6 col-lg-6 position-relative image-container" style="max-width:360px;">
+                <img src="@Card.ImageUrl" class="img-fluid img-thumbnail" alt="Selected image that describes term" />
+            
+                <!-- Small buttons with icons that show on hover -->
+                <div class="position-absolute top-0 end-0 m-2 image-buttons">
+                    <button class="btn btn-danger btn-sm me-1" @onclick="RemoveImage">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" @onclick="EditImage">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <SearchImageModal @ref="SearchImageModalRef" OnImageSelected="ImageSelected"/>
+    
+    
     <TranslationExamples
         Term="@Card.Term"
         OnTermSearch="SearchForTerm"
@@ -82,6 +113,9 @@ else
     </div>
 }
 
+
+
+
 @code
 {
     CardDto? Card { get; set; }
@@ -92,6 +126,9 @@ else
     [Parameter] public EventCallback OnPageRedirect { get; set; }
     bool IsEditMode { get; set; }
     string? EditTerm { get; set; }
+    ElementReference ImageModalRef { get; set; }
+    ElementReference CloseImageModalButtonRef { get; set; }
+    public SearchImageModal SearchImageModalRef { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -171,5 +208,31 @@ else
     {
         await ApiClient.RemoveCard(CardId);
         await OnCardDeleted.InvokeAsync(CardId);
+    }
+
+    private async Task RemoveImage()
+    {
+        Card = Card! with { ImageUrl = null};
+        //await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseImageModalButtonRef);
+
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations, ImageUrl: null), Card.Id);
+    }
+
+    private async Task EditImage()
+    {
+        await SearchImageModalRef.OpenModal(Card.Term);
+    }
+
+    private async Task OpenImageModal()
+    {
+        await SearchImageModalRef.OpenModal(Card.Term);
+    }
+
+    private async Task ImageSelected(string imgUrl)
+    {
+        Card = Card with { ImageUrl = imgUrl};
+        //await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseImageModalButtonRef);
+
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations, ImageUrl: Card.ImageUrl), Card.Id);
     }
 }

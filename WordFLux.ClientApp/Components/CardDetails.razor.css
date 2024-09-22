@@ -1,0 +1,9 @@
+﻿.image-container:hover .image-buttons {
+    display: flex;
+}
+
+.image-buttons {
+    display: none;
+}
+
+

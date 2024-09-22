@@ -3,7 +3,7 @@
 public class ImageSearchService
 {
     const string baseUrl = "https://api.bing.microsoft.com";
-    const string apiKey = "8b179e614172455c913a7080e171a9c0";
+    const string apiKey = "";
     
     public async Task<ImageSearchResponse?> GetImagesByKeyword(string keyword)
     {

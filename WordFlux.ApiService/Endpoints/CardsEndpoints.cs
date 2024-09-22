@@ -25,7 +25,7 @@ public static class CardsEndpoints
                 var card = await dbContext.Cards
                     .Where(c => c.CreatedBy == userId && c.Id == cardId)
                     .AsNoTracking()
-                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name))
+                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl))
                     .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
                 return card;
@@ -55,7 +55,7 @@ public static class CardsEndpoints
 
                 var result = await query
                     .AsNoTracking()
-                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name))
+                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl))
                     .ToListAsync(cancellationToken: cancellationToken);
 
                 return result;
@@ -97,7 +97,7 @@ public static class CardsEndpoints
             return await query
                 .OrderBy(x => x.NextReviewDate)
                 .Skip(skip.Value)
-                .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name))
+                .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl))
                 .FirstOrDefaultAsync();
         }).RequireAuthorization();
 
@@ -204,6 +204,7 @@ public static class CardsEndpoints
                     ReviewInterval = TimeSpan.FromMinutes(2),
                     Level = request.Level,
                     DeckId = request.DeckId == default ? defaultDeck.Id : request.DeckId,
+                    ImageUrl = request.ImageUrl
                 };
 
                 dbContext.Cards.Add(card);
@@ -227,6 +228,7 @@ public static class CardsEndpoints
             existingCard.Term = request.Term;
             existingCard.Level = request.Level;
             existingCard.Translations = request.Translations;
+            existingCard.ImageUrl = request.ImageUrl;
 
             await dbContext.SaveChangesAsync();
 
