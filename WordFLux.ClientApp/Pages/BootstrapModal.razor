@@ -1,0 +1,56 @@
+﻿@page "/modal"
+@inject IJSRuntime JsRuntime
+
+@code {
+    private async Task OpenModal1()
+    {
+        await JsRuntime.InvokeVoidAsync("modalEvents.open", "myModal");
+    }
+    private async Task OpenModal2()
+    {
+        await JsRuntime.InvokeVoidAsync("modalEvents.open", "myModal2");
+    }
+}
+
+<a @onclick="OpenModal1" class="btn btn-primary">Launch modal</a>
+
+
+
+<div class="modal fade" id="myModal" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Modal title</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div><div class="container"></div>
+            <div class="modal-body">
+                Content for the dialog / modal goes here.
+                <button role="button" @onclick="OpenModal2" class="btn btn-primary">Launch modal</button>
+            </div>
+            <div class="modal-footer">
+                <a href="#" data-bs-dismiss="modal" class="btn btn-outline-dark">Close</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal2" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">2nd Modal title</h4>
+                <button type="button" class="btn-close" data-bs-keyboard="false" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div><div class="container"></div>
+            <div class="modal-body">
+                Content for the dialog / modal goes here.
+                Content for the dialog / modal goes here.
+                Content for the dialog / modal goes here.
+                Content for the dialog / modal goes here.
+                Content for the dialog / modal goes here.
+            </div>
+            <div class="modal-footer">
+                <a href="#" data-bs-dismiss="modal" data-bs-target="myModal2" class="btn btn-outline-dark">Close</a>
+                <a href="#" class="btn btn-primary">Save changes</a>
+            </div>
+        </div>
+    </div>
+</div>

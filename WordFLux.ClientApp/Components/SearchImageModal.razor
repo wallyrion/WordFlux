@@ -1,0 +1,51 @@
+﻿@using WordFLux.ClientApp.Pages
+
+@inject IJSRuntime JsRuntime
+
+<div class="modal fade" id="imageModalDialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Select image</h1>
+                <button @ref="CloseImageModalButtonRef" type="button" class="btn-close" data-bs-target="imageModalDialog" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (SearchForImageTerm != null)
+                {
+                    <ImageSearch Keyword="@SearchForImageTerm" OnImageSelected="ImageSelected"/>
+                }
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-target="imageModalDialog" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public EventCallback<string> OnImageSelected { get; set; } 
+    
+    ElementReference CloseImageModalButtonRef { get; set; }
+    bool isModalOpened { get; set; }
+    public string? SearchForImageTerm { get; set; }
+
+    private async Task ImageSelected(string imageUrl)
+    {
+        await OnImageSelected.InvokeAsync(imageUrl);
+        
+        await JsRuntime.InvokeVoidAsync("modalEvents.closeByButton", CloseImageModalButtonRef);
+
+    }
+
+    public async Task OpenModal(string keyword)
+    {
+        await JsRuntime.InvokeVoidAsync("modalEvents.open", "imageModalDialog");
+
+        SearchForImageTerm = keyword;
+        
+        isModalOpened = true;
+        await InvokeAsync(StateHasChanged);
+    }
+}

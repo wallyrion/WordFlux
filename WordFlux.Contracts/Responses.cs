@@ -1,6 +1,6 @@
 ﻿namespace WordFlux.Contracts;
 
-public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<CardTranslationItem> Translations, TimeSpan ReviewInterval, string DeckName);
+public record CardDto(Guid Id, DateTime CreatedAt, string Term, string Level, List<CardTranslationItem> Translations, TimeSpan ReviewInterval, string DeckName, string? ImageUrl = null);
 public record SimpleTranslationResponse(string? SuggestedTerm, List<string> Translations, string SourceLanguage, string DestinationLanguage);
 public record NextReviewCardTimeResponse(TimeSpan? TimeToNextReview);
 public record GetMotivationResponse(string Phrase);

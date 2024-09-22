@@ -1,0 +1,58 @@
+﻿@page "/images"
+@using WordFLux.ClientApp.Services
+@inject WeatherApiClient ApiClient
+
+<div class="input-group mb-2">
+    <input type="text" class="form-control" @bind="CustomUrl" placeholder="Paste url here for a custom image" aria-label="Deck name input with two button addons">
+
+    
+    <button class="btn btn-outline-primary" type="button" @onclick="() => SaveWithUrl(CustomUrl)">
+        <i class="bi bi-check"></i>
+    </button>  
+    
+ 
+</div>
+
+
+<div class="container-fluid">
+    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 g-3">
+        @foreach (var image in ImageUrls)
+        {
+            <div class="col">
+                <button class="btn p-0 border-0" style="cursor: pointer;" @onclick="() => SaveWithUrl(image)">
+                    <img src="@image" loading="lazy" class="img-thumbnail" alt="image-option"/>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code
+{
+    [Parameter] public string? Keyword { get; set; }
+    [Parameter] public EventCallback<string> OnImageSelected { get; set; }
+    public string? CustomUrl { get; set; }
+    List<string> ImageUrls { get; set; } = [];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await Search();
+    }
+
+    private async Task Search()
+    {
+        ImageUrls = await ApiClient.SearchForImages(Keyword);
+    }
+
+
+    private async Task SaveWithUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
+        
+        await OnImageSelected.InvokeAsync(url);
+    }
+}

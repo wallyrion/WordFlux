@@ -145,6 +145,16 @@
                             <span class=""> @CurrentCard.DeckName</span>
                         </button>
                     </div>
+                    
+                    @if (CurrentCard.ImageUrl != null)
+                    {
+                        <div class="d-flex justify-content-center mt-2">
+                            <div class="col-12 col-md-6 col-lg-4" style="max-width:360px">
+                                <img src="@CurrentCard.ImageUrl" class="img-fluid img-thumbnail" alt="Selected image that describes term"/>
+                            </div>
+                        </div>
+                    }
+                    
 
                     <TranslationExamples
                         Term="@CurrentCard.Term"

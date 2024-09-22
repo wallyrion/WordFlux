@@ -41,7 +41,19 @@
     <script>
 
         window.modalEvents = {
-            CloseByButton: (buttonHtmlElement) => {
+
+            open: (id) => {
+                const myModal = new bootstrap.Modal(document.getElementById(id), {});
+                myModal.show();
+
+            },
+
+            close: (id) => {
+                const myModal = new bootstrap.Modal(document.getElementById(id), {});
+                myModal.hide();
+            },
+            
+            closeByButton: (buttonHtmlElement) => {
                 buttonHtmlElement.click()
                 
             },
@@ -57,11 +69,11 @@
                 myModal.hide();
             },*/
             
-            Initialize: function (myModalEl, dotNetHelper) {
-                console.log(myModalEl)
+            Initialize: function (myModalEl, dotNetHelper, dotNetMethodToInvoke) {
                 myModalEl.addEventListener('hidden.bs.modal', event => {
-                    console.log('modal was closed')
-                    dotNetHelper.invokeMethodAsync("CardDetails.modalClosed");
+                    if (event.target === myModalEl){
+                        dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
+                    }
                 })   
         }
             

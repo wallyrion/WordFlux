@@ -55,7 +55,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 }
 
 builder.Services.AddSingleton<NotificationsStore>();
-
+builder.Services.AddSingleton<ImageSearchService>();
 builder.Services.AddHostedService<TestBackgroundService>();
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -73,11 +73,11 @@ app.UseSwaggerUI();
 app.UseExceptionHandler();
 
 app.MapIdentityApi<AppUser>();
+app.UseOutputCache();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseOutputCache();
 
 app.MapPost("/logout", async (SignInManager<AppUser> signInManager, [FromBody] object empty) =>
 {
@@ -112,6 +112,27 @@ app.MapGet("/roles", (ClaimsPrincipal user) =>
 
     return Results.Unauthorized();
 }).RequireAuthorization();
+
+app.MapGet("images", async (ImageSearchService searchService, string keyword) =>
+{
+    /*var result = await searchService.GetImagesByKeyword(keyword);
+
+    if (result is null)
+    {
+        return [];
+    }*/
+
+    var result = JsonSerializer.Deserialize<ImageSearchResponse>(Constants.TemporaryImageSearchResponse);
+
+
+    return result.Value.Select(x => x.ContentUrl);
+})
+.CacheOutput(p =>
+{
+    p.AddPolicy<OutputCachePolicy>();
+    p.Expire(TimeSpan.FromHours(2))
+        .SetVaryByQuery("keyword");
+});
 
 app
     .MapAudioEndpoints()
