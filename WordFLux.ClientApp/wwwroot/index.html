@@ -39,6 +39,40 @@
 
 
     <script>
+
+        window.modalEvents = {
+            CloseByButton: (buttonHtmlElement) => {
+                buttonHtmlElement.click()
+                
+            },
+            
+            /*
+            Close: function (modalElement) {
+
+                var myModal = new bootstrap.Modal(document.getElementById("cardDetailsModal"), {});
+                //myModal.show();
+                
+                // cardDetailsModal
+                //const modal = new bootstrap.Modal(modalElement);
+                myModal.hide();
+            },*/
+            
+            Initialize: function (myModalEl, dotNetHelper) {
+                console.log(myModalEl)
+                myModalEl.addEventListener('hidden.bs.modal', event => {
+                    console.log('modal was closed')
+                    dotNetHelper.invokeMethodAsync("CardDetails.modalClosed");
+                })   
+        }
+            
+         /*   document.querySelector('.modal').addEventListener('click', function (e) {
+                // Check if the modal is clicked, not an element inside the modal:
+                if (e.target === e.currentTarget) {
+                    dotNetHelper.invokeMethodAsync('Close');
+                }
+            });*/
+        };
+        
         window.clipboardCopy = {
             copyText: function(text, isRetry = false) {
                 navigator.clipboard.writeText(text).then(function () {

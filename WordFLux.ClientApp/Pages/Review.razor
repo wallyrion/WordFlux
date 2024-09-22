@@ -61,22 +61,22 @@
         else
         {
             <div class="card text-center position-relative">
-                <span class="badge text-bg-light position-absolute start-0 translate-middle">@CurrentCard.Level</span>
+                <span class="badge text-bg-light position-absolute start-0 98translate-middle">@CurrentCard.Level</span>
 
                 @if (IsShowTranslation)
                 {
                     <div class="dropdown">
 
-                        <button class="btn dropdown-toggle position-absolute end-0" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                        <button class="btn btn-outline-primary dropdown-toggle position-absolute end-0" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
 
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" role="button" @onclick="DeleteCard">Delete</a>
+                                <button class="dropdown-item btn btn-outline-danger" @onclick="DeleteCard"> <i class="bi bi-trash text-danger"></i>  Remove card</button>
                             </li>
                             @if (TermTranslation != null)
                             {
                                 <li>
-                                    <a class="dropdown-item" role="button" @onclick="() => SearchForTerm(TermTranslation!)">Search for '@TermTranslation.TruncateWithEllipsis()'</a>
+                                    <button class="dropdown-item btn btn-outline-secondary" @onclick="() => SearchForTerm(TermTranslation!)"> <i class="bi bi-search"></i>  Search for '@TermTranslation.TruncateWithEllipsis()'</button>
                                 </li>
                                 <li>
                                     <span><AudioFromText Term="@TermTranslation"/></span> '@TermTranslation.TruncateWithEllipsis()'
@@ -154,9 +154,12 @@
                         OnReplaceTranslation="ReplaceTranslation"
                         OnRemoveTranslation="RemoveTranslation"/>
 
-                    <EditTranslation
-                        Term="@CurrentCard.Term"
-                        OnAddMyTranslation="AddMyTranslation"/>
+                    <div class="mt-2">
+                        <EditTranslation
+                            Term="@CurrentCard.Term"
+                            OnAddMyTranslation="AddMyTranslation"/>
+                    </div>
+                   
                 }
 
                 else

@@ -1,0 +1,175 @@
+﻿@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+@using WordFLux.ClientApp.Pages.Shared
+@using WordFLux.ClientApp.Utils
+@inject WeatherApiClient ApiClient
+@inject NavigationManager Navigation
+
+@if (Card != null)
+{
+    @if (IsEditMode)
+    {
+        <div class="input-group mb-2">
+            <input type="text" class="form-control" @bind="EditTerm" placeholder="Enter anything that you want to memorize" aria-label="Term">
+
+            <button class="btn btn-outline-success" type="button" @onclick="SaveEdit">
+                <i class="bi bi-check"></i>
+            </button>
+
+            <button class="btn btn-outline-secondary" type="button" @onclick="CancelEdit">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="card term-header position-relative">
+            <div class="card-body">
+                @Card.Term
+            </div>
+
+            <div class="term-header-buttons z-1 position-absolute top-0 end-0 translate-middle">
+                <button @onclick="StartEditingTerm" class="btn btn-outline-primary btn-icon-sm">
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+
+                <button class="btn dropdown-toggle btn-outline-success btn-icon-sm btn-icon-menu-sm " type="button" data-bs-toggle="dropdown" aria-expanded="false">   <i class="bi bi-list"></i></button>
+
+                <ul class="dropdown-menu">
+                    <li>
+                        <button class="btn dropdown-item btn-outline-danger" @onclick="RemoveCard">
+                            <i class="bi bi-trash text-danger"></i>  Remove card
+                        </button>
+                        
+                    </li>    
+                    
+                    <li>
+                        <button class="btn dropdown-item btn-outline-secondary" @onclick="RedirectToNewSearch">
+                            <i class="bi bi-search"></i>  Search for @Card.Term.TruncateWithEllipsis()
+                        </button>
+                        
+                    </li>
+
+                </ul>
+
+                @*
+                <button class="btn btn-outline-success btn-icon-sm">
+                    <i class="bi bi-list"></i>
+                </button>*@
+            </div>
+        </div>
+    }
+
+    <TranslationExamples
+        Term="@Card.Term"
+        OnTermSearch="SearchForTerm"
+        Translations="Card.Translations"
+        OnMakePrimary="MakePrimary"
+        OnReplaceTranslation="ReplaceTranslation"
+        OnRemoveTranslation="RemoveTranslation"/>
+
+    <div class="mt-2">
+        <EditTranslation
+            Term="@Card.Term"
+            OnAddMyTranslation="AddMyTranslation"/>
+    </div>
+    
+}
+else
+{
+    <div class="spinner-grow" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+
+@code
+{
+    CardDto? Card { get; set; }
+
+    [Parameter] public Guid CardId { get; set; }
+    [Parameter] public EventCallback<CardDto> OnCardChanged { get; set; }
+    [Parameter] public EventCallback<Guid> OnCardDeleted { get; set; }
+    [Parameter] public EventCallback OnPageRedirect { get; set; }
+    bool IsEditMode { get; set; }
+    string? EditTerm { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Card = await ApiClient.GetCard(CardId);
+    }
+
+    private void SearchForTerm(string term)
+    {
+        Navigation.NavigateTo("/?term=" + term);
+    }
+
+    private async Task MakePrimary(CardTranslationItem item)
+    {
+        Card!.Translations.Remove(item);
+        Card.Translations.Insert(0, item);
+
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+    }
+
+    private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) arg)
+    {
+        var replaceIndex = Card.Translations.FindIndex(x => ReferenceEquals(x, arg.oldItem));
+
+        Card.Translations[replaceIndex] = arg.newItem;
+
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+    }
+
+    private async Task RemoveTranslation(CardTranslationItem item)
+    {
+        Card!.Translations.Remove(item);
+
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+    }
+
+    private async Task AddMyTranslation(CardTranslationItem item)
+    {
+        Card!.Translations.Insert(0, item);
+
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+    }
+
+    private void StartEditingTerm()
+    {
+        IsEditMode = true;
+        EditTerm = Card!.Term;
+    }
+
+    private async Task SaveEdit()
+    {
+        if (string.IsNullOrWhiteSpace(EditTerm))
+        {
+            return;
+        }
+
+        await ApiClient.UpdateCard(new CardRequest(Card!.Term, Card.Level, Card.Translations), Card.Id);
+
+        Card = Card with { Term = EditTerm! };
+        await OnCardChanged.InvokeAsync(Card);
+        EditTerm = null;
+        IsEditMode = false;
+    }
+
+    private void CancelEdit()
+    {
+        EditTerm = null;
+        IsEditMode = false;
+    }
+
+    private async Task RedirectToNewSearch()
+    {
+        await OnPageRedirect.InvokeAsync();
+        Navigation.NavigateTo($"/?term={Card!.Term}");
+    }
+
+    private async Task RemoveCard()
+    {
+        await ApiClient.RemoveCard(CardId);
+        await OnCardDeleted.InvokeAsync(CardId);
+    }
+}

@@ -69,7 +69,9 @@
 
             <div class="position-relative">
                 <TranslationAutocomplete OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
-                <i class="bi bi-x-circle position-absolute clear-button @EnabledState()" @onclick="Reset"></i>
+                
+                <button class="btn btn-outline-secondary btn-icon-sm position-absolute end-0 translate-middle-y"  @onclick="Reset" ><i class="bi bi-x-circle "></i></button>
+                
 
                 @if (!string.IsNullOrWhiteSpace(ActualTerm))
                 {

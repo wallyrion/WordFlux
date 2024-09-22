@@ -38,6 +38,12 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     public async Task<List<CardDto>> GetCards(Guid? deckId)
     {
         return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?deckId={deckId}"))!;
+    }    
+    public async Task<CardDto?> GetCard(Guid cardId)
+    {
+        var card = await httpClient.GetFromJsonAsync<CardDto>($"/cards/{cardId}");
+
+        return card;
     }
     
     public async Task<string> GetMotivation()
