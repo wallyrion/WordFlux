@@ -2,7 +2,7 @@
 
 public record CardTranslationItem(string Term, string? ExampleTranslated = null, string? ExampleOriginal = null, int Popularity = 0, string? Level = null);
 
-public record CardRequest(string Term, string Level, List<CardTranslationItem> Translations, Guid DeckId = default);
+public record CardRequest(string Term, string Level, List<CardTranslationItem> Translations, Guid DeckId = default, string? ImageUrl = null);
 
 
 public record GetTranslationExamplesRequest(string Term, List<string> Translations, string SourceLanguage, string DestinationLanguage);

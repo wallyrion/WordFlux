@@ -231,4 +231,11 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
 
         return result;
     }
+    
+    public async Task<List<string>> SearchForImages(string keyword)
+    {
+        var response = await httpClient.GetFromJsonAsync<List<string>>($"/images?keyword={keyword}");
+
+        return response ?? [];
+    }
 }

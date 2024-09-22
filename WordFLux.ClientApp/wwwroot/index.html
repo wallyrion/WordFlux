@@ -57,11 +57,11 @@
                 myModal.hide();
             },*/
             
-            Initialize: function (myModalEl, dotNetHelper) {
+            Initialize: function (myModalEl, dotNetHelper, dotNetMethodToInvoke) {
                 console.log(myModalEl)
                 myModalEl.addEventListener('hidden.bs.modal', event => {
                     console.log('modal was closed')
-                    dotNetHelper.invokeMethodAsync("CardDetails.modalClosed");
+                    dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
                 })   
         }
             

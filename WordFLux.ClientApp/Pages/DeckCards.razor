@@ -146,7 +146,7 @@
     {
         if (firstRender)
         {
-            await JsRuntime.InvokeVoidAsync("modalEvents.Initialize", CardDetailsModalRef, DotNetObjectReference.Create(this));
+            await JsRuntime.InvokeVoidAsync("modalEvents.Initialize", CardDetailsModalRef, DotNetObjectReference.Create(this), "CardDetails.modalClosed");
         }
     }
 
