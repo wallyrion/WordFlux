@@ -16,6 +16,22 @@ public static class CardsEndpoints
 {
     public static WebApplication MapCardsEndpoints(this WebApplication app)
     {
+        app.MapGet("/cards/{cardId:guid}",
+            async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
+                CancellationToken cancellationToken = default) =>
+            {
+                var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
+                var card = await dbContext.Cards
+                    .Where(c => c.CreatedBy == userId && c.Id == cardId)
+                    .AsNoTracking()
+                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name))
+                    .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+                return card;
+            }).RequireAuthorization();
+        
+        
         app.MapGet("/cards",
             async (ApplicationDbContext dbContext, Guid? deckId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
                 CancellationToken cancellationToken = default) =>

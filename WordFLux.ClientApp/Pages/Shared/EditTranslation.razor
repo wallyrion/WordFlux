@@ -1,10 +1,11 @@
-﻿@using WordFLux.ClientApp.Models
-@using WordFLux.ClientApp.Services
+﻿@using WordFLux.ClientApp.Services
 @using WordFlux.Contracts
 @inject WeatherApiClient HttpClient
 
 
-<div class="card mt-2 mb-5">
+@if (AlwaysEditable || IsEditable)
+{
+<div class="card">
     <div class="card-header">
         <div class="input-group mb-3">
             <textarea @bind="TranslationInput" @bind:event="oninput" class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
@@ -23,21 +24,34 @@
     </div>
 
 
-    <div class="container-fluid">
-        <button type="button" class="btn btn-primary m-2" @onclick="AddMyTranslation">Save translation</button>
+    <div class="container-fluid m-2 d-flex justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-success" @onclick="AddMyTranslation">Save translation</button>
+        <button class="btn btn-outline-secondary" @onclick="Cancel">Close</button>
     </div>
 </div>
+    
+   
+}
+else
+{
+    <div class="card">
+        <button type="button" class="btn btn-outline-secondary w-100" @onclick="() => IsEditable = true">Add my translation</button>
+    </div>
+}
+
 
 
 
 @code {
     [Parameter] public EventCallback<CardTranslationItem> OnAddMyTranslation { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public string? Term { get; set; }
     [Parameter] public string? CustomExampleTranslated { get; set; }
     [Parameter] public string? CustomExampleOriginal { get; set; }
     [Parameter] public string? TranslationInput { get; set; }
+    [Parameter] public bool AlwaysEditable { get; set; }
     private CardTranslationItem? CustomTranslation { get; set; }
-
+    bool IsEditable { get; set; }
 
     public async Task GetExampleForCustomTranslation()
     {
@@ -65,7 +79,14 @@
         TranslationInput = null;
         CustomExampleOriginal = null;
         CustomExampleTranslated = null;
+
+        IsEditable = false;
     }
 
+    private async Task Cancel()
+    {
+        IsEditable = false;
+        await OnCancel.InvokeAsync();
+    }
 
 }

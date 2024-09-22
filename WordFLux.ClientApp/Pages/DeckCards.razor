@@ -5,6 +5,7 @@
 @using WordFLux.ClientApp.Components
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Decks</PageTitle>
 
@@ -64,8 +65,10 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         }
-                           
-                                        <button class="btn btn-outline-secondary m-1" @onclick="() => ShowDetails(card)" title="Details">
+                                        
+                                        <button class="btn btn-outline-secondary m-1" data-bs-toggle="modal" data-bs-target="#cardDetailsModal"
+                                                @onclick="() => ShowDetails(card)" 
+                                                title="Details">
                                             <i class="bi bi-info-circle"></i>
                                         </button>
                                     </div>
@@ -80,6 +83,33 @@
 </div>
 
 
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" @ref="CardDetailsModalRef" id="cardDetailsModal"  data-bs-backdrop="static" tabindex="-1" aria-labelledby="cardDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" @ref="CloseButtonRef" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                
+                @if (ExpandedCardId != null)
+                {
+                    <CardDetails OnPageRedirect="PageRedirected" OnCardDeleted="CardDeleted" OnCardChanged="CardChanged" CardId="ExpandedCardId.Value"/>
+                }
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeCardDetailsButtonTest" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                @*<button type="button" class="btn btn-primary">Save changes</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @code
 {
     [Parameter] public Guid? DeckId { get; set; }
@@ -88,7 +118,9 @@
     List<CardDto> Cards { get; set; } = [];
     string? NewCardTerm { get; set; }
     string? NewCardTranslation { get; set; }
-    
+    private ElementReference CardDetailsModalRef { get; set; }
+    private ElementReference CloseButtonRef { get; set; }
+    Guid? ExpandedCardId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,8 +139,25 @@
         }
 
         InitialStateLoading = false;
+        
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("modalEvents.Initialize", CardDetailsModalRef, DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable("CardDetails.modalClosed")]
+    public void OnModalClosed()
+    {
+        ExpandedCardId = null;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    
     private async Task Edit(MouseEventArgs obj)
     {
     }
@@ -126,8 +175,11 @@
         await LoadCards();
     }
 
-    private async Task ShowDetails(CardDto card)
+    private void ShowDetails(CardDto card)
     {
+        ExpandedCardId = null;
+        StateHasChanged();
+        ExpandedCardId = card.Id;
     }
 
     private async Task SaveNewCard()
@@ -143,5 +195,29 @@
         await LoadCards();
         NewCardTerm = null;
         NewCardTranslation = null;
+    }
+
+    private void CardChanged(CardDto card)
+    {
+        var cardIndex = Cards.FindIndex(c => c.Id == card.Id);
+
+        Cards[cardIndex] = card;
+    }
+
+    private async Task CardDeleted(Guid cardId)
+    {
+        Cards = Cards.Where(c => c.Id != cardId).ToList();
+
+        await CloseModalDialog();
+    }
+
+    private Task PageRedirected()
+    {
+        return CloseModalDialog();
+    }
+
+    private async Task CloseModalDialog()
+    {
+        await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseButtonRef);
     }
 }
