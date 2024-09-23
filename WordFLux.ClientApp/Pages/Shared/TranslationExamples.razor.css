@@ -23,6 +23,7 @@
 .card-wrapper:hover .action-buttons {
     display: block;
     opacity: 1;
+    transition-delay: 0.5s; /* Add delay before showing */
 }
 
 .action-buttons {

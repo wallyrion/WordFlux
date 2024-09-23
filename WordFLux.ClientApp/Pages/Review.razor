@@ -85,7 +85,7 @@
                             @if (TermLearning != null)
                             {
                                 <li>
-                                    <a class="dropdown-item" role="button" @onclick="() => SearchForTerm(TermLearning!)">Search for '@TermLearning.TruncateWithEllipsis()'</a>
+                                    <a class="dropdown-item" role="button" @onclick="() => SearchForTerm(TermLearning!)"><i class="bi bi-search"></i> Search for '@TermLearning.TruncateWithEllipsis()'</a>
                                 </li>
 
                                 <li>
@@ -119,21 +119,17 @@
                 @if (IsShowTranslation)
                 {
                     <div class="row justify-content-center mt-2 mb-2">
-                        <div class="col-6 col-lg-2 col-md-2">
+                        <div class="col-6 col-lg-6 col-md-6">
                             <button type="button" class="btn btn-warning w-100" disabled="@IsRequestInProgress" @onclick="Reject">
                                 Learning...
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-diamond-fill" viewBox="0 0 16 16">
-                                    <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L4.047 3.339 8 7.293l3.954-3.954L9.049.435zm3.61 3.611L8.708 8l3.954 3.954 2.904-2.905c.58-.58.58-1.519 0-2.098l-2.904-2.905zm-.706 8.614L8 8.708l-3.954 3.954 2.905 2.904c.58.58 1.519.58 2.098 0l2.905-2.904zm-8.614-.706L7.292 8 3.339 4.046.435 6.951c-.58.58-.58 1.519 0 2.098z"/>
-                                </svg>
+                                <i class="bi bi-x-diamond"></i>
                             </button>
                         </div>
 
-                        <div class="col-6 col-lg-2">
+                        <div class="col-6 col-lg-6 col-md-6">
                             <button type="button" class="btn btn-success w-100" disabled="@IsRequestInProgress" @onclick="Approve">
                                 I know this
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
-                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                                </svg>
+                                <i class="bi bi-check-circle"></i>
                             </button>
                         </div>
 
