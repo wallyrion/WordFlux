@@ -39,9 +39,15 @@
 
 
     <script>
+        window.addEventListener('popstate', function () {
+            const backdrop = document.querySelectorAll('.modal-backdrop');
+            for(let item of backdrop){
+                item.remove();
+            }
+        });
+        
 
         window.modalEvents = {
-
             open: (id) => {
                 const myModal = new bootstrap.Modal(document.getElementById(id), {});
                 myModal.show();
@@ -55,7 +61,6 @@
             
             closeByButton: (buttonHtmlElement) => {
                 buttonHtmlElement.click()
-                
             },
             
             /*
@@ -71,6 +76,7 @@
             
             Initialize: function (myModalEl, dotNetHelper, dotNetMethodToInvoke) {
                 myModalEl.addEventListener('hidden.bs.modal', event => {
+                    console.log('modal is closed')
                     if (event.target === myModalEl){
                         dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
                     }

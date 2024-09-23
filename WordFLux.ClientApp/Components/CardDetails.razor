@@ -2,7 +2,6 @@
 @using WordFlux.Contracts
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFLux.ClientApp.Utils
-@using WordFLux.ClientApp.Pages
 @inject IJSRuntime JsRuntime
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
@@ -128,15 +127,16 @@ else
     string? EditTerm { get; set; }
     ElementReference ImageModalRef { get; set; }
     ElementReference CloseImageModalButtonRef { get; set; }
-    public SearchImageModal SearchImageModalRef { get; set; } = null!;
+    SearchImageModal SearchImageModalRef { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
         Card = await ApiClient.GetCard(CardId);
     }
 
-    private void SearchForTerm(string term)
+    private async Task SearchForTerm(string term)
     {
+        await OnPageRedirect.InvokeAsync();
         Navigation.NavigateTo("/?term=" + term);
     }
 
@@ -201,6 +201,7 @@ else
     private async Task RedirectToNewSearch()
     {
         await OnPageRedirect.InvokeAsync();
+        
         Navigation.NavigateTo($"/?term={Card!.Term}");
     }
 
