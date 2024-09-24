@@ -9,9 +9,13 @@
     <div class="card-header">
         <div class="input-group mb-3">
             <textarea @bind="TranslationInput" @bind:event="oninput" class="form-control" placeholder="How to translate?" aria-label="translation"></textarea>
-            <button class="btn btn-outline-secondary" type="button" @onclick="GetExampleForCustomTranslation">
-                <i class="bi bi-check2-circle"></i>
-            </button>
+
+            <Tooltip Title="Complete examples with AI">
+                <button class="btn btn-outline-secondary" type="button" @onclick="GetExampleForCustomTranslation">
+                    <i class="bi bi-robot"></i>
+                </button>
+            </Tooltip>
+          
         </div>
 
 

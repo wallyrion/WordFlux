@@ -30,32 +30,35 @@
             </div>
 
             <div class="term-header-buttons z-1 position-absolute top-0 end-0 translate-middle">
-                <button @onclick="StartEditingTerm" class="btn btn-outline-primary btn-icon-sm">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
+                <Tooltip Title="Edit term of the card">
+                    <button @onclick="StartEditingTerm" class="btn btn-outline-primary btn-icon-sm">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </Tooltip>
+       
 
-                <button class="btn dropdown-toggle btn-outline-success btn-icon-sm btn-icon-menu-sm " type="button" data-bs-toggle="dropdown" aria-expanded="false">   <i class="bi bi-list"></i></button>
+                <button class="btn dropdown-toggle btn-outline-success btn-icon-sm btn-icon-menu-sm " type="button" data-bs-toggle="dropdown" aria-expanded="false"> <i class="bi bi-list"></i></button>
 
                 <ul class="dropdown-menu">
                     <li>
                         <button class="btn dropdown-item btn-outline-danger" @onclick="RemoveCard">
-                            <i class="bi bi-trash text-danger"></i>  Remove card
+                            <i class="bi bi-trash text-danger"></i> Remove card
                         </button>
-                        
-                    </li>    
-                    
+
+                    </li>
+
                     <li>
                         <button class="btn dropdown-item btn-outline-secondary" @onclick="RedirectToNewSearch">
-                            <i class="bi bi-search"></i>  Search for @Card.Term.TruncateWithEllipsis()
+                            <i class="bi bi-search"></i> Search for @Card.Term.TruncateWithEllipsis()
                         </button>
-                        
-                    </li>    
-                    
+
+                    </li>
+
                     <li>
                         <button class="btn dropdown-item btn-outline-secondary" @onclick="OpenImageModal">
-                            <i class="bi bi-card-image"></i>  Add image
+                            <i class="bi bi-card-image"></i> Add image
                         </button>
-                        
+
                     </li>
 
                 </ul>
