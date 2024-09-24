@@ -59,7 +59,10 @@
                 </div>
 
                 <div class="form-check form-switch align-self-end">
-                    <input class="form-check-input" @bind-value="@UseAzureAiTranslator" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                    <Tooltip Title="Leverage Azure AI translator power instead of default custom AI translator">
+                        <input class="form-check-input" @bind-value="@UseAzureAiTranslator" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                    </Tooltip>
+                    
                     <label class="form-check-label" for="flexSwitchCheckDefault">Use Azure AI Translator </label>
                 </div>
 
