@@ -55,7 +55,8 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 }
 
 builder.Services.AddSingleton<NotificationsStore>();
-builder.Services.AddSingleton<ImageSearchService>();
+builder.Services.AddSingleton<BingImageSearchService>();
+builder.Services.AddSingleton<UnsplashImageSearchService>();
 builder.Services.AddHostedService<TestBackgroundService>();
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -113,19 +114,25 @@ app.MapGet("/roles", (ClaimsPrincipal user) =>
     return Results.Unauthorized();
 }).RequireAuthorization();
 
-app.MapGet("images", async (ImageSearchService searchService, string keyword) =>
+
+app.MapGet("images/unsplash", async (UnsplashImageSearchService searchService, string keyword) =>
 {
-    /*var result = await searchService.GetImagesByKeyword(keyword);
 
-    if (result is null)
+    return await searchService.GetImagesByKeyword(keyword);
+    
+
+});
+
+app.MapGet("images", async (BingImageSearchService searchService, UnsplashImageSearchService unsplashSearch, string keyword, bool isUnsplash = true) =>
+{
+
+    if (isUnsplash)
     {
-        return [];
-    }*/
+        return await unsplashSearch.GetImagesByKeyword(keyword);
+    }
+    
+    return await searchService.GetImagesByKeyword(keyword);
 
-    var result = JsonSerializer.Deserialize<ImageSearchResponse>(Constants.TemporaryImageSearchResponse);
-
-
-    return result.Value.Select(x => x.ContentUrl);
 })
 .CacheOutput(p =>
 {

@@ -1,12 +1,19 @@
-﻿namespace WordFlux.ApiService;
+﻿using System.Text.Json;
 
-public class ImageSearchService
+namespace WordFlux.ApiService;
+
+public class BingImageSearchService
 {
     const string baseUrl = "https://api.bing.microsoft.com";
     const string apiKey = "";
     
-    public async Task<ImageSearchResponse?> GetImagesByKeyword(string keyword)
+    public async Task<List<string>> GetImagesByKeyword(string keyword)
     {
+        var result = JsonSerializer.Deserialize<ImageSearchResponse>(Constants.TemporaryImageSearchResponse);
+
+        return result.Value.Select(x => x.ContentUrl).ToList();
+        
+        
         using var client = new HttpClient();
         
         client.BaseAddress = new Uri(baseUrl);
@@ -18,7 +25,7 @@ public class ImageSearchService
         
         var content = await response.Content.ReadFromJsonAsync<ImageSearchResponse>();
 
-        return content;
+        return content.Value.Select(x => x.ContentUrl).ToList();
     }
     
    
