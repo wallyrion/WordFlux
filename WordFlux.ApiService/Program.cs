@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
+using Serilog;
 using WebPush;
 using WordFlux.ApiService;
 using WordFlux.ApiService.Ai;
@@ -22,6 +23,11 @@ var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((context, provider, configuration) =>
+{
+    configuration.WriteTo.Console();
+    configuration.WriteTo.Seq("http://172.191.101.172:80");
+});
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -71,6 +77,7 @@ var app = builder.Build();
 app.UseCors("wasm");
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 
 app.MapIdentityApi<AppUser>();
