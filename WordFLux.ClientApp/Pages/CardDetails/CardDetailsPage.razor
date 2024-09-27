@@ -1,0 +1,12 @@
+@page "/card/{cardId:guid}"
+@using WordFLux.ClientApp.Components
+
+<div class="container">
+    <CardDetails CardId="CardId"/>
+
+</div>
+
+@code
+{
+    [Parameter] public Guid CardId { get; set; }
+}

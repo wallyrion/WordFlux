@@ -71,17 +71,21 @@
 
                         <ul class="dropdown-menu">
                             <li>
-                                <button class="dropdown-item btn btn-outline-danger" @onclick="DeleteCard"> <i class="bi bi-trash text-danger"></i>  Remove card</button>
+                                <a class="dropdown-item btn btn-outline-info" href="/card/{@CurrentCard.Id}"><i class="bi bi-window-dock"></i>  Open card details</a>
+                            </li>
+                            <li>
+                                <button class="dropdown-item btn btn-outline-danger" @onclick="DeleteCard"> <i class="bi bi-trash text-danger"></i> Remove card</button>
                             </li>
                             @if (TermTranslation != null)
                             {
                                 <li>
-                                    <button class="dropdown-item btn btn-outline-secondary" @onclick="() => SearchForTerm(TermTranslation!)"> <i class="bi bi-search"></i>  Search for '@TermTranslation.TruncateWithEllipsis()'</button>
+                                    <button class="dropdown-item btn btn-outline-secondary" @onclick="() => SearchForTerm(TermTranslation!)"> <i class="bi bi-search"></i> Search for '@TermTranslation.TruncateWithEllipsis()'</button>
                                 </li>
                                 <li>
                                     <span><AudioFromText Term="@TermTranslation"/></span> '@TermTranslation.TruncateWithEllipsis()'
                                 </li>
                             }
+
                             @if (TermLearning != null)
                             {
                                 <li>
