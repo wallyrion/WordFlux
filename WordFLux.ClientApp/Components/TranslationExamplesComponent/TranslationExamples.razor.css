@@ -52,3 +52,19 @@
     margin-top: 50px; /* Add margin to prevent overlap with the buttons above */
     position: relative;
 }
+
+
+.drag-handle {
+    cursor: move;
+    cursor: -webkit-grabbing;
+}
+
+
+/*
+
+.drag-container:has(.sortable-chosen) .grab-item-content {
+    user-select: none;
+    -webkit-user-select: none;  !* For Safari *!
+    -moz-user-select: none;     !* For Firefox *!
+    -ms-user-select: none;      !* For IE *!
+}*/

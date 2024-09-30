@@ -4,8 +4,10 @@
 
 <h1>Hello, world!</h1>
 
-Welcome to your new app.
+<div class="test-div border-1 border-black " style="width: 200px; height: 200px; border: red solid" id="div1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<div class="test-div border-1 border-black " style="width: 200px; height: 200px; border: red solid" id="div2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
 
+<img id="drag1" src="https://images.unsplash.com/photo-1470165511815-34e78ff7a111?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NDc4Mzl8MHwxfHNlYXJjaHwyfHxmb3h8ZW58MHx8fHwxNzI3NjM2NDI0fDA&ixlib=rb-4.0.3&q=80&w=1080" draggable="true" ondragstart="drag(event)" width="336" height="69" alt="">
 
 
 <a href="/review?deckId={@(Guid.NewGuid())}">Learn this deck</a>

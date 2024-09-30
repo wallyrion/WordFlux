@@ -1,0 +1,26 @@
+li {
+    position: relative; /* Ensure each list item is positioned properly */
+}
+
+.dragging {
+    opacity: 0.5; /* Make the dragged item semi-transparent to indicate it's being dragged */
+    z-index: 1000; /* Bring the dragged item to the front */
+}
+
+li div {
+    position: relative;
+}
+
+li div .overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999; /* Ensure the overlay is on top when dragging */
+    pointer-events: none; /* Prevent the overlay from blocking the drag */
+}
+
+li .drag-placeholder {
+    height: 0; /* Placeholder for dragging */
+}
