@@ -1,9 +1,15 @@
 ﻿namespace WordFlux.Contracts;
 
+
 public record CardTranslationItem(string Term, string? ExampleTranslated = null, string? ExampleOriginal = null, int Popularity = 0, string? Level = null)
 {
     public bool IsSelected { get; set; }
 }
+/*public record CardTranslationViewModel(string Term, string? ExampleTranslated = null, string? ExampleOriginal = null, int Popularity = 0, string? Level = null)
+    : CardTranslationItem(Term, ExampleTranslated, ExampleOriginal, Popularity, Level)
+{
+    public bool IsSelected { get; set; }
+}*/
 
 public record CardRequest(string Term, string Level, List<CardTranslationItem> Translations, Guid DeckId = default, string? ImageUrl = null);
 

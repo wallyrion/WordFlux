@@ -53,13 +53,6 @@
     position: relative;
 }
 
-
-.drag-handle {
-    cursor: move;
-    cursor: -webkit-grabbing;
-}
-
-
 /*
 
 .drag-container:has(.sortable-chosen) .grab-item-content {

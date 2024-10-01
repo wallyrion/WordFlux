@@ -8,6 +8,7 @@
 @using WordFlux.Contracts
 @using WordFLux.ClientApp.Pages.ReviewPage
 @using WordFLux.ClientApp.Storage
+@using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @attribute [Authorize]
@@ -157,6 +158,7 @@
                     
 
                     <TranslationExamples
+                        IsMoveBetweenListsPossible="@false"
                         Term="@CurrentCard.Term"
                         OnTermSearch="SearchForTerm"
                         Translations="CurrentCard.Translations"

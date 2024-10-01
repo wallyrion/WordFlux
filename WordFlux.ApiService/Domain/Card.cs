@@ -1,3 +1,4 @@
+using WordFlux.ApiService.ViewModels;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Domain;

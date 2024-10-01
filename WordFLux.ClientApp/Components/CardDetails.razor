@@ -2,6 +2,7 @@
 @using WordFlux.Contracts
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFLux.ClientApp.Utils
+@using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @inject IJSRuntime JsRuntime
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
@@ -94,6 +95,7 @@
     
     
     <TranslationExamples
+        IsMoveBetweenListsPossible="@false"
         Term="@Card.Term"
         OnTermSearch="SearchForTerm"
         Translations="Card.Translations"

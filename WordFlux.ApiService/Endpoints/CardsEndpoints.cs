@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.Domain;
 using WordFlux.ApiService.Persistence;
+using WordFlux.ApiService.ViewModels;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Endpoints;
@@ -198,7 +199,7 @@ public static class CardsEndpoints
                     CreatedAt = DateTime.UtcNow,
                     Id = Guid.NewGuid(),
                     Term = request.Term,
-                    Translations = request.Translations,
+                    Translations = request.Translations.Select(x => new CardTranslationItem(x.Term, x.ExampleTranslated, x.ExampleOriginal, x.Popularity, x.Level)).ToList(),
                     CreatedBy = userId,
                     NextReviewDate = DateTime.UtcNow,
                     ReviewInterval = TimeSpan.FromMinutes(2),
