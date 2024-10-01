@@ -55,7 +55,7 @@
 
 @if (Examples.Count > 0)
 {
-    <TranslationExamples OnReplaceTranslation="ReplaceTranslation" OnTermSearch="e => SearchForTerm(e)" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
+    <TranslationExamples OnItemsReordered="tuple => Examples = tuple.Item1" OnReplaceTranslation="ReplaceTranslation" OnTermSearch="e => SearchForTerm(e)" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
 
     <div class="d-flex justify-content-center mt-1 mb-3">
         <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>

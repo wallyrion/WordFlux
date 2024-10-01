@@ -49,7 +49,7 @@
 
         @if (SavedCard != null)
         {
-            <CardDetails PredefinedCard="SavedCard"></CardDetails>
+            <CardDetails OnCardDeleted="CardDeleted" PredefinedCard="SavedCard"></CardDetails>
         }
       
         @if (Translation != null && SavedCard == null)
@@ -164,4 +164,10 @@
     {
         ConnectionHealthService.OnStatusChanged -= StateHasChanged;
     }
+
+    private async Task CardDeleted()
+    {
+        await Reset();
+    }
+
 }

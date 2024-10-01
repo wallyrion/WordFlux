@@ -113,6 +113,7 @@
     
     
     <TranslationExamples
+        OnItemsReordered="async args => await ItemsSortingChanged(args.Item1, args.isOrderChanged)"
         IsMoveBetweenListsPossible="@false"
         Term="@Card.Term"
         OnTermSearch="SearchForTerm"
@@ -259,5 +260,13 @@ else
         //await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseImageModalButtonRef);
 
         await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations, ImageUrl: Card.ImageUrl), Card.Id);
+    }
+
+    private async Task ItemsSortingChanged(List<CardTranslationItem> items, bool argsIsOrderChanged)
+    {
+        Card = Card with { Translations = items };
+        StateHasChanged();
+        
+        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
     }
 }

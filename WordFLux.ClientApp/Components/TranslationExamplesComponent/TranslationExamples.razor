@@ -9,7 +9,9 @@
 
 <div class="mt-4">
     <div class="drag-container">
-        <SortableTranslationLists IsMoveBetweenListsPossible="IsMoveBetweenListsPossible" Items="Items" Context="item">
+        <SortableTranslationLists IsMoveBetweenListsPossible="IsMoveBetweenListsPossible" Items="Items"
+                                  OnItemsReordered="OnItemsReordered"
+                                  Context="item">
             <CardTemplate>
                 <div class="card-wrapper position-relative w-100">
                     <div class="action-buttons position-absolute text-start p-2">
@@ -199,6 +201,7 @@
     [Parameter] public EventCallback<(CardTranslationItem oldItem, CardTranslationItem newItem)> OnReplaceTranslation { get; set; }
     [Parameter] public List<CardTranslationItem> Translations { get; set; } = [];
     [Parameter] public string? Term { get; set; }
+    [Parameter] public EventCallback<(List<CardTranslationItem>, bool isOrderChanged)> OnItemsReordered { get; set; }
 
     List<(CardTranslationItem value, int index)> Items => Translations.Select((value, index) =>
     {
@@ -271,5 +274,4 @@
         public bool IsSelected { get; set; }
         public int Index { get; set; }
     }
-
 }
