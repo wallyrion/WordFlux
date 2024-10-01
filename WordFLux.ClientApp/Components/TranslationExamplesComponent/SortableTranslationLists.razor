@@ -2,7 +2,7 @@
 @using WordFlux.Contracts
 
 <SortableList
-    Group="sharedLists" Items="SelectedItems" Context="item" Handle=".drag-handle" OnUpdate="@SortList" OnRemove="SelectedItemsRemove">
+    Group="sharedLists" Items="SelectedItems" Context="item" Handle=".drag-handle" OnUpdate="@(e => SortList(e, SelectedItems))" OnRemove="SelectedItemsRemove">
     <SortableItemTemplate>
         <div class="d-flex drag-item">
             <div class="">
@@ -33,7 +33,7 @@
     <hr class="mt-0"/>
 
     <SortableList
-        Group="sharedLists" Items="NotSelectedItems" Context="item" Handle=".drag-handle" OnUpdate="@SortList" OnRemove="NotSelectedItemsRemove">
+        Group="sharedLists" Items="NotSelectedItems" Context="item" Handle=".drag-handle" OnUpdate="@(e => SortList(e, NotSelectedItems))" OnRemove="NotSelectedItemsRemove">
         <SortableItemTemplate>
             <div class="d-flex drag-item">
                 <div class="">
@@ -58,21 +58,26 @@
 @code
 {
     [Parameter] public RenderFragment<(CardTranslationItem value, int index)>? CardTemplate { get; set; }
-
     [Parameter] public List<(CardTranslationItem value, int index)> Items { get; set; } = [];
-
-    List<(CardTranslationItem value, int index)> SelectedItems => IsMoveBetweenListsPossible ? Items.Where(x => x.value.IsSelected).ToList() : Items;
-    List<(CardTranslationItem value, int index)> NotSelectedItems => Items.Where(x => !x.value.IsSelected).ToList();
+    [Parameter] public EventCallback<(List<CardTranslationItem>, bool isOrderChanged)> OnItemsReordered { get; set; }
     [Parameter] public bool IsMoveBetweenListsPossible { get; set; } = true;
 
-    private async Task SortList((int oldIndex, int newIndex) indices)
+    List<(CardTranslationItem value, int index)> SelectedItems { get; set; } = [];
+    List<(CardTranslationItem value, int index)> NotSelectedItems { get; set; } = [];
+
+    protected override void OnParametersSet()
+    {
+        SelectedItems = IsMoveBetweenListsPossible ? Items.Where(x => x.value.IsSelected).ToList() : Items;
+        NotSelectedItems = IsMoveBetweenListsPossible ? Items.Where(x => !x.value.IsSelected).ToList() : [];
+    }
+
+    private async Task SortList((int oldIndex, int newIndex) indices, List<(CardTranslationItem value, int index)> items)
     {
         var (oldIndex, newIndex) = indices;
 
-        var items = Items;
         var itemToMove = items[oldIndex];
         items.RemoveAt(oldIndex);
-
+        
         if (newIndex < items.Count)
         {
             items.Insert(newIndex, itemToMove);
@@ -83,19 +88,33 @@
         }
 
         StateHasChanged();
+
+        await TriggerReorder(true);
     }
 
-    private void SelectedItemsRemove((int oldIndex, int newIndex) indices)
+    private async Task TriggerReorder(bool isOrderChanged)
+    {
+        var reordered = SelectedItems.Concat(NotSelectedItems);
+        await OnItemsReordered.InvokeAsync((reordered.Select(x => x.value).ToList(), isOrderChanged));
+    }
+    
+
+    private async Task SelectedItemsRemove((int oldIndex, int newIndex) indices)
     {
         var item = SelectedItems[indices.oldIndex];
         item.value.IsSelected = false;
         StateHasChanged();
+        await TriggerReorder(false);
+
     }
 
-    private void NotSelectedItemsRemove((int oldIndex, int newIndex) indices)
+    private async Task NotSelectedItemsRemove((int oldIndex, int newIndex) indices)
     {
         var item = NotSelectedItems[indices.oldIndex];
         item.value.IsSelected = true;
         StateHasChanged();
+        
+        await TriggerReorder(false);
+
     }
 }

@@ -53,7 +53,7 @@
                     </button>
                     @if (TimeToNextReview != null)
                     {
-                        <span>Next review in <strong>@(GetNextReviewTime()). </strong> </span>
+                    <span>Next review in <strong>@(TimeUtils.GetNextReviewTime(TimeToNextReview)). </strong> </span>
                     }
                 </div>
             </div>
@@ -103,7 +103,7 @@
                     </div>
                 </div>
                 
-                <CardDetails CardId="CurrentCard.Id" PredefinedCard="CurrentCard"></CardDetails>
+                <CardDetails OnCardDeleted="LoadNext" CardId="CurrentCard.Id" PredefinedCard="CurrentCard"></CardDetails>
 
             }
             
@@ -131,28 +131,9 @@
     
     [SupplyParameterFromQuery(Name = "deckId")]
     public Guid? DeckId { get; set; }
-    List<Guid> SelectedDecksIds = [];
+    List<Guid> SelectedDecksIds { get; set; } = [];
     List<DeckDto> Decks { get; set; } = [];
     
-    void SearchForTerm(string term)
-    {
-        Navigation.NavigateTo("/?term=" + term);
-    }
-
-    async Task MakePrimary(CardTranslationItem item)
-    {
-        CurrentCard!.Translations.Remove(item);
-        CurrentCard.Translations.Insert(0, item);
-
-        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
-    }
-
-    async Task RemoveTranslation(CardTranslationItem item)
-    {
-        CurrentCard!.Translations.Remove(item);
-
-        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
-    }
 
     private async Task Approve()
     {
@@ -244,78 +225,9 @@
         IsRequestInProgress = false;
     }
 
-
-
-    private string GetNextReviewTime()
-    {
-        if (TimeToNextReview == null)
-        {
-            return "";
-        }
-
-        var time = TimeToNextReview.Value;
-
-        if (time < TimeSpan.FromSeconds(1))
-        {
-            return "a few moments";
-        }
-
-        if (time <= TimeSpan.FromMinutes(1))
-        {
-            return $"{time.Seconds} second{AppendS(time.Seconds)}";
-        }
-
-        if (time <= TimeSpan.FromHours(1))
-        {
-            return $"{time.Minutes} minute{AppendS(time.Minutes)}";
-        }
-
-        if (time <= TimeSpan.FromDays(1))
-        {
-            return $"{time.Hours} hour{AppendS(time.Hours)}";
-        }
-
-        if (time <= TimeSpan.FromDays(30))
-        {
-            return $"{time.Days} day{AppendS(time.Days)}";
-        }
-
-        if (time <= TimeSpan.FromDays(365))
-        {
-            var months = time.Days / 30;
-
-            return $"{months} month{AppendS(months)}";
-        }
-
-        var years = time.Days / 365;
-
-        return $"{years} year{AppendS(years)}";
-
-        static string AppendS(int quantity)
-        {
-            return quantity > 1 ? "s" : "";
-        }
-    }
-
     private void UpdateLearningStrategy()
     {
         IsShowTranslationAsBaseTerm = Random.Shared.NextSingle() < 0.4;
-    }
-
-    private async Task DeleteCard()
-    {
-        await WeatherApi.RemoveCard(CurrentCard!.Id);
-
-        await LoadNext();
-
-        await UpdateTimeToNextReview();
-    }
-
-    private async Task AddMyTranslation(CardTranslationItem item)
-    {
-        CurrentCard!.Translations.Insert(0, item);
-
-        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
     }
 
     private async Task OnDeckFiltered(List<Guid> decks)
@@ -327,15 +239,4 @@
 
         await LoadInitialState();
     }
-
-    private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) obj)
-    {
-        var replaceIndex = CurrentCard.Translations.FindIndex(x => ReferenceEquals(x, obj.oldItem));
-
-        CurrentCard.Translations[replaceIndex] = obj.newItem;
-        
-        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
-
-    }
-
 }
