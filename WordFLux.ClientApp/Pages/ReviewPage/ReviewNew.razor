@@ -1,0 +1,341 @@
+﻿@page "/reviewV2"
+@using WordFLux.ClientApp.Extensions
+@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Pages.Shared
+@using WordFLux.ClientApp.Utils
+@inject LocalStorage Storage
+
+@using WordFlux.Contracts
+@using WordFLux.ClientApp.Storage
+@using WordFLux.ClientApp.Components.TranslationExamplesComponent
+@using WordFLux.ClientApp.Components
+@inject WeatherApiClient WeatherApi
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>Review yourself</PageTitle>
+
+<div class="container mx-auto">
+
+    <div class="d-flex justify-content-end mb-2">
+        @if (Decks.Count > 0)
+        {
+            <DecksFilter Decks="Decks" OnFilterDecks="OnDeckFiltered" SelectedDecksIds="SelectedDecksIds"/>
+        }
+    </div>
+
+
+    @if (IsLoading)
+    {
+        <p>
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only"></span>
+            </div>
+        </p>
+    }
+    else
+    {
+        if (CurrentCard == null)
+        {
+            <div class="card text-center">
+                <div class="card-header">
+                    Nothing to learn at this moment. <a href="/">Create new cards</a>
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p>@Motivation</p>
+                        <footer class="blockquote-footer">OpenAI</footer>
+                    </blockquote>
+                </div>
+                <div class="card-footer d-flex justify-content-center align-items-center">
+                    <button class="btn btn-outline-info me-3" @onclick="OnInitializedAsync">
+                        <i class="bi bi-bootstrap-reboot"></i>
+                    </button>
+                    @if (TimeToNextReview != null)
+                    {
+                        <span>Next review in <strong>@(GetNextReviewTime()). </strong> </span>
+                    }
+                </div>
+            </div>
+        }
+
+        else
+        {
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title pre-wrap">@TermLearning</h5>
+
+                    @if (IsShowTranslation)
+                    {
+                        <p class="card-text pre-wrap text-primary-emphasis">@TermTranslation</p>
+                    }
+                </div>
+
+            </div>
+                
+            @if (!IsShowTranslation)
+            {
+                <div class="row justify-content-center mt-2 mb-2">
+                    <div class="col-5 col-lg-2">
+                        <button type="button" class="btn btn-outline-primary w-100" @onclick="ShowTranslation">Show translation</button>
+                    </div>
+                </div>
+            }
+            
+            
+            
+            
+            @if(IsShowTranslation)
+            {
+                <div class="row justify-content-center mt-2 mb-5">
+                    <div class="col-6 col-lg-6 col-md-6">
+                        <button type="button" class="btn btn-warning w-100" disabled="@IsRequestInProgress" @onclick="Reject">
+                            Learning...
+                            <i class="bi bi-x-diamond"></i>
+                        </button>
+                    </div>
+
+                    <div class="col-6 col-lg-6 col-md-6">
+                        <button type="button" class="btn btn-success w-100" disabled="@IsRequestInProgress" @onclick="Approve">
+                            I know this
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <CardDetails CardId="CurrentCard.Id" PredefinedCard="CurrentCard"></CardDetails>
+
+            }
+            
+
+
+        }
+    }
+
+
+</div>
+
+@code {
+    CardDto? CurrentCard { get; set; }
+    CardDto? NextCard { get; set; }
+    bool IsLoading { get; set; }
+    bool IsShowTranslation { get; set; }
+    bool IsShowTranslationAsBaseTerm { get; set; }
+
+    bool IsRequestInProgress { get; set; } = true;
+    TimeSpan? TimeToNextReview { get; set; }
+    string Motivation { get; set; } = "There is no better time to learn than now";
+    string? TermLearning => IsShowTranslationAsBaseTerm ? CurrentCard?.Translations.First().Term : CurrentCard?.Term;
+    string? TermTranslation => IsShowTranslationAsBaseTerm ? CurrentCard?.Term : CurrentCard?.Translations.First().Term;
+    private AudioFromText audioComponent1;
+    
+    [SupplyParameterFromQuery(Name = "deckId")]
+    public Guid? DeckId { get; set; }
+    List<Guid> SelectedDecksIds = [];
+    List<DeckDto> Decks { get; set; } = [];
+    
+    void SearchForTerm(string term)
+    {
+        Navigation.NavigateTo("/?term=" + term);
+    }
+
+    async Task MakePrimary(CardTranslationItem item)
+    {
+        CurrentCard!.Translations.Remove(item);
+        CurrentCard.Translations.Insert(0, item);
+
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    async Task RemoveTranslation(CardTranslationItem item)
+    {
+        CurrentCard!.Translations.Remove(item);
+
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    private async Task Approve()
+    {
+        IsRequestInProgress = true;
+        await WeatherApi.ApproveCard(CurrentCard!.Id);
+        await LoadNext();
+
+        IsRequestInProgress = false;
+    }
+
+    private async Task Reject()
+    {
+        IsRequestInProgress = true;
+
+        await WeatherApi.RejectCard(CurrentCard!.Id);
+        await LoadNext();
+
+        IsRequestInProgress = false;
+    }
+
+    void ShowTranslation()
+    {
+        IsShowTranslation = true;
+    }
+
+    private async Task LoadNext()
+    {
+        IsShowTranslation = false;
+        CurrentCard = NextCard;
+        UpdateLearningStrategy();
+
+        StateHasChanged();
+        await UpdateTimeToNextReview();
+
+        NextCard = await WeatherApi.GetNextCard(SelectedDecksIds, 1);
+    }
+
+    private async Task UpdateTimeToNextReview()
+    {
+        if (CurrentCard == null)
+        {
+            TimeToNextReview = await WeatherApi.GetNextReviewTime(SelectedDecksIds);
+            Motivation = await WeatherApi.GetMotivation();
+        }
+        else
+        {
+            TimeToNextReview = null;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        var deckFromQuery = DeckId;
+        
+        if (deckFromQuery != null)
+        {
+            SelectedDecksIds = [deckFromQuery.Value];
+        }
+        else
+        {
+            SelectedDecksIds = await Storage.GetLatestDecksSelection();
+        }
+
+        var decksTask = Task.Run(WeatherApi.GetDecks);
+
+        await LoadInitialState();
+        Decks = await decksTask;
+
+    }
+
+    private async Task LoadInitialState()
+    {
+        IsLoading = true;
+        IsRequestInProgress = true;
+        StateHasChanged();
+        
+        var currentCardTask = Task.Run(() => WeatherApi.GetNextCard(SelectedDecksIds));
+        var nextCardTask = Task.Run(() => WeatherApi.GetNextCard(SelectedDecksIds, 1));
+        
+        CurrentCard = await currentCardTask;
+        IsLoading = false;
+        UpdateLearningStrategy();
+        StateHasChanged();
+
+        NextCard = await nextCardTask;
+        await UpdateTimeToNextReview();
+
+        IsRequestInProgress = false;
+    }
+
+
+
+    private string GetNextReviewTime()
+    {
+        if (TimeToNextReview == null)
+        {
+            return "";
+        }
+
+        var time = TimeToNextReview.Value;
+
+        if (time < TimeSpan.FromSeconds(1))
+        {
+            return "a few moments";
+        }
+
+        if (time <= TimeSpan.FromMinutes(1))
+        {
+            return $"{time.Seconds} second{AppendS(time.Seconds)}";
+        }
+
+        if (time <= TimeSpan.FromHours(1))
+        {
+            return $"{time.Minutes} minute{AppendS(time.Minutes)}";
+        }
+
+        if (time <= TimeSpan.FromDays(1))
+        {
+            return $"{time.Hours} hour{AppendS(time.Hours)}";
+        }
+
+        if (time <= TimeSpan.FromDays(30))
+        {
+            return $"{time.Days} day{AppendS(time.Days)}";
+        }
+
+        if (time <= TimeSpan.FromDays(365))
+        {
+            var months = time.Days / 30;
+
+            return $"{months} month{AppendS(months)}";
+        }
+
+        var years = time.Days / 365;
+
+        return $"{years} year{AppendS(years)}";
+
+        static string AppendS(int quantity)
+        {
+            return quantity > 1 ? "s" : "";
+        }
+    }
+
+    private void UpdateLearningStrategy()
+    {
+        IsShowTranslationAsBaseTerm = Random.Shared.NextSingle() < 0.4;
+    }
+
+    private async Task DeleteCard()
+    {
+        await WeatherApi.RemoveCard(CurrentCard!.Id);
+
+        await LoadNext();
+
+        await UpdateTimeToNextReview();
+    }
+
+    private async Task AddMyTranslation(CardTranslationItem item)
+    {
+        CurrentCard!.Translations.Insert(0, item);
+
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+    }
+
+    private async Task OnDeckFiltered(List<Guid> decks)
+    {
+        await Storage.SaveDeckSelection(decks);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("deckId", (string?)null));
+        
+        SelectedDecksIds = decks;
+
+        await LoadInitialState();
+    }
+
+    private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) obj)
+    {
+        var replaceIndex = CurrentCard.Translations.FindIndex(x => ReferenceEquals(x, obj.oldItem));
+
+        CurrentCard.Translations[replaceIndex] = obj.newItem;
+        
+        await WeatherApi.UpdateCard(new CardRequest(CurrentCard.Term, CurrentCard.Level, CurrentCard.Translations), CurrentCard.Id);
+
+    }
+
+}

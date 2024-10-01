@@ -3,12 +3,20 @@
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFLux.ClientApp.Utils
 @using WordFLux.ClientApp.Components.TranslationExamplesComponent
+@using WordFLux.ClientApp.Extensions
 @inject IJSRuntime JsRuntime
 @inject WeatherApiClient ApiClient
 @inject NavigationManager Navigation
 
 @if (Card != null)
 {
+    <div>
+        <button type="button" class="btn ms-1 disabled mb-2">
+            ✔️
+            <span class=""> @Card.DeckName</span>
+        </button>
+    </div>
+    
     @if (IsEditMode)
     {
         <div class="input-group mb-2">
@@ -69,6 +77,16 @@
                     <i class="bi bi-list"></i>
                 </button>*@
             </div>
+
+            @{
+                var currentProgress = Card.GetProgressRate();
+
+                <div class="card-footer">
+                    <div class="progress" role="progressbar" aria-label="Default striped example" aria-valuenow="@currentProgress" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar @(currentProgress >= 100 ? "bg-success" : "progress-bar-striped")" style="width: @currentProgress%;"></div>
+                    </div>
+                </div>
+            }
         </div>
     }
 
@@ -125,6 +143,7 @@ else
     CardDto? Card { get; set; }
 
     [Parameter] public Guid CardId { get; set; }
+    [Parameter] public CardDto? PredefinedCard { get; set; }
     [Parameter] public EventCallback<CardDto> OnCardChanged { get; set; }
     [Parameter] public EventCallback<Guid> OnCardDeleted { get; set; }
     [Parameter] public EventCallback OnPageRedirect { get; set; }
@@ -136,7 +155,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Card = await ApiClient.GetCard(CardId);
+        Card = PredefinedCard ?? await ApiClient.GetCard(CardId);
     }
 
     private async Task SearchForTerm(string term)

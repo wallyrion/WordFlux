@@ -211,7 +211,11 @@ public static class CardsEndpoints
                 dbContext.Cards.Add(card);
                 await dbContext.SaveChangesAsync();
 
+                await dbContext.Entry(card).Reference(x => x.Deck).LoadAsync();
+
                 logger.LogInformation("Saving card for term = {Term}", request.Term);
+                
+                return new CardDto(card.Id, card.CreatedAt, card.Term, card.Level, card.Translations, card.ReviewInterval, card.Deck.Name, card.ImageUrl);
             }).RequireAuthorization();
 
         app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid cardId,
