@@ -147,7 +147,7 @@ else
     [Parameter] public CardDto? PredefinedCard { get; set; }
     [Parameter] public EventCallback<CardDto> OnCardChanged { get; set; }
     [Parameter] public EventCallback<Guid> OnCardDeleted { get; set; }
-    [Parameter] public EventCallback OnPageRedirect { get; set; }
+    [Parameter] public EventCallback<string> OnPageRedirectToSearch { get; set; }
     bool IsEditMode { get; set; }
     string? EditTerm { get; set; }
     ElementReference ImageModalRef { get; set; }
@@ -161,7 +161,7 @@ else
 
     private async Task SearchForTerm(string term)
     {
-        await OnPageRedirect.InvokeAsync();
+        await OnPageRedirectToSearch.InvokeAsync(term);
         Navigation.NavigateTo("/?term=" + term);
     }
 
@@ -225,7 +225,7 @@ else
 
     private async Task RedirectToNewSearch()
     {
-        await OnPageRedirect.InvokeAsync();
+        await OnPageRedirectToSearch.InvokeAsync(Card!.Term);
         
         Navigation.NavigateTo($"/?term={Card!.Term}");
     }
