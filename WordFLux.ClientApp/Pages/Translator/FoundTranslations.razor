@@ -1,0 +1,187 @@
+@using WordFLux.ClientApp.Components
+@using WordFlux.Contracts
+@using WordFLux.ClientApp.Components.TranslationExamplesComponent
+@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Pages.Shared
+@inject WeatherApiClient WeatherApi
+
+<div class="d-flex justify-content-between g4">
+    <div >
+        <AuthorizeView>
+            <Authorized>
+                <div class="btn-group">
+                    <button disabled="@(IsLoading || IsExamplesLoading)" @onclick="() => SaveToCards(Guid.Empty)" type="button" class="btn btn-outline-warning">Save to default deck</button>
+                    <button disabled="@(IsLoading || IsExamplesLoading)" type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        @foreach (var deck in Decks)
+                        {
+                            <li>
+                                <a disabled="@(IsLoading || IsExamplesLoading)" class="dropdown-item" role="button" @onclick="() => SaveToCards(deck.Id)">@deck.Name</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </Authorized>
+
+            <NotAuthorized>
+                <button type="button" disabled class="btn btn-warning ms-1 disabled">
+                    ✔️
+                    <span class=""> Log in to save card</span>
+                </button>
+            </NotAuthorized>
+        </AuthorizeView>
+
+    </div>
+
+    <div >
+        <button type="button" class="btn btn-outline-secondary" @onclick="ShowImageModal">
+            <i class="bi bi-plus"></i> <i class="bi bi-card-image"></i>
+        </button>
+    </div>
+
+</div>
+
+
+@if (ImageUrl != null)
+{
+    <div class="d-flex justify-content-center mt-2">
+        <div class="col-12 col-md-6 col-lg-4" style="max-width:360px">
+            <img src="@ImageUrl" class="img-fluid img-thumbnail" alt="Selected image that describes term"/>
+        </div>
+    </div>
+}
+
+@if (Examples.Count > 0)
+{
+    <TranslationExamples OnReplaceTranslation="ReplaceTranslation" OnTermSearch="e => SearchForTerm(e)" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
+
+    <div class="d-flex justify-content-center mt-1 mb-3">
+        <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>
+    </div>
+}
+
+@if (IsExamplesLoading)
+{
+    <div class="d-flex justify-content-center text-center mt-5 mb-5">
+        <div class="me-2">Getting usage examples</div>
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+}
+
+
+<EditTranslation OnAddMyTranslation="AddMyTranslation" Term="@ActualTerm"/>
+
+<SearchImageModal @ref="SearchImageModalRef" OnImageSelected="imgUrl => ImageUrl = imgUrl"/>
+
+
+@code
+{
+    const string DefaultDeckName = "Default";
+
+    [Parameter] public SimpleTranslationResponse Translation { get; set; } = null!;
+    [Parameter] public string? Level { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public List<DeckDto> Decks { get; set; } = [];
+    [Parameter] public bool UseAzureAiTranslator { get; set; }
+    [Parameter] public string Term { get; set; } = null!;
+    [Parameter] public EventCallback<string> OnSearch { get; set; }
+    [Parameter] public EventCallback<CardDto> OnCardSaved { get; set; }
+    [Parameter] public CancellationToken CancellationToken { get; set; }
+
+    bool IsExamplesLoading { get; set; }
+    SearchImageModal SearchImageModalRef { get; set; } = null!;
+    public string? ImageUrl { get; set; }
+    List<CardTranslationItem> Examples { get; set; } = [];
+    string? ActualTerm => !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            IsExamplesLoading = true;
+            StateHasChanged();
+            
+            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator, CancellationToken);
+            Examples[0].IsSelected = true;
+        }
+        finally
+        {
+            IsExamplesLoading = false;
+        }
+     
+    }
+
+    private async Task SaveToCards(Guid deckId)
+    {
+        var selectedTranslations = Examples.Where(x => x.IsSelected).ToList();
+
+        if (selectedTranslations.Count == 0)
+        {
+            selectedTranslations = [Examples[0]];
+        }
+        var cardRequest = new CardRequest(ActualTerm!, Level, selectedTranslations, deckId, ImageUrl);
+        var savedCard = await WeatherApi.SaveNewCard(cardRequest);
+        await OnCardSaved.InvokeAsync(savedCard);
+    }
+
+    private async Task ShowImageModal()
+    {
+        await SearchImageModalRef.OpenModal(ActualTerm!);
+    }
+
+    private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) arg)
+    {
+        var replaceIndex = Examples.FindIndex(x => ReferenceEquals(x, arg.oldItem));
+        Examples[replaceIndex] = Examples[replaceIndex] with { Term = arg.newItem.Term, ExampleOriginal = arg.newItem.ExampleOriginal, ExampleTranslated = arg.newItem.ExampleTranslated };
+    }
+
+    private async Task SearchForTerm(string s)
+    {
+        await OnSearch.InvokeAsync(s);
+    }
+
+    async Task MakePrimary(CardTranslationItem item)
+    {
+        Examples.Remove(item);
+        Examples.Insert(0, item);
+    }
+
+    async Task RemoveTranslation(CardTranslationItem item)
+    {
+        if (Examples.Count == 1)
+        {
+            return;
+        }
+
+        Examples.Remove(item);
+    }
+
+    private async Task LoadMoreExamples()
+    {
+        try
+        {
+            IsExamplesLoading = true;
+
+            var res = await WeatherApi.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+
+            Translation = Translation with { Translations = [..Translation.Translations, ..res] };
+            var examples = await WeatherApi.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
+
+            Examples = [..Examples, ..examples];
+        }
+        finally
+        {
+            IsExamplesLoading = false;
+        }
+    }
+
+    private void AddMyTranslation(CardTranslationItem cardTranslation)
+    {
+        Examples.Insert(0, cardTranslation);
+
+    }
+}
