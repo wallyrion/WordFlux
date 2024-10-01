@@ -1,0 +1,111 @@
+@page "/Example3"
+<article class="prose prose-invert">
+    <p>
+        Example 3 addresses the challenge of moving an item to the end of the list. This is achieved by use of a variable named `lastModel`,
+        And placing an element at the end of the list that is not draggable. This element is then used as the drop target for the last item in the list.
+    </p>
+</article>
+
+
+<div>
+</div>
+<div class="flex justify-center bg-gray-800">
+
+    <ul class="mx-auto my-5 "
+        ondragover="event.preventDefault();">
+        @foreach (var item in Models.OrderBy(x => x.Order))
+        {
+            <li @key="item" class="pb-2 relative w-64 position-relative w-50"
+                @ondragstart="() => DragStart(item)"
+                @ondragend="() => draggingModel = null" draggable="@(item == lastModel ? "false" : "true")">
+                @if (item == lastModel)
+                {
+                    if (draggingModel is not null)
+                    {
+                        <div @ondrop="() => HandleDrop(item)" @key="item" class="h-10 bg-transparent w-full
+            				@(item.IsDragOver ? "border-t-4 border-red-500" : "")">
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class=" bg-sky-800 py-3 rounded-xl px-2">
+                        <div class="bg-indigo-800 bg-info py-5 mx-2 px-2 rounded-xl">@item.Name</div>
+                        <div>Part of content...</div>
+                    </div>
+                }
+
+                @if (draggingModel is not null)
+                {
+                    //for explanation why we need this overlay, see Example2
+                    <div class="position-absolute w-100 h-100 bg-neutral-500/20 absolute inset-0 w-full h-full @(item.IsDragOver ? "border-t-4 border-red-500" : "")"
+                         @ondrop="() => HandleDrop(item)"
+                         @ondragenter="@(() => { item.IsDragOver = true; Console.WriteLine($"Drag Enter {item.Name}"); })"
+                         @ondragleave="@(() => { item.IsDragOver = false; Console.WriteLine($"Drag Leave {item.Name}"); })">
+
+                        <span> Dragging model not null</span>
+                        
+                    </div>
+                }
+
+            </li>
+        }
+    </ul>
+</div>
+
+@code
+{
+    private List<Model> Models { get; } = [];
+
+    private class Model
+    {
+        public int Order { get; set; }
+        public string Name { get; set; } = "";
+        public bool IsDragOver { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        //fill names wit "random" string
+        for (var i = 0; i < 10; i++)
+        {
+            Model m = new() { Order = i, Name = $"Item {i}" };
+            Models.Add(m);
+        }
+
+        Models.Add(lastModel);
+        base.OnInitialized();
+    }
+
+    private void HandleDrop(Model landingModel)
+    {
+        Console.WriteLine("Handling drop");
+        //landing model -> where the drag happened
+        if (draggingModel is null) return;
+
+        int originalOrderLanding = landingModel.Order; //keep the original order for later
+
+        Models.Where(x => x.Order >= landingModel.Order).ToList().ForEach(x => x.Order++);
+        draggingModel.Order = originalOrderLanding; //replace landing model
+        int ii = 0;
+
+        foreach (var model in Models.OrderBy(x => x.Order).ToList())
+        {
+            model.Order = ii++; //keep the numbers from 0 to size-1
+            model.IsDragOver = false; //remove drag over.
+        }
+
+        lastModel.Order = int.MaxValue - 1; //keep it on the end, but with option to  +1
+    }
+
+    private Model? draggingModel; //the model that is being dragged
+
+    readonly Model lastModel = new() { Order = int.MaxValue - 1 }; //minus 1, because HandeDrop increases the order by 1. 
+
+    private async Task DragStart(Model item)
+    {
+        draggingModel = item;
+        Console.WriteLine($"Dragging item = {item.Name}");
+        
+    }
+}

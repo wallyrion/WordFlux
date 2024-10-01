@@ -1,0 +1,275 @@
+﻿@using System.Text.RegularExpressions
+@using WordFLux.ClientApp.Models
+@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+@using WordFLux.ClientApp.Components.DragAndDropSortable
+@using WordFLux.ClientApp.Pages.Shared
+@inject WeatherApiClient HttpClient
+
+
+<div class="mt-4">
+    <div class="drag-container">
+        <SortableTranslationLists IsMoveBetweenListsPossible="IsMoveBetweenListsPossible" Items="Items" Context="item">
+            <CardTemplate>
+                <div class="card-wrapper position-relative w-100">
+                    <div class="action-buttons position-absolute text-start p-2">
+                        @if (item.index != 0)
+                        {
+                            <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => MakePrimary(item.value)">
+                                <i class="bi bi-file-arrow-up">
+                                </i>
+                            </a>
+                        }
+
+                        <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => Edit(item.index)">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+
+                        <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => SearchTerm(item.value)">
+                            <i class="bi bi-search">
+                            </i>
+                        </a>
+
+                        <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => RemoveTranslation(item.value)">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+
+                    @if (IsEditMode(item.index))
+                    {
+                        <EditTranslation OnCancel="() => EditModes[item.index] = false" AlwaysEditable="@true" TranslationInput="@item.value.Term" CustomExampleOriginal="@item.value.ExampleOriginal"
+                                         CustomExampleTranslated="@item.value.ExampleTranslated"
+                                         OnAddMyTranslation="(e) => ReplaceExistingTranslation(item.index, item.value, e)"/>
+                    }
+                    else
+                    {
+                        <div class="card mt-1">
+                            <div class="card-header position-relative">
+                                <h4 class="d-inline pre-wrap">
+                                    @StringToHtml(item.value.Term)
+                                </h4>
+                                <span class="badge text-bg-light position-absolute end-0 bottom-0">@item.value.Level</span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(item.value.ExampleOriginal) || !string.IsNullOrWhiteSpace(item.value.ExampleTranslated))
+                            {
+                                <div class="card-body">
+                                    @if (!string.IsNullOrWhiteSpace(item.value.ExampleTranslated))
+                                    {
+                                        <p class="card-text">
+                                            <span class="position-relative">
+                                                @StringToHtml(item.value.ExampleTranslated)
+                                                <span class="audio">
+                                                    <AudioFromText Term="@item.value.ExampleTranslated"></AudioFromText>
+                                                </span>
+                                            </span>
+                                        </p>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(item.value.ExampleOriginal))
+                                    {
+                                        <blockquote class="blockquote mb-0">
+                                            <footer class="blockquote-footer">
+                                                <span class="position-relative">
+                                                    @StringToHtml(item.value.ExampleOriginal)
+                                                    <span class="audio">
+                                                        <AudioFromText Term="@item.value.ExampleOriginal"></AudioFromText>
+                                                    </span>
+                                                </span>
+                                            </footer>
+                                        </blockquote>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+
+                </div>
+            </CardTemplate>
+        </SortableTranslationLists>
+        
+    </div>
+
+
+    @*
+    <SortableList Group="sharedLists" OnRemove="ListTwoRemove" Items="NotSelectedItems" Handle=".drag-handle" OnUpdate="@SortList" Context="item">
+        <SortableItemTemplate>
+            <div class="d-flex">
+                <div class="has-cursor-grab">
+                    <div class="drag-handle mr-4">
+                        <i class="is-size-4 fas bi bi-grip-vertical fs-1"></i>
+                    </div>
+                </div>
+                <div class="">
+                    <div class="card-wrapper position-relative">
+                        <div class="action-buttons position-absolute text-start p-2">
+                            @if (item.index != 0)
+                            {
+                                <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => MakePrimary(item.value)">
+                                    <i class="bi bi-file-arrow-up">
+                                    </i>
+                                </a>
+                            }
+
+                            <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => Edit(item.index)">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+
+                            <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => SearchTerm(item.value)">
+                                <i class="bi bi-search">
+                                </i>
+                            </a>
+
+                            <a class="icon-link icon-link-hover fs-4 ms-1" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" role="button" @onclick="() => RemoveTranslation(item.value)">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+
+                        @if (IsEditMode(item.index))
+                        {
+                            <EditTranslation OnCancel="() => EditModes[item.index] = false" AlwaysEditable="@true" TranslationInput="@item.value.Term" CustomExampleOriginal="@item.value.ExampleOriginal"
+                                             CustomExampleTranslated="@item.value.ExampleTranslated"
+                                             OnAddMyTranslation="(e) => ReplaceExistingTranslation(item.index, item.value, e)"/>
+                        }
+                        else
+                        {
+                            <div class="card mt-1">
+                                <div class="card-header position-relative">
+                                    <h4 class="d-inline pre-wrap">
+                                        @StringToHtml(item.value.Term)
+                                    </h4>
+                                    <span class="badge text-bg-light position-absolute end-0 bottom-0">@item.value.Level</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(item.value.ExampleOriginal) || !string.IsNullOrWhiteSpace(item.value.ExampleTranslated))
+                                {
+                                    <div class="card-body">
+                                        @if (!string.IsNullOrWhiteSpace(item.value.ExampleTranslated))
+                                        {
+                                            <p class="card-text">
+                                                <span class="position-relative">
+                                                    @StringToHtml(item.value.ExampleTranslated)
+                                                    <span class="audio">
+                                                        <AudioFromText Term="@item.value.ExampleTranslated"></AudioFromText>
+                                                    </span>
+                                                </span>
+                                            </p>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(item.value.ExampleOriginal))
+                                        {
+                                            <blockquote class="blockquote mb-0">
+                                                <footer class="blockquote-footer">
+                                                    <span class="position-relative">
+                                                        @StringToHtml(item.value.ExampleOriginal)
+                                                        <span class="audio">
+                                                            <AudioFromText Term="@item.value.ExampleOriginal"></AudioFromText>
+                                                        </span>
+                                                    </span>
+                                                </footer>
+                                            </blockquote>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+
+
+                    </div>
+
+                </div>
+            </div>
+
+        </SortableItemTemplate>
+    </SortableList>
+    *@
+
+    @*<SortableList Id="dragHandles" Handle=".drag-handle" Items="Items" OnUpdate="@SortList" Context="item">
+        <SortableItemTemplate>
+        </SortableItemTemplate>
+    </SortableList>*@
+
+</div>
+
+
+@code {
+    [Parameter] public bool IsMoveBetweenListsPossible { get; set; } = true;
+    [Parameter] public EventCallback<string> OnTermSearch { get; set; }
+    [Parameter] public EventCallback<CardTranslationItem> OnMakePrimary { get; set; }
+    [Parameter] public EventCallback<CardTranslationItem> OnRemoveTranslation { get; set; }
+    [Parameter] public EventCallback<(CardTranslationItem oldItem, CardTranslationItem newItem)> OnReplaceTranslation { get; set; }
+    [Parameter] public List<CardTranslationItem> Translations { get; set; } = [];
+    [Parameter] public string? Term { get; set; }
+
+    List<(CardTranslationItem value, int index)> Items => Translations.Select((value, index) =>
+    {
+        var i = (value, index);
+
+        return i;
+    }).ToList();
+
+    List<(CardTranslationItem value, int index)> SelectedItems => Items.Where(x => x.value.IsSelected).ToList();
+    List<(CardTranslationItem value, int index)> NotSelectedItems => Items.Where(x => !x.value.IsSelected).ToList();
+
+    private string? CustomExampleOriginal { get; set; }
+    private string? CustomExampleTranslated { get; set; }
+    private string? TranslationInput { get; set; }
+    private CardTranslationItem? CustomTranslation { get; set; }
+    Dictionary<int, bool> EditModes { get; set; } = [];
+
+    private bool IsEditMode(int index) => EditModes.TryGetValue(index, out var isEdit) && isEdit;
+
+    async Task SearchTerm(CardTranslationItem item)
+    {
+        await OnTermSearch.InvokeAsync(item.Term);
+    }
+
+    async Task RemoveTranslation(CardTranslationItem item)
+    {
+        await OnRemoveTranslation.InvokeAsync(item);
+    }
+
+    async Task MakePrimary(CardTranslationItem item)
+    {
+        await OnMakePrimary.InvokeAsync(item);
+    }
+
+    static string GetFireColor(CardTranslationItem item)
+        => $"{item.Popularity switch { > 90 => "text-danger", > 70 => "text-warning", > 40 => "text-success", _ => "text-primary" }}";
+
+    static RenderFragment StringToHtml(string htmlString)
+    {
+        var str = ConvertAserisksToBold(htmlString);
+
+        return b => b.AddMarkupContent(0, str);
+    }
+
+    static string ConvertAserisksToBold(string text)
+    {
+        // This pattern looks for text surrounded by asterisks (*)
+        string pattern = @"\*(.*?)\*";
+
+        // Replace the asterisks and the text between them with the <strong> HTML tag
+        string result = Regex.Replace(text, pattern, "<strong>$1</strong>");
+
+        return result;
+    }
+
+    private async Task Edit(int index)
+    {
+        EditModes[index] = true;
+    }
+
+    private async Task ReplaceExistingTranslation(int index, CardTranslationItem existing, CardTranslationItem newTranslation)
+    {
+        await OnReplaceTranslation.InvokeAsync((existing, newTranslation));
+        EditModes[index] = false;
+    }
+
+    class SortableItem
+    {
+        public CardTranslationItem Item { get; set; }
+        public bool IsSelected { get; set; }
+        public int Index { get; set; }
+    }
+
+}

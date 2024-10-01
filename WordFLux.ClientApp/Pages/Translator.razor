@@ -5,6 +5,7 @@
 @inject IJSRuntime JsRuntime
 
 @using WordFlux.Contracts
+@using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @inject WeatherApiClient WeatherApi
 @inject NavigationManager Navigation
 @inject ConnectionHealthService ConnectionHealthService
@@ -249,7 +250,7 @@
     List<CardTranslationItem> Examples { get; set; } = [];
     List<DeckDto> Decks { get; set; } = [];
     CancellationTokenSource _cancellationTokenSource = new();
-    IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term.Trim('\n', ' '));
+    IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term.Trim('\n', ' ', '\t'));
     private ElementReference ImageModalRef { get; set; }
     private ElementReference CloseImageModalButtonRef { get; set; }
 
@@ -334,6 +335,7 @@
             StateHasChanged();
 
             Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator, _cancellationTokenSource.Token);
+            Examples[0].IsSelected = true;
         }
         finally
         {
@@ -381,7 +383,13 @@
             return;
         }
 
-        var cardRequest = new CardRequest(ActualTerm, Level, Examples, deckId, ImageUrl);
+        var selectedTranslations = Examples.Where(x => x.IsSelected).ToList();
+
+        if (selectedTranslations.Count == 0)
+        {
+            selectedTranslations = [Examples[0]];
+        }
+        var cardRequest = new CardRequest(ActualTerm!, Level, selectedTranslations, deckId, ImageUrl);
         await WeatherApi.SaveNewCard(cardRequest);
 
         SavedToDeckName = deckName;
