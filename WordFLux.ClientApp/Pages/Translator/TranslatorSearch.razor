@@ -1,0 +1,94 @@
+@using WordFLux.ClientApp.Components
+@using WordFLux.ClientApp.Pages.Shared
+@using WordFlux.Contracts
+
+@if (TranslationResponse != null && !string.IsNullOrWhiteSpace(TranslationResponse.SuggestedTerm) && !TranslationResponse.SuggestedTerm.Equals(Term, StringComparison.InvariantCultureIgnoreCase))
+{
+<div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@TranslationResponse.SuggestedTerm </span></div>
+}
+
+<div class="d-flex justify-content-between mb-2">
+    <div>
+        @if (IsLoading)
+        {
+            <button class="btn btn-outline-info" type="button" disabled>
+                <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+                <span role="status">Loading...</span>
+            </button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-outline-info" @onclick="Search">
+                <i class="bi bi-search"></i>
+                <span > Try it!</span>
+            </button>
+        }
+    </div>
+
+    <div class="form-check form-switch align-self-end">
+        <Tooltip Title="Leverage Azure AI translator power instead of default custom AI translator">
+            <input class="form-check-input" @bind-value="@UseAzureAiTranslator" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+        </Tooltip>
+
+        <label class="form-check-label" for="flexSwitchCheckDefault">Use Azure AI Translator </label>
+    </div>
+
+</div>
+
+
+<div class="position-relative">
+    <TranslationAutocomplete OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
+
+    <button class="btn btn-outline-secondary btn-icon-sm position-absolute end-0 translate-middle-y" @onclick="async () => await Reset()">
+        <i class="bi bi-x-circle "></i>
+    </button>
+
+
+    @if (!string.IsNullOrWhiteSpace(Term))
+    {
+        <span class="audio-button">
+            <AudioFromText Term="@Term"/>
+        </span>
+    }
+
+    @if (Level != null)
+    {
+        <span class="badge text-bg-light position-absolute start-0 translate-middle">@Level</span>
+    }
+
+</div>
+
+@code
+{
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string? Level { get; set; }
+    [Parameter] public SimpleTranslationResponse? TranslationResponse { get; set; }
+    
+    [Parameter] public EventCallback OnReset { get; set; }
+    [Parameter] public EventCallback<TranslationEngine> OnEngineChanged { get; set; }
+    [Parameter] public EventCallback<string> OnSearch { get; set; }
+    bool UseAzureAiTranslator { get; set; }
+    [Parameter] public string? Term { get; set; }
+
+    private async Task Search()
+    {
+        await OnSearch.InvokeAsync(Term);
+    }
+
+    private void TermChanged(string term)
+    {
+        Term = term;
+    }
+
+    private async Task Reset()
+    {
+        await OnReset.InvokeAsync();
+    }
+
+    public enum TranslationEngine
+    {
+        OpenAiCustom,
+        AzureAi
+    }
+}
+

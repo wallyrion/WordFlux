@@ -1,0 +1,167 @@
+﻿@page "/"
+@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Components
+
+@using WordFlux.Contracts
+@inject WeatherApiClient WeatherApi
+@inject NavigationManager Navigation
+@inject ConnectionHealthService ConnectionHealthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@implements IDisposable
+
+<PageTitle>Home</PageTitle>
+
+@if (!IsOnline)
+{
+    <div class="container">
+        <div>
+            Looks you are offline. You can
+            <a href="/offline/translator">
+                <span>go to offline page </span>
+            </a> to add items that will be automatically added to your dictionary later.
+        </div>
+    </div>
+}
+
+@if (IsOnline)
+{
+    <div class="container">
+        <div class="mb-3 position-relative">
+            <TranslatorSearch Level="@Level"
+                              IsLoading="IsLoading"
+                              OnSearch="(args) => SearchForTerm(args)"
+                              OnReset="() => Reset()"
+                              Term="@Term"
+                              TranslationResponse="Translation"
+                              OnEngineChanged="e => UseAzureAiTranslator = e == TranslatorSearch.TranslationEngine.AzureAi"
+                              />
+
+        </div>
+
+        <div class="container-fluid m-2">
+            @foreach (var item in TranslationCheeps)
+            {
+                <h5 class="d-inline me-1">
+                    <span class="badge text-bg-secondary" style="white-space: break-spaces">@item</span>
+                </h5>
+            }
+        </div>
+
+        @if (SavedCard != null)
+        {
+            <CardDetails PredefinedCard="SavedCard"></CardDetails>
+        }
+      
+        @if (Translation != null && SavedCard == null)
+        {
+            <FoundTranslations Term="@Term" 
+                               UseAzureAiTranslator="UseAzureAiTranslator"
+                               Level="@Level"
+                               CancellationToken="CancellationTokenSource.Token"
+                               Decks="Decks"
+                               Translation="Translation"
+                               OnCardSaved="e => SavedCard = e"
+                               IsLoading="IsLoading"
+                               OnSearch="e => SearchForTerm(e)"
+            />
+        }
+        
+    </div>
+}
+
+
+@code {
+    [SupplyParameterFromQuery(Name = "term")] string? Term { get; set; }
+
+    CardDto? SavedCard { get; set; }
+    bool IsOnline => ConnectionHealthService.IsOnline;
+    bool UseAzureAiTranslator { get; set; }
+    bool IsLoading { get; set; }
+
+    SimpleTranslationResponse? Translation { get; set; }
+    string? Level { get; set; }
+    List<DeckDto> Decks { get; set; } = [];
+    CancellationTokenSource CancellationTokenSource { get; set; } = new();
+    IEnumerable<string> TranslationCheeps => Translation?.Translations ?? [];
+    protected override async Task OnInitializedAsync()
+    {
+        ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
+
+        if (!string.IsNullOrWhiteSpace(Term))
+        {
+            await TryItOut();
+        }
+
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            await RefreshDecks();
+        }
+    }
+
+    async Task RefreshDecks()
+    {
+        Decks = (await WeatherApi.GetDecks()).Where(d => d.Type == DeckType.Custom).ToList();
+    }
+
+    async Task SearchForTerm(string input)
+    {
+        Term = input;
+        await TryItOut();
+    }
+
+    async Task TryItOut()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(Term))
+            {
+                return;
+            }
+
+            await Reset(shouldClearTerm: false);
+            IsLoading = true;
+
+            Navigation.NavigateTo(
+                Navigation.GetUriWithQueryParameter("term", Term));
+
+            CancellationTokenSource = new CancellationTokenSource();
+
+            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator, CancellationTokenSource.Token);
+            IsLoading = false;
+
+            StateHasChanged();
+
+            Level = await WeatherApi.GetLevel(Term, CancellationTokenSource.Token);
+
+        }
+        finally
+        {
+            IsLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task Reset(bool shouldClearTerm = true)
+    {
+        await CancellationTokenSource.CancelAsync();
+        SavedCard = null;
+
+        if (shouldClearTerm)
+        {
+            Term = null;
+        }
+        
+        Translation = null;
+        Level = null;
+
+        Navigation.NavigateTo(
+            Navigation.GetUriWithQueryParameter("term", (string?)null));
+    }
+
+    public void Dispose()
+    {
+        ConnectionHealthService.OnStatusChanged -= StateHasChanged;
+    }
+}
