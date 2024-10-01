@@ -165,9 +165,13 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return res.Level;
     }
     
-    public async Task SaveNewCard(CardRequest card)
+    public async Task<CardDto> SaveNewCard(CardRequest card)
     {
-        await httpClient.PostAsJsonAsync($"/cards", card);
+        var response = await httpClient.PostAsJsonAsync($"/cards", card);
+
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<CardDto>())!;
     }
     
     public async Task UpdateCard(CardRequest card, Guid cardId)

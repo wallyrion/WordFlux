@@ -37,23 +37,19 @@
 
 
         <div class="mb-3 position-relative">
-
             <div class="d-flex justify-content-between mb-2">
-
                 <div>
                     @if (IsLoading)
                     {
-                        <button class="btn btn-outline-info @EnabledState()" type="button" disabled>
+                        <button class="btn btn-outline-info" type="button" disabled>
                             <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
                             <span role="status">Loading...</span>
                         </button>
                     }
                     else
                     {
-                        <button type="button" class="btn btn-outline-info @EnabledState()" @onclick="TryItOut">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                            </svg>
+                        <button type="button" class="btn btn-outline-info" @onclick="TryItOut">
+                            <i class="bi bi-search"></i>
                             <span > Try it!</span>
                         </button>
                     }
@@ -69,13 +65,11 @@
 
             </div>
 
-
-            @*<textarea bind="Term" class="form-control @EnabledState()" placeholder="What do you want to memorize?" aria-label="term"></textarea>*@
-
+            
             <div class="position-relative">
                 <TranslationAutocomplete OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
 
-                <button class="btn btn-outline-secondary btn-icon-sm position-absolute end-0 translate-middle-y" @onclick="Reset">
+                <button class="btn btn-outline-secondary btn-icon-sm position-absolute end-0 translate-middle-y" @onclick="async () => await Reset()">
                     <i class="bi bi-x-circle "></i>
                 </button>
 
@@ -105,27 +99,14 @@
             }
         </div>
 
-        @*
-        <button type="button" class="btn btn-outline-secondary clear-button p-0 border-0 @EnabledState()" >
-            <i class="bi bi-x-circle"></i>
-        </button>
-        *@
 
-
-        @if (Translation is { Translations: not null })
+        @if (Translation is { Translations: not null and {Count: >0}})
         {
             <div class="d-flex justify-content-between g4">
                 <div >
                     <AuthorizeView>
                         <Authorized>
-                            @if (SavedToDeckName != null)
-                            {
-                                <button type="button" class="btn btn-warning ms-1 disabled">
-                                    ✔️
-                                    <span class=""> Saved to @SavedToDeckName</span>
-                                </button>
-                            }
-                            else
+                            @if (SavedCard == null)
                             {
                                 <div class="btn-group">
                                     <button disabled="@(IsLoading || IsExamplesLoading)" @onclick="() => SaveToCards(Guid.Empty, DefaultDeckName)" type="button" class="btn btn-outline-warning">Save to default deck</button>
@@ -142,11 +123,6 @@
 
                                     </ul>
                                 </div>
-
-                                @*<button type="button" class="btn btn-outline-warning ms-1" disabled="@(IsLoading || IsExamplesLoading)" @onclick="SaveToCards">
-                            ✔️
-                            <span class=""> Save to cards</span>
-                        </button>*@
                             }
                         </Authorized>
 
@@ -161,13 +137,20 @@
                 </div>
 
                 <div >
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" @onclick="ShowImageModal" data-bs-target="#imageModalDialog">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ShowImageModal">
                         <i class="bi bi-plus"></i> <i class="bi bi-card-image"></i>
                     </button>
                 </div>
 
             </div>
+        }
 
+        @if (SavedCard != null)
+        {
+            <CardDetails PredefinedCard="SavedCard"></CardDetails>
+        }
+        else
+        {
             @if (ImageUrl != null)
             {
                 <div class="d-flex justify-content-center mt-2">
@@ -176,54 +159,34 @@
                     </div>
                 </div>
             }
-        }
+            
+            @if (Examples.Count > 0)
+            {
+                <TranslationExamples OnReplaceTranslation="ReplaceTranslation" OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
 
-
-        @if (Examples.Count > 0)
-        {
-            <TranslationExamples OnReplaceTranslation="ReplaceTranslation" OnTermSearch="SearchForTerm" Translations="Examples" OnMakePrimary="MakePrimary" OnRemoveTranslation="RemoveTranslation" Term="@ActualTerm"/>
-
-            <div class="d-flex justify-content-center mt-1 mb-3">
-                <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>
-            </div>
-        }
-
-        @if (IsExamplesLoading)
-        {
-            <div class="d-flex justify-content-center text-center mt-5">
-                <div class="me-2">Getting usage examples</div>
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only"></span>
+                <div class="d-flex justify-content-center mt-1 mb-3">
+                    <button class="btn btn-outline-dark" disabled="@IsExamplesLoading" @onclick="LoadMoreExamples">Load more</button>
                 </div>
-            </div>
+            }
+
+            @if (IsExamplesLoading)
+            {
+                <div class="d-flex justify-content-center text-center mt-5">
+                    <div class="me-2">Getting usage examples</div>
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
+            }
+
+            @if (Translation != null)
+            {
+                <EditTranslation OnAddMyTranslation="AddMyTranslation" Term="@ActualTerm"/>
+            }
+            
+            <SearchImageModal @ref="SearchImageModalRef" OnImageSelected="imgUrl => ImageUrl = imgUrl"/>
+
         }
-
-        @if (Translation != null)
-        {
-            <EditTranslation OnAddMyTranslation="AddMyTranslation" Term="@ActualTerm"/>
-        }
-
-    </div>
-
-    <div class="modal fade" @ref="ImageModalRef" id="imageModalDialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Select image</h1>
-                    <button @ref="CloseImageModalButtonRef" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    @if (ImageSearchKeyword != null)
-                    {
-                        <ImageSearch Keyword="@ImageSearchKeyword" OnImageSelected="ImageSelected"/>
-                    }
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
     </div>
 }
 
@@ -231,12 +194,12 @@
 @code {
 
     const string DefaultDeckName = "Default";
-
-    [SupplyParameterFromQuery(Name = "term")]
-    public string? Term { get; set; }
-
-    public bool IsOnline => ConnectionHealthService.IsOnline;
-    public string? ActualTerm => Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
+    CardDto? SavedCard { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "term")] string? Term { get; set; }
+    bool IsOnline => ConnectionHealthService.IsOnline;
+    string? ActualTerm => Translation != null && !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
+    SearchImageModal SearchImageModalRef { get; set; } = null!;
 
     bool UseAzureAiTranslator { get; set; }
     bool IsLoading { get; set; }
@@ -244,16 +207,12 @@
     string? SavedToDeckName { get; set; }
 
     string? ImageUrl { get; set; }
-    string? ImageSearchKeyword { get; set; }
     SimpleTranslationResponse? Translation { get; set; }
     string? Level { get; set; }
     List<CardTranslationItem> Examples { get; set; } = [];
     List<DeckDto> Decks { get; set; } = [];
     CancellationTokenSource _cancellationTokenSource = new();
     IEnumerable<string> TranslationCheeps => Examples.Count == 0 && Translation != null ? Translation.Translations : Examples.Select(x => x.Term.Trim('\n', ' ', '\t'));
-    private ElementReference ImageModalRef { get; set; }
-    private ElementReference CloseImageModalButtonRef { get; set; }
-
     protected override async Task OnInitializedAsync()
     {
         ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
@@ -313,6 +272,7 @@
                 return;
             }
 
+            await Reset(shouldClearTerm: false);
             IsLoading = true;
             SavedToDeckName = null;
             Translation = null;
@@ -345,10 +305,16 @@
         }
     }
 
-    async Task Reset()
+    async Task Reset(bool shouldClearTerm = true)
     {
         await _cancellationTokenSource.CancelAsync();
-        Term = null;
+        SavedCard = null;
+
+        if (shouldClearTerm)
+        {
+            Term = null;
+        }
+        
         ImageUrl = null;
         Translation = null;
         Examples = [];
@@ -358,23 +324,6 @@
             Navigation.GetUriWithQueryParameter("term", (string?)null));
     }
 
-    // example: "This is a *bold* text"
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JsRuntime.InvokeVoidAsync("modalEvents.Initialize", CloseImageModalButtonRef, DotNetObjectReference.Create(this), "imageModal.modalClosed");
-        }
-    }
-
-    [JSInvokable("imageModal.modalClosed")]
-    public void OnModalClosed()
-    {
-        //InvokeAsync(StateHasChanged);
-    }
-
-    string EnabledState() => IsLoading ? "disabled" : "";
 
     async Task SaveToCards(Guid deckId, string deckName)
     {
@@ -390,7 +339,7 @@
             selectedTranslations = [Examples[0]];
         }
         var cardRequest = new CardRequest(ActualTerm!, Level, selectedTranslations, deckId, ImageUrl);
-        await WeatherApi.SaveNewCard(cardRequest);
+        SavedCard = await WeatherApi.SaveNewCard(cardRequest);
 
         SavedToDeckName = deckName;
     }
@@ -439,13 +388,6 @@
 
     private async Task ShowImageModal()
     {
-        ImageSearchKeyword = Term;
+        await SearchImageModalRef.OpenModal(ActualTerm!);
     }
-
-    private async Task ImageSelected(string imgUrl)
-    {
-        ImageUrl = imgUrl;
-        await JsRuntime.InvokeVoidAsync("modalEvents.closeByButton", CloseImageModalButtonRef);
-    }
-
 }

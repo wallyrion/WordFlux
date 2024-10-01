@@ -13,8 +13,7 @@ public static class CardExtension
         // Define the key intervals and corresponding progress rates
         var intervals = new (TimeSpan Interval, double Progress)[]
         {
-            (TimeSpan.FromMinutes(1), 0),          // 1 minute = 0%
-            (TimeSpan.FromMinutes(2), 2),          // 2 minutes = 5%
+            (TimeSpan.FromMinutes(2), 0),          // 2 minutes = 5%
             (TimeSpan.FromMinutes(4), 4),          // 4 minutes = 7%
             (TimeSpan.FromMinutes(8), 6),         // 8 minutes = 9%
             (TimeSpan.FromMinutes(16), 8),        // 16 minutes = 11%
