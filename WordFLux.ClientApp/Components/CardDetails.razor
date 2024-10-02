@@ -53,29 +53,29 @@
                         <button class="btn dropdown-item btn-outline-danger" @onclick="RemoveCard">
                             <i class="bi bi-trash text-danger"></i> Remove card
                         </button>
-
                     </li>
 
                     <li>
                         <button class="btn dropdown-item btn-outline-secondary" @onclick="RedirectToNewSearch">
                             <i class="bi bi-search"></i> Search for @Card.Term.TruncateWithEllipsis()
                         </button>
-
                     </li>
 
                     <li>
                         <button class="btn dropdown-item btn-outline-secondary" @onclick="OpenImageModal">
                             <i class="bi bi-card-image"></i> Add image
                         </button>
+                    </li>
+
+                    <li>
+                        <a target="_blank" class="btn dropdown-item btn-outline-secondary" href="/card/@Card.Id">
+                            <i class="bi bi-aspect-ratio"></i> Open card page
+                        </a>
 
                     </li>
 
                 </ul>
 
-                @*
-                <button class="btn btn-outline-success btn-icon-sm">
-                    <i class="bi bi-list"></i>
-                </button>*@
             </div>
 
             @{
