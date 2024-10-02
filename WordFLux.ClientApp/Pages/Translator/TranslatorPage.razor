@@ -107,6 +107,7 @@
 
     async Task SearchForTerm(string input)
     {
+        Console.WriteLine($"SearchForTerm, input = {input}");
         Term = input;
         await TryItOut();
     }
@@ -120,9 +121,12 @@
                 return;
             }
 
-            await Reset(shouldClearTerm: false);
             IsLoading = true;
-
+            await CancellationTokenSource.CancelAsync();
+            Translation = null;
+            Level = null;
+            SavedCard = null;
+            StateHasChanged();
             Navigation.NavigateTo(
                 Navigation.GetUriWithQueryParameter("term", Term));
 
