@@ -67,6 +67,8 @@
                                Translation="Translation"
                                OnCardSaved="e => SavedCard = e"
                                IsLoading="IsLoading"
+                               LearnLanguage="@LearnLanguageCode"
+                               NativeLanguage="@NativeLanguageCode"
                                OnSearch="e => SearchForTerm(e)"
             />
         }
@@ -91,12 +93,7 @@
     
     [SupplyParameterFromQuery(Name = "lg_native")] string? NativeLanguageCode { get; set; }
 
-    [SupplyParameterFromQuery(Name = "lg_learn")]
-    string? LearnLanguageCode
-    {
-        get; 
-        set;
-    }
+    [SupplyParameterFromQuery(Name = "lg_learn")] string? LearnLanguageCode { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

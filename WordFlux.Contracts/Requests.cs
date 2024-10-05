@@ -11,7 +11,7 @@ public record CardTranslationItem(string Term, string? ExampleTranslated = null,
     public bool IsSelected { get; set; }
 }*/
 
-public record CardRequest(string Term, string Level, List<CardTranslationItem> Translations, Guid DeckId = default, string? ImageUrl = null);
+public record CardRequest(string Term, string Level, List<CardTranslationItem> Translations, Guid DeckId = default, string? ImageUrl = null, string? NativeLang = null, string? LearnLang = null, string? SourceLang = null, string? TargetLang = null);
 
 
 public record GetTranslationExamplesRequest(string Term, List<string> Translations, string SourceLanguage, string DestinationLanguage);

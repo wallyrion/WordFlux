@@ -91,6 +91,8 @@
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<CardDto> OnCardSaved { get; set; }
     [Parameter] public CancellationToken CancellationToken { get; set; }
+    [Parameter] public string? NativeLanguage { get; set; }
+    [Parameter] public string? LearnLanguage { get; set; }
 
     bool IsExamplesLoading { get; set; }
     SearchImageModal SearchImageModalRef { get; set; } = null!;
@@ -123,7 +125,7 @@
         {
             selectedTranslations = [Examples[0]];
         }
-        var cardRequest = new CardRequest(ActualTerm!, Level, selectedTranslations, deckId, ImageUrl);
+        var cardRequest = new CardRequest(ActualTerm!, Level, selectedTranslations, deckId, ImageUrl, NativeLanguage, LearnLanguage, Translation.SourceLanguage, Translation.DestinationLanguage);
         var savedCard = await WeatherApi.SaveNewCard(cardRequest);
         await OnCardSaved.InvokeAsync(savedCard);
     }

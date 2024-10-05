@@ -10,11 +10,21 @@
 
 @if (Card != null)
 {
-    <div>
+    <div class="d-flex align-items-start gap-5 mb-1">
         <button type="button" class="btn ms-1 disabled mb-2">
             ✔️
             <span class=""> @Card.DeckName</span>
         </button>
+        
+        @if (Card.SourceLang != null && Card.TargetLang != null)
+        {
+            <div class="d-inline-block">
+                <span class="badge rounded-pill text-bg-primary">@Card.SourceLang</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge rounded-pill text-bg-secondary">@Card.TargetLang</span>
+            </div>
+        }
+
     </div>
     
     @if (IsEditMode)

@@ -13,6 +13,11 @@ public class Card
     public DateTime NextReviewDate { get; set; }
     public TimeSpan ReviewInterval { get; set; }
     public string Level { get; set; } = null!;
+    public string? NativeLanguage { get; set; }
+    public string? LearnLanguage { get; set; } 
+    
+    public string? SourceLanguage { get; set; }
+    public string? TargetLanguage { get; set; }
     
     public Deck Deck { get; set; } = null!;
     public Guid DeckId { get; set; }
