@@ -78,7 +78,7 @@
                     </li>
 
                     <li>
-                        <a target="_blank" class="btn dropdown-item btn-outline-secondary" href="/card/@Card.Id">
+                        <a class="btn dropdown-item btn-outline-secondary" @onclick="async() => await OnPageRedirected.InvokeAsync()" href="/card/@Card.Id">
                             <i class="bi bi-aspect-ratio"></i> Open card page
                         </a>
 
@@ -157,7 +157,7 @@ else
     [Parameter] public CardDto? PredefinedCard { get; set; }
     [Parameter] public EventCallback<CardDto> OnCardChanged { get; set; }
     [Parameter] public EventCallback<Guid> OnCardDeleted { get; set; }
-    [Parameter] public EventCallback<string> OnPageRedirectToSearch { get; set; }
+    [Parameter] public EventCallback<string> OnPageRedirected { get; set; }
     bool IsEditMode { get; set; }
     string? EditTerm { get; set; }
     ElementReference ImageModalRef { get; set; }
@@ -171,7 +171,7 @@ else
 
     private async Task SearchForTerm(string term)
     {
-        await OnPageRedirectToSearch.InvokeAsync(term);
+        await OnPageRedirected.InvokeAsync(term);
         Navigation.NavigateTo("/?term=" + term);
     }
 
@@ -235,7 +235,7 @@ else
 
     private async Task RedirectToNewSearch()
     {
-        await OnPageRedirectToSearch.InvokeAsync(Card!.Term);
+        await OnPageRedirected.InvokeAsync(Card!.Term);
         
         Navigation.NavigateTo($"/?term={Card!.Term}");
     }
