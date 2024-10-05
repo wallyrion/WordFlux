@@ -54,7 +54,7 @@
 
         @if (SavedCard != null)
         {
-            <CardDetails OnPageRedirectToSearch="SearchForTerm" OnCardDeleted="CardDeleted" PredefinedCard="SavedCard"></CardDetails>
+            <CardDetails OnPageRedirected="SearchForTerm" OnCardDeleted="CardDeleted" PredefinedCard="SavedCard"></CardDetails>
         }
       
         @if (Translation != null && SavedCard == null)
