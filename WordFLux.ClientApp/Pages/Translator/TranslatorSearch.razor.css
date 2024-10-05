@@ -12,3 +12,7 @@
 .audio-button:hover {
     background: #1b6ec2;
 }
+
+.lang-button {
+    padding: 0.2rem;
+}

@@ -222,7 +222,7 @@
     {
         try
         {
-            var result = await ApiClient.GetSimpleTranslations(term, false, CancellationToken.None);
+            var result = await ApiClient.GetSimpleTranslations(term, false);
 
             var translations = result.Translations.Select(t => new CardTranslationItem(t, null, null, 0, null)).ToList();
             await ApiClient.SaveNewCard(new CardRequest(term, "", translations, deckId));

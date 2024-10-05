@@ -21,7 +21,9 @@ public static class TranslationsEndpoints
 
             return new { Level = respose };
         });
-        
+
+        app.MapGet("/languages", async ([FromKeyedServices("AzureAiTranslator")] ITranslationService azureTranslationService) 
+            => await azureTranslationService.GetLanguagesAsync());
         
         app.MapGet("/translations", async (string term, IServiceProvider di, string nativeLanguage, string studyingLanguage, bool useAzureAiTranslator) =>
         {
