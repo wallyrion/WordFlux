@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject ConnectionHealthService ConnectionHealthService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject LanguageProvider LanguageProvider
 @implements IDisposable
 
 <PageTitle>Home</PageTitle>
@@ -29,11 +30,15 @@
         <div class="mb-3 position-relative">
             <TranslatorSearch Level="@Level"
                               IsLoading="IsLoading"
+                              UseAzureAiTranslator="UseAzureAiTranslator"
                               OnSearch="(args) => SearchForTerm(args)"
                               OnReset="() => Reset()"
                               Term="@Term"
                               TranslationResponse="Translation"
                               OnEngineChanged="e => UseAzureAiTranslator = e == TranslatorSearch.TranslationEngine.AzureAi"
+                              LearnLanguageCode="@LearnLanguageCode"
+                              NativeLanguageCode="@NativeLanguageCode"
+                              OnLanguageChanged="LanguageChanged"
                               />
 
         </div>
@@ -72,10 +77,10 @@
 
 @code {
     [SupplyParameterFromQuery(Name = "term")] string? Term { get; set; }
+    [SupplyParameterFromQuery(Name = "useAzureAi")] bool UseAzureAiTranslator { get; set; }
 
     CardDto? SavedCard { get; set; }
     bool IsOnline => ConnectionHealthService.IsOnline;
-    bool UseAzureAiTranslator { get; set; }
     bool IsLoading { get; set; }
 
     SimpleTranslationResponse? Translation { get; set; }
@@ -83,10 +88,22 @@
     List<DeckDto> Decks { get; set; } = [];
     CancellationTokenSource CancellationTokenSource { get; set; } = new();
     IEnumerable<string> TranslationCheeps => Translation?.Translations ?? [];
+    
+    [SupplyParameterFromQuery(Name = "lg_native")] string? NativeLanguageCode { get; set; }
+
+    [SupplyParameterFromQuery(Name = "lg_learn")]
+    string? LearnLanguageCode
+    {
+        get; 
+        set;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
 
+        await ValidateSelectedLanguages();
+        
         if (!string.IsNullOrWhiteSpace(Term))
         {
             await TryItOut();
@@ -97,6 +114,29 @@
         if (state.User.Identity?.IsAuthenticated == true)
         {
             await RefreshDecks();
+        }
+    }
+
+    private async Task ValidateSelectedLanguages()
+    {
+        var supportedLanguages = await LanguageProvider.GetSupportedLanguagesAsync();
+
+        if (NativeLanguageCode != null)
+        {
+            NativeLanguageCode = supportedLanguages.FirstOrDefault(x => x.Code == NativeLanguageCode)?.Code;
+        }
+        
+        if (LearnLanguageCode != null)
+        {
+            LearnLanguageCode = supportedLanguages.FirstOrDefault(x => x.Code == LearnLanguageCode)?.Code;
+        }
+
+        if (NativeLanguageCode == null || LearnLanguageCode == null)
+        {
+            var myLanguages = await LanguageProvider.GetDefaultLanguagesAsync();
+            
+            NativeLanguageCode = supportedLanguages.FirstOrDefault(x => x.Code == myLanguages.NativeLanguageCode)?.Code;
+            LearnLanguageCode = supportedLanguages.FirstOrDefault(x => x.Code == myLanguages.LearningLanguageCode)?.Code;
         }
     }
 
@@ -128,11 +168,11 @@
             SavedCard = null;
             StateHasChanged();
             Navigation.NavigateTo(
-                Navigation.GetUriWithQueryParameter("term", Term));
+                Navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { { "term", Term }, { "lg_native", NativeLanguageCode }, { "lg_learn", LearnLanguageCode }, { "useAzureAi", UseAzureAiTranslator } }));
 
             CancellationTokenSource = new CancellationTokenSource();
 
-            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator, CancellationTokenSource.Token);
+            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator,  NativeLanguageCode, LearnLanguageCode, CancellationTokenSource.Token);
             IsLoading = false;
 
             StateHasChanged();
@@ -172,6 +212,18 @@
     private async Task CardDeleted()
     {
         await Reset();
+    }
+
+    private void LanguageChanged((string code, bool isNative) args)
+    {
+        if (args.isNative)
+        {
+            NativeLanguageCode = args.code;
+        }
+        else
+        {
+            LearnLanguageCode = args.code;
+        }
     }
 
 }

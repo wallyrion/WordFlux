@@ -33,7 +33,7 @@ public class LocalStorage(ILocalStorageService localStorage)
         var native = await localStorage.GetItemAsync<string>("languages_native");
         var studying = await localStorage.GetItemAsync<string>("languages_studying");
 
-        return (native ?? "ru-RU", studying ?? "en-US");
+        return (native ?? "ru", studying ?? "en");
     }
 
     public async Task<List<Guid>> GetLatestDecksSelection()

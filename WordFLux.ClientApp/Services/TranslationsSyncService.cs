@@ -128,7 +128,7 @@ public class TranslationsSyncService(
         {
             logger.LogInformation("Processing item Term = {Term}", term);
 
-            var translations = await apiClient.GetSimpleTranslations(term, false, CancellationToken.None);
+            var translations = await apiClient.GetSimpleTranslations(term, false);
 
             var examples = await apiClient.GetTranslationExamples(term, translations.Translations, translations.SourceLanguage,
                 translations.DestinationLanguage, false, CancellationToken.None);

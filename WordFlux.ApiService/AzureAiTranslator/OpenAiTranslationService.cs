@@ -55,10 +55,17 @@ public class AzureAiTranslationService : ITranslationService
 
         //return await _aiGenerator.GetTranslations(term, languages);
     }*/
+
+    public async Task<IReadOnlyCollection<SupportedLanguage>> GetLanguagesAsync()
+    {
+        var languages = await client.GetSupportedLanguagesAsync();
+
+        return languages.Value.Translation.Select(x => new SupportedLanguage(x.Value.Name, x.Value.NativeName, x.Key)).ToList();
+    }
     
     public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
     {
-        Response<IReadOnlyList<TranslatedTextItem>> clientResult = await client.TranslateAsync(["en", "ru"], [term]);
+        Response<IReadOnlyList<TranslatedTextItem>> clientResult = await client.TranslateAsync(languages, [term]);
 
         if (!clientResult.HasValue || clientResult.Value.Count == 0)
         {
@@ -71,9 +78,9 @@ public class AzureAiTranslationService : ITranslationService
         var sourceLanguage = translationResult.DetectedLanguage.Language;
         var targetLanguage = translations[0].TargetLanguage;
         
-        Response<IReadOnlyList<DictionaryLookupItem>> lookupResult = await client.LookupDictionaryEntriesAsync(sourceLanguage, targetLanguage, term);
+        var lookupResult = await GetDictionaryEntriesAsync(sourceLanguage, targetLanguage, term);
 
-        var additionalTranslations = lookupResult.Value[0].Translations.Select(x => x.DisplayTarget).Take(5).ToList();
+        var additionalTranslations = lookupResult.Take(5).ToList();
 
         var totalTranslations = translations.Select(x => x.Text).Concat(additionalTranslations).Distinct(new CaseInsensitiveValueComparer()).ToList();
         
@@ -83,6 +90,45 @@ public class AzureAiTranslationService : ITranslationService
         //return await _aiGenerator.GetTranslations(term, languages);
     }
 
+    private async Task<IEnumerable<string>> GetDictionaryEntriesAsync(string sourceLanguage, string targetLanguage, string term)
+    {
+        if (sourceLanguage.Equals("en", StringComparison.OrdinalIgnoreCase) || targetLanguage.Equals("en", StringComparison.OrdinalIgnoreCase))
+        {
+            return (await client.LookupDictionaryEntriesAsync(sourceLanguage, targetLanguage, term)).Value[0].Translations.Select(x => x.DisplayTarget);
+        }
+        
+        
+        Response<IReadOnlyList<DictionaryLookupItem>> lookupResultToEnglish = await client.LookupDictionaryEntriesAsync(sourceLanguage, "en", term);
+        var translations = lookupResultToEnglish.Value.SelectMany(x => x.Translations.Select(r => r.DisplayTarget)).ToList();
+        
+        var lookupResultToTarget = await client.LookupDictionaryEntriesAsync("en", targetLanguage, translations);
+
+        return lookupResultToTarget.Value.SelectMany(x => x.Translations.Select(r => new { r.DisplayTarget, r.Confidence }))
+            .OrderByDescending(x => x.Confidence)
+            .Select(x => x.DisplayTarget);
+    }  
+    
+    private async Task<(Response<IReadOnlyList<DictionaryExampleItem>>, bool isFullyTranslated)> GetDictionaryExamplesAsync(string sourceLanguage, string targetLanguage, string term, IEnumerable<string> inputTranslations)
+    {
+        if (sourceLanguage.Equals("en", StringComparison.OrdinalIgnoreCase) || targetLanguage.Equals("en", StringComparison.OrdinalIgnoreCase))
+        {
+            return (await client.LookupDictionaryExamplesAsync(sourceLanguage, targetLanguage, inputTranslations.Select(x => new InputTextWithTranslation(term, x))), true);
+        }
+
+        var termToEnglish = (await client.TranslateAsync("en", term, sourceLanguage)).Value[0].Translations[0].Text;
+
+        var englishToTargetExamples = await client.LookupDictionaryExamplesAsync("en", targetLanguage, inputTranslations.Select(x => new InputTextWithTranslation(termToEnglish, x)));
+        
+  
+        return (englishToTargetExamples, false);
+        /*
+        var lookupResultToTarget = await client.LookupDictionaryEntriesAsync("en", targetLanguage, translations);
+
+        return lookupResultToTarget.Value.SelectMany(x => x.Translations.Select(r => new { r.DisplayTarget, r.Confidence }))
+            .OrderByDescending(x => x.Confidence)
+            .Select(x => x.DisplayTarget);*/
+    }
+    
     public async Task<List<TranslationItem>> GetExamples(GetTranslationExamplesRequest request)
     {
         if (string.IsNullOrEmpty(request.SourceLanguage) || string.IsNullOrEmpty(request.DestinationLanguage))
@@ -98,9 +144,9 @@ public class AzureAiTranslationService : ITranslationService
         }
 
         var translations = request.Translations.Select(x => new InputTextWithTranslation(request.Term, x));
-        Response<IReadOnlyList<DictionaryExampleItem>> response = await client.LookupDictionaryExamplesAsync(request.SourceLanguage, request.DestinationLanguage, translations);
+        var response = await GetDictionaryExamplesAsync(request.SourceLanguage, request.DestinationLanguage,  request.Term,  request.Translations);
 
-        var items = response.Value.Select(x =>
+        var items = response.Item1.Value.Select(x =>
             {
                 var e = x.Examples.FirstOrDefault();
 
@@ -108,8 +154,8 @@ public class AzureAiTranslationService : ITranslationService
                 {
                     return new TranslationItem(x.NormalizedTarget, "", "", 0, "Unknown");
                 }
-                    
-                var exampleOriginal = $"{e.SourcePrefix}*{e.SourceTerm}*{e.SourceSuffix}";
+
+                string exampleOriginal = response.isFullyTranslated ? $"{e.SourcePrefix}*{e.SourceTerm}*{e.SourceSuffix}" : "";
                 var exampleTranslated = $"{e.TargetPrefix}*{e.TargetTerm}*{e.TargetSuffix}";
                 
             return new TranslationItem(x.NormalizedTarget, exampleTranslated, exampleOriginal, 0, "Unknown");

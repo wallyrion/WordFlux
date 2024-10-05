@@ -152,11 +152,14 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
     }
     
     
-    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator, CancellationToken token)
+    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator, string? nativeLangCode = null, string? learnLangCode = null, CancellationToken token = default)
     {
         var languages = await storage.GetMyLanguages();
+
+        nativeLangCode ??= languages.native;
+        learnLangCode ??= languages.studing;
         
-        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={languages.native}&studyingLanguage={languages.studing}&useAzureAiTranslator={useAzureAiTranslator}", cancellationToken: token))!;
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={nativeLangCode}&studyingLanguage={learnLangCode}&useAzureAiTranslator={useAzureAiTranslator}", cancellationToken: token))!;
     }
     public async Task<string> GetLevel(string term, CancellationToken token)
     {
@@ -241,5 +244,12 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         var response = await httpClient.GetFromJsonAsync<List<string>>($"/images?keyword={keyword}");
 
         return response ?? [];
+    }
+
+    public async Task<List<SupportedLanguage>> GetSupportedLanguages()
+    {
+        var response = await httpClient.GetFromJsonAsync<List<SupportedLanguage>>($"/languages");
+
+        return response!;
     }
 }

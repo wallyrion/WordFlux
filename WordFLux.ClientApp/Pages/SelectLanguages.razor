@@ -1,24 +1,49 @@
 ﻿@page "/lang"
-@using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Storage
+@using WordFLux.ClientApp.Components
+@using WordFlux.Contracts
 @inject LocalStorage Storage
 <PageTitle>Choose languages</PageTitle>
 
-@inject WeatherApiClient ApiClient
-
 <div class="container">
 
-    <div class="input-group mb-3">
-        <label class="input-group-text" for="selectNative">Your native language:</label>
-        <select class="form-select" id="selectNative" @onchange="SelectNative">
-            <option selected="@(NativeLanguage == null)">None</option>
-            @foreach (var option in LanguageOptions)
-            {
-                <option selected="@(option.Code == NativeLanguage)" value="@option.Code">@option.Name</option>
-            }
-        </select>
+    <div class="container">
+        <div class="row row-cols-1 row-cols-md-2">
+            <!-- Left Column (aligned to the right on desktop, left on mobile) -->
+            <div class="col-md-6 d-flex justify-content-md-end justify-content-start">
+                <div class="input-group mb-3">
+                    <label class="input-group-text">Your native language:</label>
+                    <SelectLanguageDropdown
+                        IsFullNameLabelShown="@true"
+                        OnLanguageSelected="@(e => LanguageSelected(e, true))"
+                        PredefinedLanguageCode="@NativeLanguage"
+                        IsNative="@true">
+                    </SelectLanguageDropdown>
+                </div>
+            </div>
+
+            <!-- Right Column (aligned to the left on both desktop and mobile) -->
+            <div class="col-md-6 d-flex justify-content-md-start justify-content-start">
+                <div class="input-group mb-3">
+                    <label class="input-group-text">Language you study:</label>
+                    <SelectLanguageDropdown
+                        IsFullNameLabelShown="@true"
+                        OnLanguageSelected="@(e => LanguageSelected(e, false))"
+                        PredefinedLanguageCode="@StudyingLanguage"
+                        IsNative="@false">
+                    </SelectLanguageDropdown>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="input-group mb-3">
+
+
+
+
+
+
+
+    @*<div class="input-group mb-3">
         <label class="input-group-text" for="selectStudying">Language you study:</label>
         <select class="form-select" id="selectStudying" @onchange="SelectStudying">
             <option selected="@(StudyingLanguage == null)">None</option>
@@ -27,38 +52,17 @@
                 <option selected="@(option.Code == StudyingLanguage)" value="@option.Code">@option.Name</option>
             }
         </select>
-    </div>
-    
-    
-    <div>
-        <p>My id:</p>
-        <p>@MyId</p>
-    </div>
-
+    </div>*@
 
 </div>
 
 
 @code {
-
-    static readonly List<LanguageOption> LanguageOptions =
-    [
-        new("Russian", "ru-RU"),
-        new("Ukrainian", "uk-UA"),
-        new("English", "en-US"),
-        new("Croatian", "hr-HR"),
-        new("Spain", "es-ES"),
-    ];
-
     string? NativeLanguage { get; set; }
     string? StudyingLanguage { get; set; }
-    
-    Guid? MyId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        MyId = await Storage.GetMyId();
-        
         var langs = await Storage.GetMyLanguages();
 
         NativeLanguage = langs.native;
@@ -82,8 +86,20 @@
         await Storage.SaveStudyingLanguage(langCode!);
     }
 
-    
-    
+    private async Task LanguageSelected(SupportedLanguage lang, bool isNative)
+    {
+        if (isNative)
+        {
+            NativeLanguage = lang.Code;
+            await Storage.SaveNativeLanguage(lang.Code);
+        }
+        else
+        {
+            StudyingLanguage = lang.Code;
+            await Storage.SaveStudyingLanguage(lang.Code);
+        }
+    }
+
 }
 
 

@@ -104,5 +104,11 @@ public static class AiSystemMessages
                                             Give me some rangom quote or motivational phrase. It can be one or several sentences.
                                            """;
     
+    /*public const string GiveAlternativesPrompt = """
+                                                  There is a $term = '{{$term}}' in '{{$srcLang}}' and existing translations for it: $existingTranslations = {{$existingTranslations}} in '{{$destLang}}'.
+                                                  Give me alternative translations for $term in {{$destLang}} and return response in JSON, for examples: {"translations": ["to long for", "to yearn for"]}
+                                                  Exclude $existingTranslations from the result. Double check you do not provide duplicates
+                                                 """;*/
+    
     
 }

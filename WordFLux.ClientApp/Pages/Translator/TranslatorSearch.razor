@@ -2,6 +2,8 @@
 @using WordFLux.ClientApp.Pages.Shared
 @using WordFlux.Contracts
 
+
+
 @if (TranslationResponse != null && !string.IsNullOrWhiteSpace(TranslationResponse.SuggestedTerm) && !TranslationResponse.SuggestedTerm.Equals(Term, StringComparison.InvariantCultureIgnoreCase))
 {
 <div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@TranslationResponse.SuggestedTerm </span></div>
@@ -18,19 +20,37 @@
         }
         else
         {
-            <button type="button" class="btn btn-outline-info" @onclick="Search">
+            <button type="button" class="btn btn-outline-info" @onclick="() => Search(Term)">
                 <i class="bi bi-search"></i>
-                <span > Try it!</span>
             </button>
         }
     </div>
+
+    @*<div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Dropdown
+        </button>
+        <ul class="dropdown-menu">
+            <li><button class="dropdown-item" type="button">Action</button></li>
+            <li><button class="dropdown-item" type="button">Another action</button></li>
+            <li><button class="dropdown-item" type="button">Something else here</button></li>
+        </ul>
+    </div>*@
+    
+    <div>
+        <SelectLanguageDropdown OnLanguageSelected="@(e => LanguageSelected(e, true))" PredefinedLanguageCode="@NativeLanguageCode" IsNative="@true"></SelectLanguageDropdown>
+        <span><i class="bi bi-arrow-left-right"></i></span>
+        <SelectLanguageDropdown OnLanguageSelected="@(e => LanguageSelected(e, false))" PredefinedLanguageCode="@LearnLanguageCode" IsNative="@false"></SelectLanguageDropdown>
+
+    </div>
+    
 
     <div class="form-check form-switch align-self-end">
         <Tooltip Title="Leverage Azure AI translator power instead of default custom AI translator">
             <input class="form-check-input" @bind="@UseAzureAiTranslator" @bind:after="ChangeSearchEngine" type="checkbox" role="switch" id="flexSwitchCheckDefault">
         </Tooltip>
 
-        <label class="form-check-label" for="flexSwitchCheckDefault">Use Azure AI Translator </label>
+        <label class="form-check-label" for="flexSwitchCheckDefault">Azure AI</label>
     </div>
 
 </div>
@@ -63,16 +83,19 @@
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public string? Level { get; set; }
     [Parameter] public SimpleTranslationResponse? TranslationResponse { get; set; }
+    [Parameter] public string? LearnLanguageCode { get; set; }
+    [Parameter] public string? NativeLanguageCode { get; set; }
     
     [Parameter] public EventCallback OnReset { get; set; }
     [Parameter] public EventCallback<TranslationEngine> OnEngineChanged { get; set; }
     [Parameter] public EventCallback<string> OnSearch { get; set; }
-    bool UseAzureAiTranslator { get; set; }
+    [Parameter] public EventCallback<(string code, bool isNative)> OnLanguageChanged { get; set; }
+    [Parameter] public bool UseAzureAiTranslator { get; set; }
     [Parameter] public string? Term { get; set; }
 
-    private async Task Search()
+    private async Task Search(string? term)
     {
-        await OnSearch.InvokeAsync(Term);
+        await OnSearch.InvokeAsync(term);
     }
 
     private void TermChanged(string term)
@@ -95,6 +118,11 @@
     {
         var value = UseAzureAiTranslator;
         await OnEngineChanged.InvokeAsync(value ? TranslationEngine.AzureAi : TranslationEngine.OpenAiCustom);
+    }
+
+    private async Task LanguageSelected(SupportedLanguage language, bool isNative)
+    {
+        await OnLanguageChanged.InvokeAsync((language.Code, isNative));
     }
 }
 

@@ -46,4 +46,10 @@ public class OpenAiTranslationService(OpenAiGenerator aiGenerator) : ITranslatio
 
         return response;
     }
+
+    public async Task<IReadOnlyCollection<SupportedLanguage>> GetLanguagesAsync()
+    {
+        // not expected to use this method from this service. use Azure translation service
+        throw new NotImplementedException();
+    }
 }

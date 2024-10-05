@@ -1,0 +1,88 @@
+﻿@using WordFLux.ClientApp.Services
+@using WordFLux.ClientApp.Storage
+@using WordFlux.Contracts
+@inject WeatherApiClient Api
+@inject LanguageProvider LanguageProvider
+@inject LocalStorage Storage
+
+<button class="btn btn-outline-secondary btn-sm lang-button" data-bs-toggle="dropdown" aria-expanded="false">
+    @if (SelectedLanguage != null)
+    {
+        <span>@(IsFullNameLabelShown ? SelectedLanguage.Name : SelectedLanguage.Code)</span>
+    }
+    else
+    {
+        <span>lang</span>
+    }
+</button>
+<ul class="dropdown-menu p-3" style="max-height: 400px; overflow-y: auto; max-width: 350px">
+    <label class="dropdown-header fw-bold mb-2">@SelectLanguageLabel</label>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search language" @bind="SearchQuery" @bind:event="oninput">
+    </div>
+
+    <div class="row">
+        @foreach (var lang in FilteredLanguages)
+        {
+            <li class="col-12 mb-2">
+                <button class="dropdown-item" type="button" @onclick="() => SelectLanguage(lang)">
+                    <span>@lang.Name</span>
+                </button>
+            </li>
+        }
+    </div>
+</ul>
+
+@*<div class="dropdown d-inline-block">
+   
+</div>*@
+
+@code {
+    [Parameter] public string? PredefinedLanguageCode { get; set; }
+    [Parameter] public bool IsFullNameLabelShown { get; set; }
+    [Parameter] public EventCallback<SupportedLanguage> OnLanguageSelected { get; set; }
+    [Parameter] public bool IsNative { get; set; }
+    private string SelectLanguageLabel => IsNative ? "Choose your native language" : "Choose the language you are studying";
+    private List<SupportedLanguage> SupportedLanguages { get; set; } = [];
+    SupportedLanguage? SelectedLanguage { get; set; }
+
+    private List<SupportedLanguage> FilteredLanguages => SupportedLanguages
+        .Where(lang => string.IsNullOrWhiteSpace(SearchQuery) || lang.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    private string SearchQuery { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SupportedLanguages = await LanguageProvider.GetSupportedLanguagesAsync();
+
+        SelectedLanguage = await GetSelectedLanguage();
+    }
+
+    private async Task<SupportedLanguage?> GetSelectedLanguage()
+    {
+        SupportedLanguage? selectedLanguage = null;
+
+        if (PredefinedLanguageCode != null)
+        {
+            selectedLanguage = SupportedLanguages.FirstOrDefault(x => x.Code == PredefinedLanguageCode);
+        }
+
+        if (selectedLanguage == null)
+        {
+            var myLanguages = await Storage.GetMyLanguages();
+
+            string selectedLanguageCode = IsNative ? myLanguages.native : myLanguages.studing;
+            selectedLanguage = SupportedLanguages.FirstOrDefault(x => x.Code == selectedLanguageCode);
+        }
+
+        return selectedLanguage;
+    }
+
+    private async Task SelectLanguage(SupportedLanguage language)
+    {
+        SelectedLanguage = language;
+        await OnLanguageSelected.InvokeAsync(language);
+    }
+
+}
