@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.Domain;
+using WordFlux.ApiService.Mappers;
 using WordFlux.ApiService.Persistence;
 using WordFlux.ApiService.ViewModels;
 using WordFlux.Contracts;
@@ -26,7 +28,7 @@ public static class CardsEndpoints
                 var card = await dbContext.Cards
                     .Where(c => c.CreatedBy == userId && c.Id == cardId)
                     .AsNoTracking()
-                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl))
+                    .Select(CardMapper.ToCardDto())
                     .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
                 return card;
@@ -56,7 +58,7 @@ public static class CardsEndpoints
 
                 var result = await query
                     .AsNoTracking()
-                    .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl))
+                    .Select(CardMapper.ToCardDto())
                     .ToListAsync(cancellationToken: cancellationToken);
 
                 return result;
@@ -98,7 +100,7 @@ public static class CardsEndpoints
             return await query
                 .OrderBy(x => x.NextReviewDate)
                 .Skip(skip.Value)
-                .Select(x => new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl))
+                .Select(CardMapper.ToCardDto())
                 .FirstOrDefaultAsync();
         }).RequireAuthorization();
 
@@ -205,7 +207,11 @@ public static class CardsEndpoints
                     ReviewInterval = TimeSpan.FromMinutes(2),
                     Level = request.Level,
                     DeckId = request.DeckId == default ? defaultDeck.Id : request.DeckId,
-                    ImageUrl = request.ImageUrl
+                    ImageUrl = request.ImageUrl,
+                    SourceLanguage = request.SourceLang,
+                    LearnLanguage = request.LearnLang,
+                    TargetLanguage = request.TargetLang,
+                    NativeLanguage = request.NativeLang
                 };
 
                 dbContext.Cards.Add(card);
@@ -242,6 +248,8 @@ public static class CardsEndpoints
 
         return app;
     }
+
+   
 }
 
 
