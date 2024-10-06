@@ -62,6 +62,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 
     //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
+builder.Services.AddHostedService<MigrationHostedService>();
 
 builder.Services.AddSingleton<NotificationsStore>();
 builder.Services.AddSingleton<BingImageSearchService>();
@@ -82,7 +83,6 @@ builder.Services.AddProblemDetails();
 builder.Services.AddSwagger();
 builder.Services.AddEndpointsApiExplorer();
 builder.AddNpgsqlDbContext<ApplicationDbContext>("postgresdb");
-builder.Services.AddHostedService<MigrationHostedService>();
 
 builder.Services.AddOpenAi(builder.Configuration);
 
