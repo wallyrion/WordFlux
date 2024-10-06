@@ -78,11 +78,11 @@ public class CardProcessingBackgroundJob(IServiceProvider serviceProvider, ILogg
                     card.NativeLanguage = card.SourceLanguage;
                     card.LearnLanguage = "en";
                 }
-
-                card.Status = CardProcessingStatus.LanguageDetected;
-
-                await dbContext.SaveChangesAsync(stoppingToken);
             }
+            
+            card.Status = CardProcessingStatus.LanguageDetected;
+
+            await dbContext.SaveChangesAsync(stoppingToken);
         }
         catch (Exception e)
         {
