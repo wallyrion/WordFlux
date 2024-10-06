@@ -1,8 +1,7 @@
 ﻿@using WordFLux.ClientApp.Services
 @using WordFlux.Contracts
 
-@inject WeatherApiClient HttpClient
-
+@inject ApiClient HttpClient
 
 @*
 <label for="exampleDataList" class="form-label">Datalist example</label>
@@ -28,7 +27,6 @@
 
 
 @code {
-
     private PeriodicTimer? timer = null;
     private string text;
     private int calls;
@@ -36,6 +34,8 @@
 
     List<AutocompleteItem> AutocompleteOptions { get; set; } = [];
     [Parameter] public string? Term { get; set; }
+    [Parameter] public string LanguageSource { get; set; } = null!;
+    [Parameter] public string LanguageDestination { get; set; } = null!;
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<string> OnTermChanged { get; set; }
     CancellationTokenSource _cancellationTokenSource = new();
@@ -91,7 +91,7 @@
     {
         //var completions = await HttpClient.SearchForCompletions(str);
 
-        var completions = await HttpClient.SearchForCompletionsWithTranslations(str, token);
+        var completions = await HttpClient.SearchForCompletionsWithTranslations(str, LanguageSource, LanguageDestination, token);
         AutocompleteOptions = completions.Items;
         //AutocompleteOptions = completions.Completions;
         await InvokeAsync(StateHasChanged);

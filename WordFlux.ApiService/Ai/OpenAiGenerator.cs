@@ -274,6 +274,36 @@ public class OpenAiGenerator : IOpenAiGenerator
 
         return response;
     }
+
+
+    [Experimental("SKEXP0010")]
+    public async Task<List<(string ExampleLearn, string ExampleNative)>?> GetExamplesCardTask(string term, string learnLanguage, string nativeLanguage, int examplesCount, CancellationToken cancellationToken = default)
+    {
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            Temperature = 1
+        })
+        {
+            { "term", term }, { "learnLang", learnLanguage }, { "nativeLang", nativeLanguage }, { "count", examplesCount },
+        };
+
+        var result = await AiFunctions.CreateCardExampleTaskFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
+
+        if (result?.Content == null)
+        {
+            return [];
+        }
+
+        var content = JsonSerializer.Deserialize<CardExampleTaskResult>(result.Content);
+
+        if (content == null)
+        {
+            return [];
+        }
+
+        return content.Examples.Select(x => (x.ExampleToLearn, x.ExampleOriginal)).ToList();
+    }
 }
 
 /*file class TranslationResult
@@ -360,6 +390,17 @@ file class TranslationResultNew
     [JsonPropertyName("srcL")] public string SourceLanguage { get; set; } = null!;
 
     [JsonPropertyName("outL")] public string OutputLanguage { get; set; } = null!;
+}
+
+file class CardExampleTaskResult
+{
+    [JsonPropertyName("sentences")] public List<CardExampleTaskItem> Examples { get; set; } = [];
+}
+
+file class CardExampleTaskItem
+{
+    [JsonPropertyName("example_original")] public required string ExampleToLearn { get; set; }
+    [JsonPropertyName("example_translated")] public required string ExampleOriginal { get; set; }
 }
 
 file class AutocompleteWithTranslationsResult

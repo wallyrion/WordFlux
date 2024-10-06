@@ -1,0 +1,20 @@
+﻿@using WordFlux.Contracts
+
+<div class="card card-body">
+    @foreach (var item in Card.CardTaskExamples)
+    {
+        <div class="card card-body">
+            <div>
+                @item.ExampleLearn
+            </div>
+            <div class="text-primary">
+                @item.ExampleNative
+            </div>
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter] public CardDto Card { get; set; } = null!;
+}

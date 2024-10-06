@@ -32,7 +32,7 @@ builder.Services.AddSingleton<InMemoryMessageQueue>();
 
 builder.Services.AddDefaultApiClient<RefreshIdentityHttpClient>();
 
-builder.Services.AddDefaultApiClient<WeatherApiClient>()
+builder.Services.AddDefaultApiClient<ApiClient>()
     .AddHttpMessageHandler<TokenHandler>();
 
 builder.Services.AddDefaultApiClient<IdentityHttpClient>()

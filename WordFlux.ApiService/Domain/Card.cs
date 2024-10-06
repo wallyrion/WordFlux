@@ -23,4 +23,5 @@ public class Card
     public Guid DeckId { get; set; }
     public string? ImageUrl { get; set; }
     public CardProcessingStatus Status { get; set; }
+    public List<CardTaskExample> ExampleTasks { get; set; } = [];
 }

@@ -4,5 +4,6 @@ public enum CardProcessingStatus
 {
     Unprocessed,
     LanguageDetected,
-    Failed
+    CardExampleTaskCreated,
+    Failed = 100
 }
