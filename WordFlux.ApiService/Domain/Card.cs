@@ -22,4 +22,5 @@ public class Card
     public Deck Deck { get; set; } = null!;
     public Guid DeckId { get; set; }
     public string? ImageUrl { get; set; }
+    public CardProcessingStatus Status { get; set; }
 }

@@ -1,12 +1,14 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -16,6 +18,7 @@ using WebPush;
 using WordFlux.ApiService;
 using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
+using WordFlux.ApiService.Jobs;
 using WordFlux.ApiService.Persistence;
 using static System.Net.WebRequestMethods;
 
@@ -64,6 +67,16 @@ builder.Services.AddSingleton<NotificationsStore>();
 builder.Services.AddSingleton<BingImageSearchService>();
 builder.Services.AddSingleton<UnsplashImageSearchService>();
 builder.Services.AddHostedService<TestBackgroundService>();
+
+Channel<Guid> channel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions
+{
+    SingleReader = true,
+    SingleWriter = false,
+});
+builder.Services.AddKeyedSingleton(Channels.CardProcessing, channel);
+builder.Services.AddHostedService<CardProcessingBackgroundJob>();
+builder.Services.AddSingleton<CardMessagePublisher>();
+
 // Add services to the container.
 builder.Services.AddProblemDetails();
 builder.Services.AddSwagger();

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.Domain;
+using WordFlux.ApiService.Jobs;
 using WordFlux.ApiService.Mappers;
 using WordFlux.ApiService.Persistence;
 using WordFlux.ApiService.ViewModels;
@@ -173,7 +174,7 @@ public static class CardsEndpoints
             }).RequireAuthorization();
 
         app.MapPost("/cards",
-            async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal,
+            async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal, CardMessagePublisher messagePublisher,
                 UserManager<AppUser> userManager) =>
             {
                 var userIdStr = userManager.GetUserId(claimsPrincipal);
@@ -216,7 +217,8 @@ public static class CardsEndpoints
 
                 dbContext.Cards.Add(card);
                 await dbContext.SaveChangesAsync();
-
+                await messagePublisher.PublishNewCardForProcessing(card.Id);
+                
                 logger.LogInformation("Saving card for term = {Term}", request.Term);
 
                 return await dbContext.Cards.AsNoTracking().Where(x => x.Id == card.Id).Select(CardMapper.ToCardDto()).FirstOrDefaultAsync();

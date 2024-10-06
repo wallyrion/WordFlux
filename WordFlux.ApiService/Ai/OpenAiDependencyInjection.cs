@@ -1,10 +1,7 @@
-﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel;
-using WordFlux.ApiService.Ai;
+﻿using Microsoft.SemanticKernel;
 using WordFlux.ApiService.Services;
 
-namespace WordFlux.ApiService;
+namespace WordFlux.ApiService.Ai;
 
 #pragma warning disable SKEXP0001
 
@@ -18,6 +15,7 @@ public static class OpenAiDependencyInjection
             configuration["OpenAIKey"]!);
         
         services.AddSingleton<OpenAiGenerator>();
+        services.AddSingleton<IOpenAiGenerator, OpenAiGenerator>(s => s.GetRequiredService<OpenAiGenerator>());
         services.AddKeyedSingleton<ITranslationService, AzureAiTranslationService>("AzureAiTranslator");
         services.AddKeyedSingleton<ITranslationService, OpenAiTranslationService>("OpenAiTranslator");
         //services.AddSingleton<ITranslationService, AzureAiTranslationService>();
