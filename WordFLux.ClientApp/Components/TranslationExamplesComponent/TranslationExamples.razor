@@ -3,6 +3,7 @@
 @using WordFLux.ClientApp.Services
 @using WordFlux.Contracts
 @using WordFLux.ClientApp.Components.DragAndDropSortable
+@using WordFLux.ClientApp.Extensions
 @using WordFLux.ClientApp.Pages.Shared
 @inject ApiClient HttpClient
 
@@ -48,7 +49,7 @@
                         <div class="card mt-1">
                             <div class="card-header position-relative">
                                 <h4 class="d-inline pre-wrap">
-                                    @StringToHtml(item.value.Term)
+                                    @item.value.Term.AsHtmlContent() 
                                 </h4>
                                 <span class="badge text-bg-light position-absolute end-0 bottom-0">@item.value.Level</span>
                             </div>
@@ -59,7 +60,7 @@
                                     {
                                         <p class="card-text">
                                             <span class="position-relative">
-                                                @StringToHtml(item.value.ExampleTranslated)
+                                                @item.value.ExampleTranslated.AsHtmlContent()
                                                 <span class="audio">
                                                     <AudioFromText Term="@item.value.ExampleTranslated"></AudioFromText>
                                                 </span>
@@ -72,7 +73,7 @@
                                         <blockquote class="blockquote mb-0">
                                             <footer class="blockquote-footer">
                                                 <span class="position-relative">
-                                                    @StringToHtml(item.value.ExampleOriginal)
+                                                    @item.value.ExampleOriginal.AsHtmlContent()
                                                     <span class="audio">
                                                         <AudioFromText Term="@item.value.ExampleOriginal"></AudioFromText>
                                                     </span>
@@ -239,23 +240,6 @@
     static string GetFireColor(CardTranslationItem item)
         => $"{item.Popularity switch { > 90 => "text-danger", > 70 => "text-warning", > 40 => "text-success", _ => "text-primary" }}";
 
-    static RenderFragment StringToHtml(string htmlString)
-    {
-        var str = ConvertAserisksToBold(htmlString);
-
-        return b => b.AddMarkupContent(0, str);
-    }
-
-    static string ConvertAserisksToBold(string text)
-    {
-        // This pattern looks for text surrounded by asterisks (*)
-        string pattern = @"\*(.*?)\*";
-
-        // Replace the asterisks and the text between them with the <strong> HTML tag
-        string result = Regex.Replace(text, pattern, "<strong>$1</strong>");
-
-        return result;
-    }
 
     private async Task Edit(int index)
     {

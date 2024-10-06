@@ -79,7 +79,6 @@
 
 @code {
     [SupplyParameterFromQuery(Name = "term")] string? Term { get; set; }
-    [SupplyParameterFromQuery(Name = "useAzureAi")] bool UseAzureAiTranslator { get; set; }
 
     CardDto? SavedCard { get; set; }
     bool IsOnline => ConnectionHealthService.IsOnline;
@@ -91,12 +90,24 @@
     CancellationTokenSource CancellationTokenSource { get; set; } = new();
     IEnumerable<string> TranslationCheeps => Translation?.Translations ?? [];
     
-    [SupplyParameterFromQuery(Name = "lg_native")] string? NativeLanguageCode { get; set; }
+    [SupplyParameterFromQuery(Name = "lg_native")] string? NativeLanguageCodeFromQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "lg_learn")] string? LearnLanguageCodeFromQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "useAzureAi")] bool UseAzureAiTranslatorFromQuery { get; set; }
 
-    [SupplyParameterFromQuery(Name = "lg_learn")] string? LearnLanguageCode { get; set; }
+    bool UseAzureAiTranslator { get; set; }
+    string? NativeLanguageCode{ get; set; }
+    string? LearnLanguageCode { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        NativeLanguageCode = NativeLanguageCodeFromQuery;
+        LearnLanguageCode = LearnLanguageCodeFromQuery;
+        UseAzureAiTranslator = UseAzureAiTranslatorFromQuery;
+        /*if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("initialCount", out var _initialCount))
+        {
+            currentCount = Convert.ToInt32(_initialCount);
+        }*/
+        
         ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
 
         await ValidateSelectedLanguages();
@@ -197,8 +208,10 @@
         Translation = null;
         Level = null;
 
-        Navigation.NavigateTo(
-            Navigation.GetUriWithQueryParameter("term", (string?)null));
+
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("term", (string?)null));
+
     }
 
     public void Dispose()

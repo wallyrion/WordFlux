@@ -4,6 +4,7 @@
 @using WordFLux.ClientApp.Utils
 @using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @using WordFLux.ClientApp.Extensions
+@using WordFLux.ClientApp.Pages.CardDetails
 @inject IJSRuntime JsRuntime
 @inject ApiClient ApiClient
 @inject NavigationManager Navigation
@@ -137,7 +138,15 @@
             Term="@Card.Term"
             OnAddMyTranslation="AddMyTranslation"/>
     </div>
-    
+ 
+    <p class="mt-5">
+        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+            Tasks >>>>
+        </button>
+    </p>
+    <div class="collapse" id="collapseExample">
+        <CardTasks Card="Card"/>
+    </div>
 }
 else
 {

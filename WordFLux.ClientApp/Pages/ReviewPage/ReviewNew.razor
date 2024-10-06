@@ -1,13 +1,11 @@
 ﻿@page "/reviewV2"
+@using System.Runtime.InteropServices
 @using WordFLux.ClientApp.Extensions
 @using WordFLux.ClientApp.Services
-@using WordFLux.ClientApp.Pages.Shared
-@using WordFLux.ClientApp.Utils
 @inject LocalStorage Storage
 
 @using WordFlux.Contracts
 @using WordFLux.ClientApp.Storage
-@using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @using WordFLux.ClientApp.Components
 @inject ApiClient Api
 @inject NavigationManager Navigation
@@ -63,11 +61,18 @@
         {
             <div class="card text-center">
                 <div class="card-body">
-                    <h5 class="card-title pre-wrap">@TermLearning</h5>
+                    @{
+                        var (frontTerm, backTerm) = GetCardTerms();
+                    }
+                    <h5 class="card-title pre-wrap">@frontTerm.AsHtmlContent()</h5>
+                    @if (ReviewStrategy == ReviewChallenge.Image && !IsShowTranslation)
+                    {
+                         <img src="@CurrentCard.ImageUrl" class="img-fluid img-thumbnail" alt="Selected image that describes term" />
+                    }
 
                     @if (IsShowTranslation)
                     {
-                        <p class="card-text pre-wrap text-primary-emphasis">@TermTranslation</p>
+                        <p class="card-text pre-wrap text-primary-emphasis">@backTerm.AsHtmlContent()</p>
                     }
                 </div>
 
@@ -121,19 +126,39 @@
     bool IsLoading { get; set; }
     bool IsShowTranslation { get; set; }
     bool IsShowTranslationAsBaseTerm { get; set; }
+    ReviewChallenge ReviewStrategy { get; set; }
+    CardTaskExample? ReviewChallengeExample { get; set; }
 
     bool IsRequestInProgress { get; set; } = true;
     TimeSpan? TimeToNextReview { get; set; }
     string Motivation { get; set; } = "There is no better time to learn than now";
     string? TermLearning => IsShowTranslationAsBaseTerm ? CurrentCard?.Translations.First().Term : CurrentCard?.Term;
     string? TermTranslation => IsShowTranslationAsBaseTerm ? CurrentCard?.Term : CurrentCard?.Translations.First().Term;
-    private AudioFromText audioComponent1;
     
     [SupplyParameterFromQuery(Name = "deckId")]
     public Guid? DeckId { get; set; }
     List<Guid> SelectedDecksIds { get; set; } = [];
     List<DeckDto> Decks { get; set; } = [];
-    
+
+    private (string? frontTerm, string? backTerm) GetCardTerms()
+    {
+        if (CurrentCard == null)
+        {
+            return (null, null);
+        }
+
+        if (ReviewStrategy == ReviewChallenge.Image)
+        {
+            return (null, CurrentCard.Term);
+        }
+
+        if (ReviewStrategy == ReviewChallenge.ChallengeExampleNative && ReviewChallengeExample != null)
+        {
+            return (ReviewChallengeExample.ExampleNative, ReviewChallengeExample.ExampleLearn);
+        }
+        
+        return (CurrentCard.Term, CurrentCard.Translations[0].Term);
+    }
 
     private async Task Approve()
     {
@@ -227,7 +252,34 @@
 
     private void UpdateLearningStrategy()
     {
-        IsShowTranslationAsBaseTerm = Random.Shared.NextSingle() < 0.4;
+        if (CurrentCard == null)
+        {
+            return;
+        }
+        
+        var possibleStrategies = new List<ReviewChallenge>
+        {
+            ReviewChallenge.PrimaryTranslation,
+            ReviewChallenge.OriginalTerm
+        };
+
+        if (CurrentCard!.ImageUrl != null)
+        {
+            possibleStrategies.Add(ReviewChallenge.Image);
+        }
+
+        if (CurrentCard.CardTaskExamples.Count > 0)
+        {
+            possibleStrategies.Add(ReviewChallenge.ChallengeExampleNative);
+        }
+
+        var randomStrategy = Random.Shared.GetItems<ReviewChallenge>(CollectionsMarshal.AsSpan(possibleStrategies), 1)[0];
+
+        ReviewStrategy = randomStrategy;
+
+        ReviewChallengeExample = ReviewStrategy == ReviewChallenge.ChallengeExampleNative 
+            ? Random.Shared.GetItems<CardTaskExample>(CollectionsMarshal.AsSpan(CurrentCard.CardTaskExamples), 1)[0] 
+            : null;
     }
 
     private async Task OnDeckFiltered(List<Guid> decks)
@@ -238,5 +290,13 @@
         SelectedDecksIds = decks;
 
         await LoadInitialState();
+    }
+
+    public enum ReviewChallenge
+    {
+        OriginalTerm,
+        PrimaryTranslation,
+        ChallengeExampleNative,
+        Image
     }
 }
