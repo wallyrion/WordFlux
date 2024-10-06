@@ -7,7 +7,7 @@ using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Ai;
 
-public class OpenAiGenerator
+public class OpenAiGenerator : IOpenAiGenerator
 {
     private readonly Kernel _kernel;
     private readonly ILogger<OpenAiGenerator> _logger;
@@ -20,7 +20,7 @@ public class OpenAiGenerator
 
     
     [Experimental("SKEXP0010")]
-    public async Task<(string detectedLanguage, List<(string, string)> autocompletes)?> GetAutocompleteWithTranslations(string term, string lang1, string lang2)
+    public async Task<(string detectedLanguage, List<(string, string)> autocompletes)?> GetAutocompleteWithTranslations(string term, string lang1, string lang2, CancellationToken cancellationToken = default)
     {
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
@@ -28,7 +28,7 @@ public class OpenAiGenerator
             Temperature = 1
         }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
 
-        var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
 
         if (result == null || result.Content == null)
         {
@@ -123,6 +123,29 @@ public class OpenAiGenerator
         var content = JsonSerializer.Deserialize<DetectLanguageResponse>(result.Content);
 
         return (content!.Language, content.SuggestedTerm);
+    }
+    
+    [Experimental("SKEXP0010")]
+    public async Task<(string sourceLanguage, string destinationLanguage)?> DetectLanguage(string sourceInput, string translatedInput, CancellationToken cancellationToken = default)
+    {
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+            Temperature = 0.5
+        }) { { "src", sourceInput }, { "dest", translatedInput }  };
+
+        var result = await AiFunctions.DetectPossibleLanguageFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
+
+        if (result?.Content == null)
+        {
+            _logger.LogError("Got null result");
+
+            return null;
+        }
+
+        var content = JsonSerializer.Deserialize<DetectMultipleLanguagesResponse>(result.Content);
+
+        return (content.SourceLanguage, content.DestinationLanguage);
     }
 
     [Experimental("SKEXP0010")]
@@ -314,8 +337,14 @@ file class DetectLanguageResponse
 {
     [JsonPropertyName("language")] public string Language { get; set; } = null!;
     [JsonPropertyName("suggested_term")] public string? SuggestedTerm { get; set; }
-
 }
+
+file class DetectMultipleLanguagesResponse
+{
+    [JsonPropertyName("srcLanguage")] public required string SourceLanguage { get; set; } 
+    [JsonPropertyName("destLanguage")] public required string DestinationLanguage { get; set; }
+}
+
 
 file class EstimateLevelResult
 {

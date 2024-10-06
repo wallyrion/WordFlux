@@ -55,9 +55,9 @@ public static class TranslationsEndpoints
         });
         
         
-        app.MapPost("/translations/autocomplete/with-translations", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator) =>
+        app.MapPost("/translations/autocomplete/with-translations", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator, CancellationToken CancellationToken) =>
         {
-            var result = await openAiGenerator.GetAutocompleteWithTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage);
+            var result = await openAiGenerator.GetAutocompleteWithTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage, CancellationToken);
 
             var items = result.Value.autocompletes.Select(x => new AutocompleteItem(x.Item1, x.Item2)).ToList();
             var response = new AutocompleteResponse(result.Value.detectedLanguage, items);

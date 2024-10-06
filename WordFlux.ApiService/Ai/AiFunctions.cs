@@ -42,7 +42,7 @@ public class AiFunctions
     public static readonly KernelFunction DetectLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
-                   Detect language of input: |{{$input}}| and map to the JSON object: {"language": "language of input (e.g. en-US)"}
+                   Detect language of input: |{{$input}}| and map to the JSON object: {"language": "language of input (e.g. en)"}
                    Only these languages are possible: [{{$possibleLanguages}}].
                    If input has typo, try to fix a typo and put corrected value into suggested_term. If no typo, skip suggested_term field
                    """,
@@ -53,7 +53,25 @@ public class AiFunctions
         OutputVariable = new OutputVariable
         {
             JsonSchema = """
-                         {"language": "en-US"}
+                         {"language": "en"}
+                         """
+        }
+    });
+    
+    public static readonly KernelFunction DetectPossibleLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = """
+                   Detect language of src: |{{$src}}| and language of destination |{{$dest}}| and map to the JSON object: {"srcLanguage": "language of src (e.g. en, ru, uk, hr)", "destLanguage": "language of destination"}
+                   If you can't do it, put empty string
+                   """,
+        InputVariables = [
+            new() { Name = "src" }, 
+            new() { Name = "dest" }
+        ],
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         {"srcLanguage": "en", "destLanguage": "ru"}
                          """
         }
     });
