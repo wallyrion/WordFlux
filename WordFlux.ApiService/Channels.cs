@@ -2,5 +2,6 @@
 
 public static class Channels
 {
-    public const string CardProcessing = "CardProcessingChannel";
+    public const string CardDetectLanguage = "CardDetectLanguageChannel";
+    public const string CardCreateTasks = "CardCreateTasksChannel";
 }

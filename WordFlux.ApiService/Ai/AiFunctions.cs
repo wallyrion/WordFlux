@@ -36,6 +36,23 @@ public class AiFunctions
                          {"translations":["to encourage"]}
                          """
         }
+    });       
+    
+    public static readonly KernelFunction CreateCardExampleTaskFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = AiSystemMessages.CardExampleTaskPrompt,
+        InputVariables = [
+            new() { Name = "term", Description = "The term (can be word or phrase)" },
+            new() { Name = "learnLang", Description = "language of the term, that is learning" } ,
+            new() { Name = "nativeLang", Description = "native language" } ,
+            new() { Name = "count", Description = "Number of examples" } 
+        ],
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] }
+                         """
+        }
     });   
     
     

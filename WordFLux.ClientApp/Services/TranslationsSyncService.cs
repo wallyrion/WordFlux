@@ -111,7 +111,7 @@ public class TranslationsSyncService(
                 await using var scope = serviceCollection.CreateAsyncScope();
                 logger.LogInformation("CreatedScope for term {Term}", item);
 
-                var apiClient = scope.ServiceProvider.GetRequiredService<WeatherApiClient>();
+                var apiClient = scope.ServiceProvider.GetRequiredService<ApiClient>();
                 logger.LogInformation("Took api client");
 
                 await SaveTranslationSilent(item.Term, apiClient);
@@ -122,7 +122,7 @@ public class TranslationsSyncService(
         }
     }
 
-    private async Task SaveTranslationSilent(string term, WeatherApiClient apiClient)
+    private async Task SaveTranslationSilent(string term, ApiClient apiClient)
     {
         try
         {

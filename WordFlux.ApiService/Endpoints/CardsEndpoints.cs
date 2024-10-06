@@ -212,12 +212,22 @@ public static class CardsEndpoints
                     SourceLanguage = request.SourceLang,
                     LearnLanguage = request.LearnLang,
                     TargetLanguage = request.TargetLang,
-                    NativeLanguage = request.NativeLang
+                    NativeLanguage = request.NativeLang,
+                    Status = request.SourceLang == null ? CardProcessingStatus.Unprocessed : CardProcessingStatus.LanguageDetected
                 };
 
                 dbContext.Cards.Add(card);
                 await dbContext.SaveChangesAsync();
-                await messagePublisher.PublishNewCardForProcessing(card.Id);
+
+                if (card.SourceLanguage == null)
+                {
+                    await messagePublisher.PublishNewCardForLanguageDetection(card.Id);    
+                }
+                else
+                {
+                    await messagePublisher.PublishNewCardForTasksCreating(card.Id);
+                }
+                
                 
                 logger.LogInformation("Saving card for term = {Term}", request.Term);
 

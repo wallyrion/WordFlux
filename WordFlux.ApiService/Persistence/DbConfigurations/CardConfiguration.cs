@@ -13,6 +13,11 @@ internal sealed class CardConfiguration : IEntityTypeConfiguration<Card>
             y.ToJson();
         });
         
+        builder.OwnsMany(x => x.ExampleTasks, y =>
+        {
+            y.ToJson();
+        });
+        
         builder.Property(e => e.SourceLanguage)
             .HasMaxLength(5)
             .IsUnicode(false);

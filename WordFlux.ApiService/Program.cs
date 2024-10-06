@@ -69,14 +69,7 @@ builder.Services.AddSingleton<BingImageSearchService>();
 builder.Services.AddSingleton<UnsplashImageSearchService>();
 builder.Services.AddHostedService<TestBackgroundService>();
 
-Channel<Guid> channel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions
-{
-    SingleReader = true,
-    SingleWriter = false,
-});
-builder.Services.AddKeyedSingleton(Channels.CardProcessing, channel);
-builder.Services.AddHostedService<CardProcessingBackgroundJob>();
-builder.Services.AddSingleton<CardMessagePublisher>();
+builder.Services.AddChannels();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();

@@ -3,7 +3,7 @@
 @using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @using WordFLux.ClientApp.Services
 @using WordFLux.ClientApp.Pages.Shared
-@inject WeatherApiClient WeatherApi
+@inject ApiClient Api
 
 <div class="d-flex justify-content-between g4">
     <div >
@@ -107,7 +107,7 @@
             IsExamplesLoading = true;
             StateHasChanged();
             
-            Examples = await WeatherApi.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator, CancellationToken);
+            Examples = await Api.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator, CancellationToken);
             Examples[0].IsSelected = true;
         }
         finally
@@ -126,7 +126,7 @@
             selectedTranslations = [Examples[0]];
         }
         var cardRequest = new CardRequest(ActualTerm!, Level, selectedTranslations, deckId, ImageUrl, NativeLanguage, LearnLanguage, Translation.SourceLanguage, Translation.DestinationLanguage);
-        var savedCard = await WeatherApi.SaveNewCard(cardRequest);
+        var savedCard = await Api.SaveNewCard(cardRequest);
         await OnCardSaved.InvokeAsync(savedCard);
     }
 
@@ -168,10 +168,10 @@
         {
             IsExamplesLoading = true;
 
-            var res = await WeatherApi.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
+            var res = await Api.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
 
             Translation = Translation with { Translations = [..Translation.Translations, ..res] };
-            var examples = await WeatherApi.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
+            var examples = await Api.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
 
             Examples = [..Examples, ..examples];
         }

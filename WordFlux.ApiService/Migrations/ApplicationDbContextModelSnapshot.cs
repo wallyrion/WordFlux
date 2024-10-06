@@ -382,6 +382,33 @@ namespace WordFlux.ApiService.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsMany("WordFlux.Contracts.CardTaskExample", "ExampleTasks", b1 =>
+                        {
+                            b1.Property<Guid>("CardId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("ExampleLearn")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("ExampleNative")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("CardId", "Id");
+
+                            b1.ToTable("Cards");
+
+                            b1.ToJson("ExampleTasks");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CardId");
+                        });
+
                     b.OwnsMany("WordFlux.Contracts.CardTranslationItem", "Translations", b1 =>
                         {
                             b1.Property<Guid>("CardId")
@@ -421,6 +448,8 @@ namespace WordFlux.ApiService.Migrations
                         });
 
                     b.Navigation("Deck");
+
+                    b.Navigation("ExampleTasks");
 
                     b.Navigation("Translations");
                 });

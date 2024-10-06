@@ -57,7 +57,7 @@
 
 
 <div class="position-relative">
-    <TranslationAutocomplete OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
+    <TranslationAutocomplete LanguageSource="@LearnLanguageCode" LanguageDestination="@NativeLanguageCode" OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
 
     <button class="btn btn-outline-secondary btn-icon-sm position-absolute end-0 translate-middle-y" @onclick="async () => await Reset()">
         <i class="bi bi-x-circle "></i>

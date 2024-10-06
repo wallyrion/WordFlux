@@ -81,16 +81,19 @@ public static class AiSystemMessages
                                               example_output2: {"translations":["to encourage", "to promote", "to reward"]} for input = 'поощрать'
                                               """;
 
+    
+    /*'e_or' and 'e_tr' fields must have the same example message but 'e_or' contain *$term* (in {{$srcLang}}) and 'e_tr' contain *translation_item* (in {{$destLang}}*/
+    
     public const string GiveTranslationExamples = """
-                                               There is a $term = '{{$term}}' and list of translation_items for it: {{$translations}} in {{$destLang}}.
+                                               There is a $term = '{{$term}}' and list of translation_items for it: {{$translations}} in {{$destLang}};
                                                For each translation_item give example of usage and map to object:
-                                               {"tr": "translation_item, should not be changed", "l": "level of translation_item from A0 to C2", "e_or": "Example of usage of *$term*. Must be in {{$srcLang}}.", "e_tr": "example of usage of *translation_item*. Should be in {{$destLang}}."}
-                                               Mapped objects should be in the same order and same count as original 'translation_items' array.
-                                               Highlight term with '*'.
-                                               'e_or' and 'e_tr' fields must have the same example message but 'e_or' contain *$term* (in {{$srcLang}}) and 'e_tr' contain *translation_item* (in {{$destLang}}
-                                               Response must be in JSON format in the following template: (note that examples are in ru-en, but you must consider only {{$srcLang}} and {{$destlang}}
-                                               example1 for input 'term' = "кошка" and 'translations' = ["cat", "feline"]: {"translations": [{"tr": "cat", "l": "A1", "e_tr": "This *cat* is very playful", "e_or": "Эта *кошка* очень игривая"}, {"tr": "feline", "l": "B2", "e_tr": "His *feline* reflexes allowed him to catch the ball.", "e_or": "Его *кошачья* реакция позволила ему поймать мяч"}]
-                                               example2 for input 'term' = "my" and 'translations' = ["мой", "моя"]: {"translations": [{"tr": "мой", "l": "A1", "e_or": "This is *my* house", "e_tr": "Это *мой* дом"}, {"tr": "моя", "l": "A1", "e_or": "This is *my* car", "e_tr": "Это *моя* машина"}]
+                                               {"tr": "provided translation_item", "l": "level of translation_item from A0 to C2", "e_or": "Example of usage of *$term*. Sentence must be in {{$srcLang}}.", "e_tr": "example of usage of *translation_item*. Sentence must be in {{$destLang}}."};
+                                               Mapped objects should be in the same order and same count as original 'translation_items' array;
+                                               Highlight term with '*';
+                                               Sentences must be real life examples and not just nonsense random text;
+                                               Response must be in JSON format in the following template: (note that examples are in ru-en, but you must generate example only in {{$srcLang}} and {{$destlang}}.
+                                               example1 for input 'term' = "кошка" and 'translations' = ["cat", "feline"]: {"translations": [{"tr": "cat", "l": "A1", "e_tr": "This *cat* is very playful", "e_or": "Эта *кошка* очень игривая"}, {"tr": "feline", "l": "B2", "e_tr": "His *feline* reflexes allowed him to catch the ball.", "e_or": "Его *кошачья* реакция позволила ему поймать мяч"}];
+                                               example2 for input 'term' = "my" and 'translations' = ["мой", "моя"]: {"translations": [{"tr": "мой", "l": "A1", "e_or": "This is *my* house", "e_tr": "Это *мой* дом"}, {"tr": "моя", "l": "A1", "e_or": "This is *my* car", "e_tr": "Это *моя* машина"}];
                                                """;
 
     public const string GiveAlternativesPrompt = """
@@ -109,6 +112,10 @@ public static class AiSystemMessages
                                                   Give me alternative translations for $term in {{$destLang}} and return response in JSON, for examples: {"translations": ["to long for", "to yearn for"]}
                                                   Exclude $existingTranslations from the result. Double check you do not provide duplicates
                                                  """;*/
-    
-    
+
+    public const string CardExampleTaskPrompt = """
+                                                There is a $term = '{{$term}}' in {{$learnLang}}. Generate {{$count}} example sentences that contain this term. Mask term inside sentences with *.
+                                                After that, translate them into {{$nativeLang}}.
+                                                Return response in JSON as example { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] }
+                                                """;
 }

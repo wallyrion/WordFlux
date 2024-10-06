@@ -54,10 +54,28 @@ public static class TranslationsEndpoints
             return Results.Ok(response);
         });
         
-        
-        app.MapPost("/translations/autocomplete/with-translations", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator, CancellationToken CancellationToken) =>
+        app.MapGet("/translations/autocomplete/with-translations", async ([FromQuery] string term, [FromQuery] string lang1, [FromQuery] string lang2, OpenAiGenerator openAiGenerator, CancellationToken cancellationToken) =>
         {
-            var result = await openAiGenerator.GetAutocompleteWithTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage, CancellationToken);
+            var result = await openAiGenerator.GetAutocompleteWithTranslations(term, lang1, lang2, cancellationToken);
+
+            var items = result.Value.autocompletes.Select(x => new AutocompleteItem(x.Item1, x.Item2)).ToList();
+            var response = new AutocompleteResponse(result.Value.detectedLanguage, items);
+
+            return response;
+        }).CacheOutput(p =>
+        {
+            p.AddPolicy<OutputCachePolicy>();
+            p.Expire(TimeSpan.FromMinutes(5))
+                .SetVaryByQuery("term")
+                .SetVaryByQuery("sourceLanguage")
+                .SetVaryByQuery("destinationLanguage");
+
+        });
+        
+        
+        app.MapPost("/translations/autocomplete/with-translations", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator, CancellationToken cancellationToken) =>
+        {
+            var result = await openAiGenerator.GetAutocompleteWithTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage, cancellationToken);
 
             var items = result.Value.autocompletes.Select(x => new AutocompleteItem(x.Item1, x.Item2)).ToList();
             var response = new AutocompleteResponse(result.Value.detectedLanguage, items);

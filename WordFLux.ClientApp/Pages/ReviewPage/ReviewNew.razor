@@ -9,7 +9,7 @@
 @using WordFLux.ClientApp.Storage
 @using WordFLux.ClientApp.Components.TranslationExamplesComponent
 @using WordFLux.ClientApp.Components
-@inject WeatherApiClient WeatherApi
+@inject ApiClient Api
 @inject NavigationManager Navigation
 @attribute [Authorize]
 
@@ -138,7 +138,7 @@
     private async Task Approve()
     {
         IsRequestInProgress = true;
-        await WeatherApi.ApproveCard(CurrentCard!.Id);
+        await Api.ApproveCard(CurrentCard!.Id);
         await LoadNext();
 
         IsRequestInProgress = false;
@@ -148,7 +148,7 @@
     {
         IsRequestInProgress = true;
 
-        await WeatherApi.RejectCard(CurrentCard!.Id);
+        await Api.RejectCard(CurrentCard!.Id);
         await LoadNext();
 
         IsRequestInProgress = false;
@@ -168,15 +168,15 @@
         StateHasChanged();
         await UpdateTimeToNextReview();
 
-        NextCard = await WeatherApi.GetNextCard(SelectedDecksIds, 1);
+        NextCard = await Api.GetNextCard(SelectedDecksIds, 1);
     }
 
     private async Task UpdateTimeToNextReview()
     {
         if (CurrentCard == null)
         {
-            TimeToNextReview = await WeatherApi.GetNextReviewTime(SelectedDecksIds);
-            Motivation = await WeatherApi.GetMotivation();
+            TimeToNextReview = await Api.GetNextReviewTime(SelectedDecksIds);
+            Motivation = await Api.GetMotivation();
         }
         else
         {
@@ -198,7 +198,7 @@
             SelectedDecksIds = await Storage.GetLatestDecksSelection();
         }
 
-        var decksTask = Task.Run(WeatherApi.GetDecks);
+        var decksTask = Task.Run(Api.GetDecks);
 
         await LoadInitialState();
         Decks = await decksTask;
@@ -211,8 +211,8 @@
         IsRequestInProgress = true;
         StateHasChanged();
         
-        var currentCardTask = Task.Run(() => WeatherApi.GetNextCard(SelectedDecksIds));
-        var nextCardTask = Task.Run(() => WeatherApi.GetNextCard(SelectedDecksIds, 1));
+        var currentCardTask = Task.Run(() => Api.GetNextCard(SelectedDecksIds));
+        var nextCardTask = Task.Run(() => Api.GetNextCard(SelectedDecksIds, 1));
         
         CurrentCard = await currentCardTask;
         IsLoading = false;

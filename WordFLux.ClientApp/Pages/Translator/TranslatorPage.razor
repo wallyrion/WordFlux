@@ -3,7 +3,7 @@
 @using WordFLux.ClientApp.Components
 
 @using WordFlux.Contracts
-@inject WeatherApiClient WeatherApi
+@inject ApiClient Api
 @inject NavigationManager Navigation
 @inject ConnectionHealthService ConnectionHealthService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -139,7 +139,7 @@
 
     async Task RefreshDecks()
     {
-        Decks = (await WeatherApi.GetDecks()).Where(d => d.Type == DeckType.Custom).ToList();
+        Decks = (await Api.GetDecks()).Where(d => d.Type == DeckType.Custom).ToList();
     }
 
     async Task SearchForTerm(string input)
@@ -169,12 +169,12 @@
 
             CancellationTokenSource = new CancellationTokenSource();
 
-            Translation = await WeatherApi.GetSimpleTranslations(Term, UseAzureAiTranslator,  NativeLanguageCode, LearnLanguageCode, CancellationTokenSource.Token);
+            Translation = await Api.GetSimpleTranslations(Term, UseAzureAiTranslator,  NativeLanguageCode, LearnLanguageCode, CancellationTokenSource.Token);
             IsLoading = false;
 
             StateHasChanged();
 
-            Level = await WeatherApi.GetLevel(Term, CancellationTokenSource.Token);
+            Level = await Api.GetLevel(Term, CancellationTokenSource.Token);
 
         }
         finally

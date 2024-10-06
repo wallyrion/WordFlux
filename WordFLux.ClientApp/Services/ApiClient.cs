@@ -11,7 +11,7 @@ using NextReviewCardTimeResponse = WordFLux.ClientApp.Models.NextReviewCardTimeR
 
 namespace WordFLux.ClientApp.Services;
 
-public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogger<WeatherApiClient> logger)
+public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiClient> logger)
 {
     public async Task<NotificationSubscription> SubscribeToNotification(NotificationSubscription subscription)
     {
@@ -81,15 +81,9 @@ public class WeatherApiClient(HttpClient httpClient, LocalStorage storage, ILogg
         return (await response.Content.ReadFromJsonAsync<GetAutocompleteResponse>())!;
     }
     
-    public async Task<AutocompleteResponse> SearchForCompletionsWithTranslations(string term, CancellationToken token)
+    public async Task<AutocompleteResponse> SearchForCompletionsWithTranslations(string term, string lang1, string lang2, CancellationToken token = default)
     {
-        var request = new GetAutocompleteRequest(term, "ru", "en");
-        
-        var response = await httpClient.PostAsJsonAsync($"/translations/autocomplete/with-translations", request, cancellationToken: token);
-
-        response.EnsureSuccessStatusCode();
-
-        return (await response.Content.ReadFromJsonAsync<AutocompleteResponse>(cancellationToken: token))!;
+        return (await httpClient.GetFromJsonAsync<AutocompleteResponse>($"/translations/autocomplete/with-translations?term={term}&lang1={lang1}&lang2={lang2}", cancellationToken: token))!;
     }
     
     

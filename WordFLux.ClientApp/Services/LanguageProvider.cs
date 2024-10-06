@@ -12,10 +12,10 @@ public class LanguageProvider
     public SupportedLanguage? NativeLanguage { get; set; }
     public SupportedLanguage? LearningLanguage { get; set; }
 
-    private readonly WeatherApiClient _api;
+    private readonly ApiClient _api;
     private readonly LocalStorage _localStorage;
     
-    public LanguageProvider(WeatherApiClient api, LocalStorage localStorage)
+    public LanguageProvider(ApiClient api, LocalStorage localStorage)
     {
         _api = api;
         _localStorage = localStorage;

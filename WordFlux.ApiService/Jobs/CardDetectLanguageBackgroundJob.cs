@@ -6,10 +6,10 @@ using WordFlux.ApiService.Persistence;
 
 namespace WordFlux.ApiService.Jobs;
 
-public class CardProcessingBackgroundJob(IServiceProvider serviceProvider, ILogger<CardProcessingBackgroundJob> logger, IOpenAiGenerator openAi)
+public class CardDetectLanguageBackgroundJob(IServiceProvider serviceProvider, ILogger<CardDetectLanguageBackgroundJob> logger, IOpenAiGenerator openAi)
     : BackgroundService
 {
-    private readonly Channel<Guid> _channel = serviceProvider.GetRequiredKeyedService<Channel<Guid>>(Channels.CardProcessing);
+    private readonly Channel<Guid> _channelDetectLanguage = serviceProvider.GetRequiredKeyedService<Channel<Guid>>(Channels.CardDetectLanguage);
 
     private async Task PushNotProcessedMessagedToInitialQueue(CancellationToken cancellationToken)
     {
@@ -21,7 +21,7 @@ public class CardProcessingBackgroundJob(IServiceProvider serviceProvider, ILogg
 
         foreach (var cardId in nonProcessedCardIds)
         {
-            await _channel.Writer.WriteAsync(cardId, cancellationToken);
+            await _channelDetectLanguage.Writer.WriteAsync(cardId, cancellationToken);
         }
     }
 
@@ -32,7 +32,7 @@ public class CardProcessingBackgroundJob(IServiceProvider serviceProvider, ILogg
         logger.LogInformation("Message job processing started.");
 
         // Continuously process messages from the channel until the service is stopped
-        await foreach (var cardId in _channel.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var cardId in _channelDetectLanguage.Reader.ReadAllAsync(stoppingToken))
         {
             logger.LogInformation("Processing message for CardId: {CardId}", cardId);
             // Process one message at a time
@@ -99,16 +99,5 @@ public class CardProcessingBackgroundJob(IServiceProvider serviceProvider, ILogg
                 await dbContext.SaveChangesAsync(stoppingToken);
             }
         }
-    }
-}
-
-public class CardMessagePublisher(IServiceProvider serviceProvider, ILogger<CardProcessingBackgroundJob> logger)
-{
-    private readonly Channel<Guid> _channel = serviceProvider.GetRequiredKeyedService<Channel<Guid>>(Channels.CardProcessing);
-
-    public async Task PublishNewCardForProcessing(Guid cardId)
-    {
-        logger.LogInformation("Publishing new card for processing. CardId = {CardId}", cardId);
-        await _channel.Writer.WriteAsync(cardId);
     }
 }
