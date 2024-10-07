@@ -67,7 +67,7 @@ public class CardCreateTasksBackgroundJob(IServiceProvider serviceProvider, ILog
                 logger.LogWarning("Skipping card that does not have detected languages. CardId {CardId}", cardId);
                     return;
             }
-            
+
             if (card.LearnLanguage != card.SourceLanguage)
             {
                 card.Status = CardProcessingStatus.CardExampleTaskCreated;
@@ -76,9 +76,9 @@ public class CardCreateTasksBackgroundJob(IServiceProvider serviceProvider, ILog
                 logger.LogWarning("Skipping card as source term not in learning language. CardId {CardId}", cardId);
                     return;
             }
-            
 
-            var examples = (await openAi.GetExamplesCardTask(card.Term, card.LearnLanguage!, card.NativeLanguage!, 10, stoppingToken)) ?? [];
+            var translations = card.Translations.Select(x => x.Term);
+            var examples = (await openAi.GetExamplesCardTask(card.Term, card.LearnLanguage!, card.NativeLanguage!, 10, translations, stoppingToken)) ?? [];
             card.ExampleTasks = examples.Select(x => new CardTaskExample
             {
                 ExampleLearn = x.ExampleLearn,

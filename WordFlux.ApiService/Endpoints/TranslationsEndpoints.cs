@@ -23,7 +23,12 @@ public static class TranslationsEndpoints
         });
 
         app.MapGet("/languages", async ([FromKeyedServices("AzureAiTranslator")] ITranslationService azureTranslationService) 
-            => await azureTranslationService.GetLanguagesAsync());
+            => await azureTranslationService.GetLanguagesAsync())
+            .CacheOutput(p =>
+            {
+                p.AddPolicy<OutputCachePolicy>();
+                p.Expire(TimeSpan.FromDays(1));
+            });;
         
         app.MapGet("/translations", async (string term, IServiceProvider di, string nativeLanguage, string studyingLanguage, bool useAzureAiTranslator) =>
         {
@@ -93,7 +98,6 @@ public static class TranslationsEndpoints
         
         app.MapPost("/translations/deepl", async (GetAutocompleteRequest request, IConfiguration configuration) =>
         {
-            
             var authKey = configuration["DeeplAuthKey"]; // Replace with your key
             var translator = new Translator(authKey);
             

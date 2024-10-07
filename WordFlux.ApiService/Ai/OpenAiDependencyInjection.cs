@@ -4,6 +4,7 @@ using WordFlux.ApiService.Services;
 namespace WordFlux.ApiService.Ai;
 
 #pragma warning disable SKEXP0001
+#pragma warning disable SKEXP0010
 
 public static class OpenAiDependencyInjection
 {

@@ -45,7 +45,8 @@ public class AiFunctions
             new() { Name = "term", Description = "The term (can be word or phrase)" },
             new() { Name = "learnLang", Description = "language of the term, that is learning" } ,
             new() { Name = "nativeLang", Description = "native language" } ,
-            new() { Name = "count", Description = "Number of examples" } 
+            new() { Name = "count", Description = "Number of examples" },
+            new() { Name = "translations", Description = "existing translations. Can be used as a background context" }
         ],
         OutputVariable = new OutputVariable
         {
