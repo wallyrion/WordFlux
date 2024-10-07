@@ -114,8 +114,11 @@ public static class AiSystemMessages
                                                  """;*/
 
     public const string CardExampleTaskPrompt = """
-                                                There is a $term = '{{$term}}' in {{$learnLang}}. Generate {{$count}} example sentences that contain this term. Mask term inside sentences with *.
-                                                After that, translate them into {{$nativeLang}}.
-                                                Return response in JSON as example { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] }
+                                                There is a $term = '{{$term}}' in {{$learnLang}}. Generate {{$count}} example sentences that contain this term. Mask term inside sentences with *;
+                                                After that, translate them into {{$nativeLang}};
+                                                Return response in JSON as example { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] };
+                                                Double check correctness of the example sentences. example_original must be in {{$learnLang}} and example_translated must be in {{$destLang}};
+                                                Examples must be real word sentences. Double check you do not provide nonsense random text.
+                                                Consider the following translations: {{$translations}}
                                                 """;
 }

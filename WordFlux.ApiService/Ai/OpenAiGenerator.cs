@@ -28,8 +28,9 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 1
         }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
 
+        
         var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
-
+        
         if (result == null || result.Content == null)
         {
             _logger.LogError("Got null result");
@@ -277,7 +278,7 @@ public class OpenAiGenerator : IOpenAiGenerator
 
 
     [Experimental("SKEXP0010")]
-    public async Task<List<(string ExampleLearn, string ExampleNative)>?> GetExamplesCardTask(string term, string learnLanguage, string nativeLanguage, int examplesCount, CancellationToken cancellationToken = default)
+    public async Task<List<(string ExampleLearn, string ExampleNative)>?> GetExamplesCardTask(string term, string learnLanguage, string nativeLanguage, int examplesCount, IEnumerable<string> translations, CancellationToken cancellationToken = default)
     {
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
@@ -285,7 +286,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 1
         })
         {
-            { "term", term }, { "learnLang", learnLanguage }, { "nativeLang", nativeLanguage }, { "count", examplesCount },
+            { "term", term }, { "learnLang", learnLanguage }, { "nativeLang", nativeLanguage }, { "count", examplesCount },{ "translations", JsonSerializer.Serialize(translations) },
         };
 
         var result = await AiFunctions.CreateCardExampleTaskFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
