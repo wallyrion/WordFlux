@@ -119,6 +119,6 @@ public static class AiSystemMessages
                                                 Return response in JSON as example { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] };
                                                 Double check correctness of the example sentences. example_original must be in {{$learnLang}} and example_translated must be in {{$destLang}};
                                                 Examples must be real word sentences. Double check you do not provide nonsense random text.
-                                                Consider the following translations: {{$translations}}
+                                                Consider the following translations: {{$translations}} as a background context, but you can change them or add alternatives as you want 
                                                 """;
 }
