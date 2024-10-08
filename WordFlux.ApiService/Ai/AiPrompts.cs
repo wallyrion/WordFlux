@@ -73,12 +73,12 @@ public static class AiSystemMessages
 
     public const string GiveTranslations = """
                                               You must translate this input: {{$term}} that in {{$inputLang}} language into {{$translationsLang}} language. Follow my instructions:
-                                              1. You can provide more than 1 translation, and up to {{$translationsCount}} (in {{$translationsLang}}). Most obvious translations must be on the top.
+                                              1. You can provide more than 1 translation, but maximum is {{$translationsCount}}. Translations must be ordered by popularity (how often this is used). If input is obvious enough you can end with single translation
                                               2. input may contain a note (clarification) that should be considered as a clue for the context. (e.g. example_output1).
-                                              3. Response must be in JSON. Consider the following examples. Examples are in en-ru but you must provide translations in {{$translationsLang}}.
-                                              4. Input can also be a sentence / paragraph.
+                                              3. Response must be in JSON. Consider the following examples
                                               example_output1: {"translations":["bow"]} for input = 'лук (для стрельбы)'
                                               example_output2: {"translations":["to encourage", "to promote", "to reward"]} for input = 'поощрать'
+                                              Before sending response, you must double check that translations are in {{$translationsLang}}
                                               """;
 
     
@@ -86,8 +86,8 @@ public static class AiSystemMessages
     
     public const string GiveTranslationExamples = """
                                                There is a $term = '{{$term}}' and list of translation_items for it: {{$translations}} in {{$destLang}};
-                                               For each translation_item give example of usage and map to object:
-                                               {"tr": "provided translation_item", "l": "level of translation_item from A0 to C2", "e_or": "Example of usage of *$term*. Sentence must be in {{$srcLang}}.", "e_tr": "example of usage of *translation_item*. Sentence must be in {{$destLang}}."};
+                                               For each translation_item give example of usage. (sentences that clearly describes how this item is used when translating from $term). You must map the object for each item
+                                               {"tr": "translation_item (do not change it)", "l": "level of translation_item from A0 to C2", "e_or": "Example of usage of *translation_item* (to describe $term). Sentence must be in {{$srcLang}}.", "e_tr": "translated example of usage of *translation_item*. Sentence must be in {{$destLang}}."};
                                                Mapped objects should be in the same order and same count as original 'translation_items' array;
                                                Highlight term with '*';
                                                Sentences must be real life examples and not just nonsense random text;
@@ -117,8 +117,9 @@ public static class AiSystemMessages
                                                 There is a $term = '{{$term}}' in {{$learnLang}}. Generate {{$count}} example sentences that contain this term. Mask term inside sentences with *;
                                                 After that, translate them into {{$nativeLang}};
                                                 Return response in JSON as example { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] };
-                                                Double check correctness of the example sentences. example_original must be in {{$learnLang}} and example_translated must be in {{$destLang}};
-                                                Examples must be real word sentences. Double check you do not provide nonsense random text.
-                                                Consider the following translations: {{$translations}} as a background context, but you can change them or add alternatives as you want 
+                                                Double check that example_original must be in {{$learnLang}} and example_translated must be in {{$destLang}};
+                                                Note that examples must be real word sentences and sound fluently (jsut as a human would said it);
+                                                Consider the following translations: {{$translations}} as a background context;
+                                                After you have completed all the steps, run the procedure of finding nonsense in your sentences. Take as much time as need.
                                                 """;
 }
