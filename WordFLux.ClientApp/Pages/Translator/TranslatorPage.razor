@@ -34,6 +34,7 @@
                               OnSearch="(args) => SearchForTerm(args)"
                               OnReset="() => Reset()"
                               Term="@Term"
+                              OnTermChanged="OnTermChanged"
                               TranslationResponse="Translation"
                               OnEngineChanged="e => UseAzureAiTranslator = e == TranslatorSearch.TranslationEngine.AzureAi"
                               LearnLanguageCode="@LearnLanguageCode"
@@ -78,7 +79,8 @@
 
 
 @code {
-    [SupplyParameterFromQuery(Name = "term")] string? Term { get; set; }
+    [SupplyParameterFromQuery(Name = "term")] string? TermFromQuery { get; set; }
+    string? Term { get; set; }
 
     CardDto? SavedCard { get; set; }
     bool IsOnline => ConnectionHealthService.IsOnline;
@@ -100,6 +102,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("On initializing Translator Page");
+        Term = TermFromQuery;
         NativeLanguageCode = NativeLanguageCodeFromQuery;
         LearnLanguageCode = LearnLanguageCodeFromQuery;
         UseAzureAiTranslator = UseAzureAiTranslatorFromQuery;
@@ -111,9 +115,10 @@
         ConnectionHealthService.OnStatusChanged += () => InvokeAsync(StateHasChanged);
 
         await ValidateSelectedLanguages();
-        
-        if (!string.IsNullOrWhiteSpace(Term))
+        Console.WriteLine($"ValidateSelectedLanguages completed. Term = {Term}");
+        if (!string.IsNullOrWhiteSpace(TermFromQuery))
         {
+            Console.WriteLine($"Try out with term = {TermFromQuery}");
             await TryItOut();
         }
 
@@ -123,6 +128,9 @@
         {
             await RefreshDecks();
         }
+        
+        Console.WriteLine("Initialized Translator Page - completed");
+
     }
 
     private async Task ValidateSelectedLanguages()
@@ -234,6 +242,12 @@
         {
             LearnLanguageCode = args.code;
         }
+    }
+
+    private void OnTermChanged(string term)
+    {
+        Console.WriteLine("Term has changed (in TranslatorPage)");
+        Term = term;
     }
 
 }

@@ -27,40 +27,36 @@
 
 
 @code {
-    private PeriodicTimer? timer = null;
-    private string text;
-    private int calls;
-    private int totalItems;
-
     List<AutocompleteItem> AutocompleteOptions { get; set; } = [];
     [Parameter] public string? Term { get; set; }
-    [Parameter] public string LanguageSource { get; set; } = null!;
-    [Parameter] public string LanguageDestination { get; set; } = null!;
+    [Parameter] public string? LanguageSource { get; set; }
+    [Parameter] public string? LanguageDestination { get; set; }
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<string> OnTermChanged { get; set; }
     CancellationTokenSource _cancellationTokenSource = new();
     
     protected override void OnInitialized()
     {
-        /*timer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));*/
+        Console.WriteLine("On initializing TranslationAutocomplete Page");
 
-        /*Task.Run(async () =>
-        {
-            while (true)
-            {
-                await timer.WaitForNextTickAsync();
-                SomeList.Add(DateTime.UtcNow.ToLongDateString());
-                await InvokeAsync(StateHasChanged);
-            }
-        });*/
-
+        Console.WriteLine("Initialized TranslationAutocomplete - completed");
+        
         base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Console.WriteLine("OnParametersSetAsync TranslationAutocomplete Page");
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Console.WriteLine($"OnAfterRender TranslationAutocomplete Page. FirstRender = {firstRender}");
     }
 
     private async Task Search()
     {
         await OnTermChanged.InvokeAsync(Term);
-        await DisposePeriodicTimer();
         await _cancellationTokenSource.CancelAsync();
 
         if (string.IsNullOrWhiteSpace(Term))
@@ -81,7 +77,7 @@
             if (tick)
             {
                 await SearchForCompletions(Term, _cancellationTokenSource.Token);
-                await DisposePeriodicTimer();
+                Console.WriteLine("Disposing periodic timer");
             }
             
         });
@@ -89,27 +85,15 @@
 
     private async Task SearchForCompletions(string str, CancellationToken token)
     {
-        //var completions = await HttpClient.SearchForCompletions(str);
+        if (LanguageSource == null || LanguageDestination == null)
+        {
+            return;
+        }
 
         var completions = await HttpClient.SearchForCompletionsWithTranslations(str, LanguageSource, LanguageDestination, token);
         AutocompleteOptions = completions.Items;
-        //AutocompleteOptions = completions.Completions;
         await InvokeAsync(StateHasChanged);
-        /*if (timer != null)
-        {
-            
-            
-        }*/
-
     }
-
-    private async Task DisposePeriodicTimer()
-    {
-        Console.WriteLine("Disposing periodic timer");
-        timer?.Dispose();
-        timer = null;
-    }
-
 
     private async Task SelectSuggestedAutocomplete(string item)
     {
@@ -140,7 +124,7 @@
     {
         if (arg.Key == "Enter")
         {
-            AutocompleteOptions = [];
+            await ResetAutoComplete();
             await OnSearch.InvokeAsync(Term);
         }
     }
