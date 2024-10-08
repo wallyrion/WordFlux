@@ -30,7 +30,7 @@ public class CardCreateTasksBackgroundJob(IServiceProvider serviceProvider, ILog
     {
         await PushNotProcessedMessagedToInitialQueue(stoppingToken);
 
-        logger.LogInformation("Message job processing started.");
+        logger.LogInformation("Message job processing started");
 
         // Continuously process messages from the channel until the service is stopped
         await foreach (var cardId in _channel.Reader.ReadAllAsync(stoppingToken))
@@ -40,7 +40,7 @@ public class CardCreateTasksBackgroundJob(IServiceProvider serviceProvider, ILog
             await ProcessMessageAsync(cardId, stoppingToken);
         }
 
-        logger.LogInformation("Message job processing stopped.");
+        logger.LogInformation("Message job processing stopped");
     }
 
     private async Task ProcessMessageAsync(Guid cardId, CancellationToken stoppingToken)
@@ -67,24 +67,17 @@ public class CardCreateTasksBackgroundJob(IServiceProvider serviceProvider, ILog
                 logger.LogWarning("Skipping card that does not have detected languages. CardId {CardId}", cardId);
                     return;
             }
-
-            if (card.LearnLanguage != card.SourceLanguage)
-            {
-                card.Status = CardProcessingStatus.CardExampleTaskCreated;
-                await dbContext.SaveChangesAsync(stoppingToken);
-                
-                logger.LogWarning("Skipping card as source term not in learning language. CardId {CardId}", cardId);
-                    return;
-            }
-
+            
             var translations = card.Translations.Select(x => x.Term);
-            var examples = (await openAi.GetExamplesCardTask(card.Term, card.LearnLanguage!, card.NativeLanguage!, 10, translations, stoppingToken)) ?? [];
+            var examples = await openAi.GetExamplesCardTask(card.Term, card.SourceLanguage!, card.TargetLanguage!, 10, translations, stoppingToken) ?? [];
+
+            var isLearnedLanguageTheAsSource = card.LearnLanguage == card.SourceLanguage;
             card.ExampleTasks = examples.Select(x => new CardTaskExample
             {
-                ExampleLearn = x.ExampleLearn,
-                ExampleNative = x.ExampleNative
+                ExampleLearn = isLearnedLanguageTheAsSource ? x.ExampleLearn : x.ExampleNative,
+                ExampleNative = isLearnedLanguageTheAsSource ? x.ExampleNative : x.ExampleLearn
             }).ToList();
-
+            
             card.Status = CardProcessingStatus.CardExampleTaskCreated;
             await dbContext.SaveChangesAsync(stoppingToken);
         }
