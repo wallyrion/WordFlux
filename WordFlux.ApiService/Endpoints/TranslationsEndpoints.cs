@@ -1,8 +1,5 @@
 ﻿using DeepL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Services;
 using WordFlux.Contracts;
@@ -30,10 +27,11 @@ public static class TranslationsEndpoints
                 p.Expire(TimeSpan.FromDays(1));
             });;
         
-        app.MapGet("/translations", async (string term, IServiceProvider di, string nativeLanguage, string studyingLanguage, bool useAzureAiTranslator) =>
+        app.MapGet("/translations", async (string term, IServiceProvider di, string nativeLanguage, string studyingLanguage, bool useAzureAiTranslator, int? temperature) =>
         {
+            var temperatureDouble = temperature != null ? ((double? )temperature.Value)/ 100 : null;
             var translationService = di.ResolveTranslationService(useAzureAiTranslator);
-            var response = await translationService.GetTranslations(term, [nativeLanguage, studyingLanguage]);
+            var response = await translationService.GetTranslations(term, [nativeLanguage, studyingLanguage], temperatureDouble);
 
             if (response == null)
             {

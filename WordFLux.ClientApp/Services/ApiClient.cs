@@ -146,14 +146,14 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     }
     
     
-    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator, string? nativeLangCode = null, string? learnLangCode = null, CancellationToken token = default)
+    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator, string? nativeLangCode = null, string? learnLangCode = null, int? temperature = null, CancellationToken token = default)
     {
         var languages = await storage.GetMyLanguages();
 
         nativeLangCode ??= languages.native;
         learnLangCode ??= languages.studing;
         
-        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={nativeLangCode}&studyingLanguage={learnLangCode}&useAzureAiTranslator={useAzureAiTranslator}", cancellationToken: token))!;
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={nativeLangCode}&studyingLanguage={learnLangCode}&useAzureAiTranslator={useAzureAiTranslator}&temperature={temperature}", cancellationToken: token))!;
     }
     public async Task<string> GetLevel(string term, CancellationToken token)
     {
@@ -174,6 +174,11 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     public async Task UpdateCard(CardRequest card, Guid cardId)
     {
         await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
+    }    
+    
+    public async Task RegenerateCardChallenges(Guid cardId)
+    {
+        await httpClient.PutAsync($"/cards/{cardId}/challenges/regenerate", null);
     }
     
     public async Task RemoveCard(Guid cardId)

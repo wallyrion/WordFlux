@@ -73,12 +73,13 @@ public static class AiSystemMessages
 
     public const string GiveTranslations = """
                                               You must translate this input: {{$term}} that in {{$inputLang}} language into {{$translationsLang}} language. Follow my instructions:
-                                              1. You can provide more than 1 translation, but maximum is {{$translationsCount}}. Translations must be ordered by popularity (how often this is used). If input is obvious enough you can end with single translation
-                                              2. input may contain a note (clarification) that should be considered as a clue for the context. (e.g. example_output1).
+                                              1. Provide up to {{$translationsCount}} translations.
+                                              - Translations must be accurate and ordered by their common usage or frequency in everyday language.
+                                              2. If the input contains a note or clarification (e.g., in parentheses), use it to determine the correct context for the translation.
                                               3. Response must be in JSON. Consider the following examples
                                               example_output1: {"translations":["bow"]} for input = 'лук (для стрельбы)'
                                               example_output2: {"translations":["to encourage", "to promote", "to reward"]} for input = 'поощрать'
-                                              Before sending response, you must double check that translations are in {{$translationsLang}}
+                                              Before sending the response, double-check that all translations are correctly spelled and fully in {{$translationsLang}}.
                                               """;
 
     
@@ -118,8 +119,8 @@ public static class AiSystemMessages
                                                 After that, translate them into {{$nativeLang}};
                                                 Return response in JSON as example { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] };
                                                 Double check that example_original must be in {{$learnLang}} and example_translated must be in {{$destLang}};
-                                                Note that examples must be real word sentences and sound fluently (jsut as a human would said it);
+                                                Note that examples must be real word sentences and sound fluently (just as a human would said it);
                                                 Consider the following translations: {{$translations}} as a background context;
-                                                After you have completed all the steps, run the procedure of finding nonsense in your sentences. Take as much time as need.
+                                                After you have completed all the steps, run the procedure of finding nonsense in your sentences. Be strict as this content is important and mistake can't be made. Take as much time as need.
                                                 """;
 }

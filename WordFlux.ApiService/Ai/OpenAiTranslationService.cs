@@ -10,7 +10,7 @@ public class OpenAiTranslationService(OpenAiGenerator aiGenerator) : ITranslatio
 {
     private readonly OpenAiGenerator _aiGenerator = aiGenerator;
 
-    public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
+    public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages, double? temperature = null)
     {
         var detectedLanguageResponse = await _aiGenerator.DetectLanguage(term, languages);
 
@@ -21,7 +21,7 @@ public class OpenAiTranslationService(OpenAiGenerator aiGenerator) : ITranslatio
 
         var translationsCount = input.Length > 30 ? 2 : 4;
         
-        var translationsResponse = await _aiGenerator.GetTranslations(input, sourceLanguage, translationsLanguage, translationsCount);
+        var translationsResponse = await _aiGenerator.GetTranslations(input, sourceLanguage, translationsLanguage, translationsCount, temperature);
 
         translationsResponse = translationsResponse! with { SourceLanguage = sourceLanguage, DestinationLanguage = translationsLanguage, SuggestedTerm = detectedLanguageResponse.Value.suggestedTerm};
 

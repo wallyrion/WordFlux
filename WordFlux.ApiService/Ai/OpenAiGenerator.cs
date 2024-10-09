@@ -9,14 +9,17 @@ namespace WordFlux.ApiService.Ai;
 
 public class OpenAiGenerator : IOpenAiGenerator
 {
-    private readonly Kernel _kernel;
     private readonly ILogger<OpenAiGenerator> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public OpenAiGenerator(Kernel kernel, ILogger<OpenAiGenerator> logger)
+    public OpenAiGenerator(IServiceProvider serviceProvider, ILogger<OpenAiGenerator> logger)
     {
-        _kernel = kernel;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
+
+    private Kernel Kernel => _serviceProvider.ResolveKernel(KeyedKernelType.Gpt4oMini);
+    private Kernel GetKernel(KeyedKernelType type = KeyedKernelType.Gpt4oMini) => _serviceProvider.ResolveKernel(type);
 
     
     [Experimental("SKEXP0010")]
@@ -29,7 +32,7 @@ public class OpenAiGenerator : IOpenAiGenerator
         }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
 
         
-        var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
+        var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments, cancellationToken);
         
         if (result == null || result.Content == null)
         {
@@ -56,7 +59,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 1
         }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
 
-        var result = await AiFunctions.AutocompleteFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.AutocompleteFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments);
 
         if (result == null || result.Content == null)
         {
@@ -84,7 +87,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 0.5
         }) { { "src", src }, { "dest", dest } };
 
-        var result = await AiFunctions.DetectLanguagesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.DetectLanguagesFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments);
 
         if (result == null || result.Content == null)
         {
@@ -112,7 +115,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 0.5
         }) { { "input", input }, { "possibleLanguages", string.Join(",", possibleLanguages) } };
 
-        var result = await AiFunctions.DetectLanguageFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.DetectLanguageFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments);
 
         if (result?.Content == null)
         {
@@ -135,7 +138,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 0.5
         }) { { "src", sourceInput }, { "dest", translatedInput }  };
 
-        var result = await AiFunctions.DetectPossibleLanguageFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
+        var result = await AiFunctions.DetectPossibleLanguageFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments, cancellationToken);
 
         if (result?.Content == null)
         {
@@ -158,7 +161,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             Temperature = 0.5
         }) { { "term", term }, { "srcLang", sourceLanguage }, { "destLang", destinationLanguage }, { "translations", JsonSerializer.Serialize(translations) } };
 
-        var result = await AiFunctions.GiveExamplesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.GiveExamplesFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments);
 
         if (result == null || result.Content == null)
         {
@@ -188,7 +191,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             ResponseFormat = "json_object"
         }) { { "term", term } };
 
-        var result = await AiFunctions.GetLevelFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.GetLevelFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments);
 
         if (result == null || result.Content == null)
         {
@@ -210,21 +213,21 @@ public class OpenAiGenerator : IOpenAiGenerator
 
     public async Task<string?> GetMotivationalPhrase()
     {
-        var result = await AiFunctions.GiveMotivationalPhraseFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel);
+        var result = await AiFunctions.GiveMotivationalPhraseFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel);
 
         return result?.Content;
     }
 
     [Experimental("SKEXP0010")]
-    public async Task<SimpleTranslationResponse?> GetTranslations(string term, string inputLanguage, string translationsLanguage, int translationsCount = 4)
+    public async Task<SimpleTranslationResponse?> GetTranslations(string term, string inputLanguage, string translationsLanguage, int translationsCount = 4, double? temperature = null)
     {
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
-            Temperature = 1
+            Temperature = temperature == 0 ? 0.0001 : temperature
         }) { { "term", term }, { "inputLang", inputLanguage }, { "translationsLang",translationsLanguage}, { "translationsCount", translationsCount  }  };
 
-        var result = await AiFunctions.TranslationsFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.TranslationsFunc.InvokeAsync<OpenAIChatMessageContent>(GetKernel(KeyedKernelType.Gpt4oMini), arguments);
 
         if (result == null || result.Content == null)
         {
@@ -257,7 +260,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             { "existingTranslations", JsonSerializer.Serialize(translations) }
         };
 
-        var result = await AiFunctions.GiveAlternativesFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments);
+        var result = await AiFunctions.GiveAlternativesFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments);
 
         if (result == null || result.Content == null)
         {
@@ -278,18 +281,18 @@ public class OpenAiGenerator : IOpenAiGenerator
 
 
     [Experimental("SKEXP0010")]
-    public async Task<List<(string ExampleLearn, string ExampleNative)>?> GetExamplesCardTask(string term, string learnLanguage, string nativeLanguage, int examplesCount, IEnumerable<string> translations, CancellationToken cancellationToken = default)
+    public async Task<List<(string ExampleLearn, string ExampleNative)>?> GetExamplesCardTask(string term, string learnLanguage, string nativeLanguage, int examplesCount, IReadOnlyList<string> translations, CancellationToken cancellationToken = default)
     {
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
         {
             ResponseFormat = "json_object",
-            Temperature = 1
+            Temperature = 0.5
         })
         {
             { "term", term }, { "learnLang", learnLanguage }, { "nativeLang", nativeLanguage }, { "count", examplesCount },{ "translations", JsonSerializer.Serialize(translations) },
         };
 
-        var result = await AiFunctions.CreateCardExampleTaskFunc.InvokeAsync<OpenAIChatMessageContent>(_kernel, arguments, cancellationToken);
+        var result = await AiFunctions.CreateCardExampleTaskFunc.InvokeAsync<OpenAIChatMessageContent>(GetKernel(KeyedKernelType.Gpt4o), arguments, cancellationToken);
 
         if (result?.Content == null)
         {

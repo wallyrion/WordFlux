@@ -145,7 +145,7 @@
         </button>
     </p>
     <div class="collapse" id="collapseExample">
-        <CardTasks Card="Card"/>
+        <CardTasks OnRegenerateChallenges="RegenerateChallenges" Card="Card"/>
     </div>
 }
 else
@@ -287,5 +287,10 @@ else
         StateHasChanged();
         
         await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+    }
+
+    private async Task RegenerateChallenges()
+    {
+        await ApiClient.RegenerateCardChallenges(CardId);
     }
 }

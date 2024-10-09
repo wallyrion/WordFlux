@@ -68,7 +68,7 @@ public class CardCreateTasksBackgroundJob(IServiceProvider serviceProvider, ILog
                     return;
             }
             
-            var translations = card.Translations.Select(x => x.Term);
+            var translations = card.Translations.Select(x => x.Term).ToList();
             var examples = await openAi.GetExamplesCardTask(card.Term, card.SourceLanguage!, card.TargetLanguage!, 10, translations, stoppingToken) ?? [];
 
             var isLearnedLanguageTheAsSource = card.LearnLanguage == card.SourceLanguage;

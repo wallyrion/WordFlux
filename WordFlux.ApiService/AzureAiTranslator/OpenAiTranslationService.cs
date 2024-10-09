@@ -63,7 +63,7 @@ public class AzureAiTranslationService : ITranslationService
         return languages.Value.Translation.Select(x => new SupportedLanguage(x.Value.Name, x.Value.NativeName, x.Key)).ToList();
     }
     
-    public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages)
+    public async Task<SimpleTranslationResponse?> GetTranslations(string term, List<string> languages, double? temperature)
     {
         Response<IReadOnlyList<TranslatedTextItem>> clientResult = await client.TranslateAsync(languages, [term]);
 

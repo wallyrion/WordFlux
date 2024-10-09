@@ -55,6 +55,11 @@
 
 </div>
 
+<div>
+    <label for="rangeTemperature" class="form-label">Temperature</label>
+    <input @bind="Temperature" @bind:after="ChangeTemperature"  type="range" class="form-range" min="0" max="100" step="1" id="rangeTemperature">
+</div>
+
 
 <div class="position-relative">
     <TranslationAutocomplete LanguageSource="@LearnLanguageCode" LanguageDestination="@NativeLanguageCode" OnTermChanged="TermChanged" OnSearch="Search" Term="@Term"/>
@@ -88,9 +93,11 @@
     
     [Parameter] public EventCallback OnReset { get; set; }
     [Parameter] public EventCallback<TranslationEngine> OnEngineChanged { get; set; }
+    [Parameter] public EventCallback<int> OnTemperatureChanged { get; set; }
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<(string code, bool isNative)> OnLanguageChanged { get; set; }
     [Parameter] public bool UseAzureAiTranslator { get; set; }
+    [Parameter] public int Temperature { get; set; }
     [Parameter] public string? Term { get; set; }
     [Parameter] public EventCallback<string> OnTermChanged { get; set; }
 
@@ -98,7 +105,6 @@
     {
         Console.WriteLine("On initializing TranslatorSearch Page");
 
-        
         Console.WriteLine("Initialized TranslatorSearch - completed");
     }
 
@@ -127,6 +133,11 @@
     {
         var value = UseAzureAiTranslator;
         await OnEngineChanged.InvokeAsync(value ? TranslationEngine.AzureAi : TranslationEngine.OpenAiCustom);
+    }
+    
+    private async Task ChangeTemperature()
+    {
+        await OnTemperatureChanged.InvokeAsync(Temperature);
     }
 
     private async Task LanguageSelected(SupportedLanguage language, bool isNative)

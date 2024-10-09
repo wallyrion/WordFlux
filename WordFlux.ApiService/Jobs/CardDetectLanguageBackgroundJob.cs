@@ -29,7 +29,7 @@ public class CardDetectLanguageBackgroundJob(IServiceProvider serviceProvider, I
     {
         await PushNotProcessedMessagedToInitialQueue(stoppingToken);
 
-        logger.LogInformation("Message job processing started.");
+        logger.LogInformation("Message job processing started");
 
         // Continuously process messages from the channel until the service is stopped
         await foreach (var cardId in _channelDetectLanguage.Reader.ReadAllAsync(stoppingToken))
@@ -39,7 +39,7 @@ public class CardDetectLanguageBackgroundJob(IServiceProvider serviceProvider, I
             await ProcessMessageAsync(cardId, stoppingToken);
         }
 
-        logger.LogInformation("Message job processing stopped.");
+        logger.LogInformation("Message job processing stopped");
     }
 
     private async Task ProcessMessageAsync(Guid cardId, CancellationToken stoppingToken)
