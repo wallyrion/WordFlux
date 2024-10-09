@@ -2,6 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
+using WordFlux.ApiService.Ai;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Endpoints;
@@ -18,15 +19,10 @@ public static class AudioEndpoints
         }).CacheOutput();
 
 #pragma warning disable SKEXP0001
-        app.MapGet("/audio", async ([FromServices] Kernel kernel, string term) =>
+        app.MapGet("/audio", async ([FromServices] IAudioAiGenerator audioGenerator, string term, CancellationToken cancellationToken = default) =>
         {
-            var service = kernel.GetRequiredService<ITextToAudioService>();
-
-            var res = await service.GetAudioContentsAsync(term);
-
-            var first = res[0];
-
-            return Results.File(first.Data!.Value.ToArray(), "audio/mp3");
+            var audioContent = await audioGenerator.GenerateAudioFromTextAsync(term, cancellationToken);
+            return Results.File(audioContent, "audio/mp3");
         }).WithName("audio").CacheOutput();
 
         return app;

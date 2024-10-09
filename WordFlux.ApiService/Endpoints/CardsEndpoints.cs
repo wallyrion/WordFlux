@@ -34,8 +34,7 @@ public static class CardsEndpoints
 
                 return card;
             }).RequireAuthorization();
-        
-        
+
         app.MapGet("/cards",
             async (ApplicationDbContext dbContext, Guid? deckId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
                 CancellationToken cancellationToken = default) =>
@@ -83,7 +82,8 @@ public static class CardsEndpoints
                 return Results.Ok();
             }).RequireAuthorization();
 
-        app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, ParsableQueryList? deckIds = null, int? skip = 0) =>
+        app.MapGet("/cards/next", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
+            ParsableQueryList? deckIds = null, int? skip = 0) =>
         {
             var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
@@ -97,7 +97,7 @@ public static class CardsEndpoints
             {
                 query = query.Where(x => deckIds.Ids.Contains(x.DeckId));
             }
-            
+
             return await query
                 .OrderBy(x => x.NextReviewDate)
                 .Skip(skip.Value)
@@ -105,29 +105,30 @@ public static class CardsEndpoints
                 .FirstOrDefaultAsync();
         }).RequireAuthorization();
 
-        app.MapGet("/cards/next/time", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, ParsableQueryList? deckIds = null) =>
-        {
-            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
-
-            var query = dbContext.Cards
-                .Where(c => c.CreatedBy == userId);
-            
-            if (deckIds?.Ids is { Count: > 0 })
+        app.MapGet("/cards/next/time",
+            async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, ParsableQueryList? deckIds = null) =>
             {
-                query = query.Where(x => deckIds.Ids.Contains(x.DeckId));
-            }
-            
-            var nextCard = await query
-                .OrderBy(x => x.NextReviewDate)
-                .Select(x => new { x.NextReviewDate }).FirstOrDefaultAsync();
+                var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
 
-            if (nextCard == null)
-            {
-                return Results.Ok(new NextReviewCardTimeResponse(null));
-            }
+                var query = dbContext.Cards
+                    .Where(c => c.CreatedBy == userId);
 
-            return Results.Ok(new NextReviewCardTimeResponse(nextCard.NextReviewDate - DateTime.UtcNow));
-        }).RequireAuthorization();
+                if (deckIds?.Ids is { Count: > 0 })
+                {
+                    query = query.Where(x => deckIds.Ids.Contains(x.DeckId));
+                }
+
+                var nextCard = await query
+                    .OrderBy(x => x.NextReviewDate)
+                    .Select(x => new { x.NextReviewDate }).FirstOrDefaultAsync();
+
+                if (nextCard == null)
+                {
+                    return Results.Ok(new NextReviewCardTimeResponse(null));
+                }
+
+                return Results.Ok(new NextReviewCardTimeResponse(nextCard.NextReviewDate - DateTime.UtcNow));
+            }).RequireAuthorization();
 
         app.MapPost("/cards/{cardId:guid}/approve",
             async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
@@ -174,7 +175,8 @@ public static class CardsEndpoints
             }).RequireAuthorization();
 
         app.MapPost("/cards",
-            async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal, CardMessagePublisher messagePublisher,
+            async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal,
+                CardMessagePublisher messagePublisher,
                 UserManager<AppUser> userManager) =>
             {
                 var userIdStr = userManager.GetUserId(claimsPrincipal);
@@ -202,7 +204,8 @@ public static class CardsEndpoints
                     CreatedAt = DateTime.UtcNow,
                     Id = Guid.NewGuid(),
                     Term = request.Term,
-                    Translations = request.Translations.Select(x => new CardTranslationItem(x.Term, x.ExampleTranslated, x.ExampleOriginal, x.Popularity, x.Level)).ToList(),
+                    Translations = request.Translations.Select(x => new CardTranslationItem(x.Term, x.ExampleTranslated, x.ExampleOriginal, x.Popularity, x.Level))
+                        .ToList(),
                     CreatedBy = userId,
                     NextReviewDate = DateTime.UtcNow,
                     ReviewInterval = TimeSpan.FromMinutes(2),
@@ -221,14 +224,13 @@ public static class CardsEndpoints
 
                 if (card.SourceLanguage == null)
                 {
-                    await messagePublisher.PublishNewCardForLanguageDetection(card.Id);    
+                    await messagePublisher.PublishNewCardForLanguageDetection(card.Id);
                 }
                 else
                 {
                     await messagePublisher.PublishNewCardForTasksCreating(card.Id);
                 }
-                
-                
+
                 logger.LogInformation("Saving card for term = {Term}", request.Term);
 
                 return await dbContext.Cards.AsNoTracking().Where(x => x.Id == card.Id).Select(CardMapper.ToCardDto()).FirstOrDefaultAsync();
@@ -256,23 +258,37 @@ public static class CardsEndpoints
             return Results.Ok();
         }).RequireAuthorization();
 
+        app.MapPut("/cards/{cardId:guid}/challenges/regenerate", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid cardId,
+            ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, [FromServices] CardMessagePublisher publisher) =>
+        {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
+            var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
+
+            if (existingCard == null)
+            {
+                return Results.NotFound();
+            }
+
+            await publisher.PublishNewCardForTasksCreating(cardId);
+
+            return Results.Ok();
+        }).RequireAuthorization();
+
         return app;
     }
-
-   
 }
-
 
 public class ParsableQueryList : IParsable<ParsableQueryList>
 {
     public IReadOnlyCollection<Guid> Ids { get; private set; } = [];
-    
+
     public static ParsableQueryList Parse(string s, IFormatProvider? provider)
     {
         var entries = s.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
         var guids = entries.Select(Guid.Parse);
-        
+
         return new ParsableQueryList
         {
             Ids = guids.ToList()
@@ -284,10 +300,10 @@ public class ParsableQueryList : IParsable<ParsableQueryList>
         if (string.IsNullOrWhiteSpace(s))
         {
             result = new ParsableQueryList();
-            
+
             return false;
         }
-        
+
         var entries = s.Split(',', StringSplitOptions.RemoveEmptyEntries);
         var guids = entries.Select(Guid.Parse);
 
@@ -295,7 +311,7 @@ public class ParsableQueryList : IParsable<ParsableQueryList>
         {
             Ids = guids.ToList()
         };
-        
+
         return true;
     }
 }

@@ -34,6 +34,8 @@
                               OnSearch="(args) => SearchForTerm(args)"
                               OnReset="() => Reset()"
                               Term="@Term"
+                              Temperature="Temperature"
+                              OnTemperatureChanged="t => Temperature = t"
                               OnTermChanged="OnTermChanged"
                               TranslationResponse="Translation"
                               OnEngineChanged="e => UseAzureAiTranslator = e == TranslatorSearch.TranslationEngine.AzureAi"
@@ -96,6 +98,7 @@
     [SupplyParameterFromQuery(Name = "lg_learn")] string? LearnLanguageCodeFromQuery { get; set; }
     [SupplyParameterFromQuery(Name = "useAzureAi")] bool UseAzureAiTranslatorFromQuery { get; set; }
 
+    int Temperature { get; set; } = 50;
     bool UseAzureAiTranslator { get; set; }
     string? NativeLanguageCode{ get; set; }
     string? LearnLanguageCode { get; set; }
@@ -188,7 +191,7 @@
 
             CancellationTokenSource = new CancellationTokenSource();
 
-            Translation = await Api.GetSimpleTranslations(Term, UseAzureAiTranslator,  NativeLanguageCode, LearnLanguageCode, CancellationTokenSource.Token);
+            Translation = await Api.GetSimpleTranslations(Term, UseAzureAiTranslator,  NativeLanguageCode, LearnLanguageCode, Temperature, CancellationTokenSource.Token);
             IsLoading = false;
 
             StateHasChanged();

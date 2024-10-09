@@ -1,14 +1,20 @@
-﻿@using WordFlux.Contracts
+﻿@using WordFLux.ClientApp.Extensions
+@using WordFlux.Contracts
 
-<div class="card card-body">
+<div class="mb-3">
+    <button @onclick="RegenerateTasks" class="btn btn-outline-warning">Regenerate tasks</button>
+</div>
+
+
+<div class="d-flex gap-2 flex-column">
     @foreach (var item in Card.CardTaskExamples)
     {
         <div class="card card-body">
             <div>
-                @item.ExampleLearn
+                @item.ExampleLearn.AsHtmlContent()
             </div>
             <div class="text-primary">
-                @item.ExampleNative
+                @item.ExampleNative.AsHtmlContent()
             </div>
         </div>
     }
@@ -17,4 +23,10 @@
 @code
 {
     [Parameter] public CardDto Card { get; set; } = null!;
+    [Parameter] public EventCallback OnRegenerateChallenges { get; set; }
+    
+    private async Task RegenerateTasks()
+    {
+        await OnRegenerateChallenges.InvokeAsync();
+    }
 }
