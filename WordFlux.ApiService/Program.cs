@@ -13,6 +13,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using WebPush;
 using WordFlux.ApiService;
@@ -28,9 +32,24 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, provider, configuration) =>
 {
-    configuration.WriteTo.Console();
-    configuration.WriteTo.Seq("http://172.191.101.172:80");
+    configuration.ReadFrom.Configuration(context.Configuration);
+    //configuration.WriteTo.Console();
+    //configuration.WriteTo.Seq("http://172.191.101.172:80");
 });
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("WordFlux.Api"))
+    .WithTracing(tracing =>
+    {
+        tracing.AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation();
+
+        tracing.AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(builder.Configuration["OtlpEndpoint"]);
+            options.Protocol = OtlpExportProtocol.HttpProtobuf;
+        });
+    });
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
