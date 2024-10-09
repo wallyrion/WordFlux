@@ -46,8 +46,10 @@ builder.Services.AddOpenTelemetry()
 
         tracing.AddOtlpExporter(options =>
         {
-            options.Endpoint = new Uri(builder.Configuration["OtlpEndpoint"]);
+            var seqApiKey = builder.Configuration["OtelApiKey"];
+            options.Endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
             options.Protocol = OtlpExportProtocol.HttpProtobuf;
+            options.Headers = $"X-Seq-ApiKey={seqApiKey}";
         });
     });
 builder.Services.AddAuthorization();
