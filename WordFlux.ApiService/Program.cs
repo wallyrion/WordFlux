@@ -30,11 +30,17 @@ var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Host.UseSerilog((context, provider, configuration) =>
 {
     configuration.ReadFrom.Configuration(context.Configuration);
     //configuration.WriteTo.Console();
     //configuration.WriteTo.Seq("http://172.191.101.172:80");
+    
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .CreateBootstrapLogger();
+
 });
 
 builder.Services.AddOpenTelemetry()
@@ -47,7 +53,11 @@ builder.Services.AddOpenTelemetry()
         tracing.AddOtlpExporter(options =>
         {
             var seqApiKey = builder.Configuration["OtelApiKey"];
-            options.Endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
+            var endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
+
+            Log.Logger.Information("Endpoint is {UtelEndpointUrl}", endpoint);
+            Log.Logger.Information("Endpoint is {UtelseqApiKey}", seqApiKey);
+            options.Endpoint = endpoint;
             options.Protocol = OtlpExportProtocol.HttpProtobuf;
             options.Headers = $"X-Seq-ApiKey={seqApiKey}";
         });
