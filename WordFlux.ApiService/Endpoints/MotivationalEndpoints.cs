@@ -19,7 +19,11 @@ public static class MotivationalEndpoints
             }
 
             return Results.Ok(new GetMotivationResponse(response));
-        }).CacheOutput();
+        }) .CacheOutput(p =>
+        {
+            p.AddPolicy<OutputCachePolicy>();
+            p.Expire(TimeSpan.FromHours(1));
+        });;
 
         return app;
     }
