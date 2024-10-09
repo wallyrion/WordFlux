@@ -8,21 +8,47 @@
     <main>
 
         <UpdateAvailableDetector/>
-        
-        @*<div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>*@
 
         <article class="content">
-            @Body
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent Context="exception">
+                    <div class="container mt-3">
+                        <div class="alert alert-danger" role="alert">
+                            😈 A rotten gremlin got us. Sorry!
+                            <div class="mt-3">
+                                <button class="btn btn-primary me-2" onclick="window.location.reload();">
+                                    Reload Page
+                                </button>
+
+                                <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails" aria-expanded="false" aria-controls="errorDetails">
+                                    Toggle Details
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="collapse mt-3" id="errorDetails">
+                            <div class="card card-body">
+                                <pre>@exception.ToString()</pre>
+                            </div>
+                        </div>
+                    </div>
+                </ErrorContent>
+
+
+            </ErrorBoundary>
         </article>
         <div class="mt-5"></div>
     </main>
 </div>
 
 
+@*
 <div id="blazor-error-ui">
-    An unhandled error has occurred.
+    Something went wrong with the site. Reload
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+*@
