@@ -84,7 +84,7 @@ builder.Services.AddCors(
         policy => policy
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .WithOrigins("https://localhost:7153", "https://wordflux.online", "https://icy-ocean-03f34ba03-13.westeurope.5.azurestaticapps.net")));
+            .WithOrigins("https://localhost:7153", "https://wordflux.online", "https://www.wordflux.online", "https://icy-ocean-03f34ba03-13.westeurope.5.azurestaticapps.net")));
 
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
