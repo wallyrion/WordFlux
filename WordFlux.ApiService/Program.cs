@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.TextToAudio;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -43,29 +44,40 @@ builder.Host.UseSerilog((context, provider, configuration) =>
 });
 
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("WordFlux.Api"))
+    .ConfigureResource(resource => resource.AddService("MyMainApi"))
+    .WithMetrics(
+        (b) =>
+        {
+            b.AddAspNetCoreInstrumentation();
+            b.AddHttpClientInstrumentation();
+            b.AddConsoleExporter();
+        }
+    )
     .WithTracing(tracing =>
     {
-        tracing.AddAspNetCoreInstrumentation(c => c.Filter = context =>
+        tracing.AddAspNetCoreInstrumentation(c =>
             {
-                Log.Logger.Information("Filtering trace");
+                c.Filter = context =>
+                {
+                    Log.Logger.Information("Filtering trace");
 
-                return true;
+                    return true;
+                };
             })
             .AddHttpClientInstrumentation()
             .AddNpgsql()
-            .AddConsoleExporter()
-            .AddOtlpExporter(options =>
-            {
-                var seqApiKey = builder.Configuration["OtelApiKey"];
-                var endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
+            .AddConsoleExporter();
+        /*.AddOtlpExporter(options =>
+        {
+            var seqApiKey = builder.Configuration["OtelApiKey"];
+            var endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
 
-                Log.Logger.Information("Endpoint is {UtelEndpointUrl}", endpoint);
-                Log.Logger.Information("Endpoint is {UtelseqApiKey}", seqApiKey);
-                options.Endpoint = endpoint;
-                options.Protocol = OtlpExportProtocol.HttpProtobuf;
-                options.Headers = $"X-Seq-ApiKey={seqApiKey}";
-            });
+            Log.Logger.Information("Endpoint is {UtelEndpointUrl}", endpoint);
+            Log.Logger.Information("Endpoint is {UtelseqApiKey}", seqApiKey);
+            options.Endpoint = endpoint;
+            options.Protocol = OtlpExportProtocol.HttpProtobuf;
+            options.Headers = $"X-Seq-ApiKey={seqApiKey}";
+        });*/
     });
 
 builder.Services.AddAuthorization();
