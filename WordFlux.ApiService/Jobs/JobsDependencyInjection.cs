@@ -23,6 +23,7 @@ public static class JobsDependencyInjection
         
         services.AddHostedService<CardDetectLanguageBackgroundJob>();
         services.AddHostedService<CardCreateTasksBackgroundJob>();
+        services.AddHostedService<TestDistributedTracesBackgroundJob>();
         services.AddSingleton<CardMessagePublisher>();
         
         return services;
