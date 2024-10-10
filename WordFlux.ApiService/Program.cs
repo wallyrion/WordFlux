@@ -146,7 +146,7 @@ builder.Services.AddSingleton<UnsplashImageSearchService>();
 builder.Services.AddHostedService<TestBackgroundService>();
 
 builder.Services.AddChannels();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+//builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
