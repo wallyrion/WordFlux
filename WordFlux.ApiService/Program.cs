@@ -54,6 +54,7 @@ builder.Services.AddOpenTelemetry()
             })
             .AddHttpClientInstrumentation()
             .AddNpgsql()
+            .AddConsoleExporter()
             .AddOtlpExporter(options =>
             {
                 var seqApiKey = builder.Configuration["OtelApiKey"];
@@ -108,6 +109,11 @@ builder.Services.AddChannels();
 builder.Services.AddProblemDetails();
 builder.Services.AddSwagger();
 builder.Services.AddEndpointsApiExplorer();
+
+var dbConnection = builder.Configuration.GetConnectionString("postgresdb");
+Console.WriteLine($"Connection string is (console) {dbConnection}");
+Log.Information("Connection string is {dbConnection}", dbConnection);
+
 builder.AddNpgsqlDbContext<ApplicationDbContext>("postgresdb");
 
 builder.Services.AddOpenAi(builder.Configuration);
