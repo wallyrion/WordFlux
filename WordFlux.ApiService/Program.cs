@@ -126,7 +126,7 @@ var dbConnection = builder.Configuration.GetConnectionString("postgresdb");
 Console.WriteLine($"Connection string is (console) {dbConnection}");
 Log.Information("Connection string is {dbConnection}", dbConnection);
 
-builder.AddNpgsqlDbContext<ApplicationDbContext>("postgresdb");
+builder.Services.AddNpgsql<ApplicationDbContext>(dbConnection);
 
 builder.Services.AddOpenAi(builder.Configuration);
 
@@ -210,6 +210,6 @@ app.MapGet("/health", (IConfiguration configuration) => new
     AliveTime = DateTime.UtcNow - startedDateTime
 });
 
-app.MapDefaultEndpoints();
+//app.MapDefaultEndpoints();
 
 app.Run();
