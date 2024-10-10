@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
+using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
@@ -30,46 +31,47 @@ var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Host.UseSerilog((context, provider, configuration) =>
 {
     configuration.ReadFrom.Configuration(context.Configuration);
     //configuration.WriteTo.Console();
     //configuration.WriteTo.Seq("http://172.191.101.172:80");
-    
+
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
         .CreateBootstrapLogger();
-
 });
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("WordFlux.Api"))
     .WithTracing(tracing =>
     {
-        tracing.AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation();
+        tracing.AddAspNetCoreInstrumentation(c => c.Filter = context =>
+            {
+                Log.Logger.Information("Filtering trace");
 
-        tracing.AddOtlpExporter(options =>
-        {
-            var seqApiKey = builder.Configuration["OtelApiKey"];
-            var endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
+                return true;
+            })
+            .AddHttpClientInstrumentation()
+            .AddNpgsql()
+            .AddOtlpExporter(options =>
+            {
+                var seqApiKey = builder.Configuration["OtelApiKey"];
+                var endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
 
-            Log.Logger.Information("Endpoint is {UtelEndpointUrl}", endpoint);
-            Log.Logger.Information("Endpoint is {UtelseqApiKey}", seqApiKey);
-            options.Endpoint = endpoint;
-            options.Protocol = OtlpExportProtocol.HttpProtobuf;
-            options.Headers = $"X-Seq-ApiKey={seqApiKey}";
-        });
+                Log.Logger.Information("Endpoint is {UtelEndpointUrl}", endpoint);
+                Log.Logger.Information("Endpoint is {UtelseqApiKey}", seqApiKey);
+                options.Endpoint = endpoint;
+                options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                options.Headers = $"X-Seq-ApiKey={seqApiKey}";
+            });
     });
+
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options =>
-{
-    options.BearerTokenExpiration = TimeSpan.FromDays(7);
-});
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => { options.BearerTokenExpiration = TimeSpan.FromDays(7); });
 
 // Add service defaults & Aspire components.
 //builder.AddServiceDefaults();
@@ -83,7 +85,6 @@ builder.Services.AddCors(
             .AllowAnyHeader()
             .WithOrigins("https://localhost:7153", "https://wordflux.online", "https://icy-ocean-03f34ba03-13.westeurope.5.azurestaticapps.net")));
 
-
 if (builder.Configuration["UseAzureKeyVault"] == "true")
 {
     //Console.WriteLine("Using Azure Key Vault");
@@ -93,6 +94,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 
     //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
+
 builder.Services.AddHostedService<MigrationHostedService>();
 
 builder.Services.AddSingleton<NotificationsStore>();
@@ -114,7 +116,6 @@ var app = builder.Build();
 app.UseCors("wasm");
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 
 app.MapIdentityApi<AppUser>();
@@ -122,7 +123,6 @@ app.UseOutputCache();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapPost("/logout", async (SignInManager<AppUser> signInManager, [FromBody] object empty) =>
 {
@@ -158,32 +158,23 @@ app.MapGet("/roles", (ClaimsPrincipal user) =>
     return Results.Unauthorized();
 }).RequireAuthorization();
 
-
-app.MapGet("images/unsplash", async (UnsplashImageSearchService searchService, string keyword) =>
-{
-
-    return await searchService.GetImagesByKeyword(keyword);
-    
-
-});
+app.MapGet("images/unsplash", async (UnsplashImageSearchService searchService, string keyword) => { return await searchService.GetImagesByKeyword(keyword); });
 
 app.MapGet("images", async (BingImageSearchService searchService, UnsplashImageSearchService unsplashSearch, string keyword, bool isUnsplash = true) =>
-{
-
-    if (isUnsplash)
     {
-        return await unsplashSearch.GetImagesByKeyword(keyword);
-    }
-    
-    return await searchService.GetImagesByKeyword(keyword);
+        if (isUnsplash)
+        {
+            return await unsplashSearch.GetImagesByKeyword(keyword);
+        }
 
-})
-.CacheOutput(p =>
-{
-    p.AddPolicy<OutputCachePolicy>();
-    p.Expire(TimeSpan.FromHours(2))
-        .SetVaryByQuery("keyword");
-});
+        return await searchService.GetImagesByKeyword(keyword);
+    })
+    .CacheOutput(p =>
+    {
+        p.AddPolicy<OutputCachePolicy>();
+        p.Expire(TimeSpan.FromHours(2))
+            .SetVaryByQuery("keyword");
+    });
 
 app
     .MapAudioEndpoints()
@@ -194,14 +185,12 @@ app
     .MapPushNotificationsEndpoints()
     ;
 
-
 app.MapGet("/health", (IConfiguration configuration) => new
 {
     ImageTag = configuration["CurrentImageTag"],
     StartedDate = startedDateTime,
     AliveTime = DateTime.UtcNow - startedDateTime
 });
-
 
 app.MapDefaultEndpoints();
 
