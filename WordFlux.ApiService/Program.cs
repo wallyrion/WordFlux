@@ -65,7 +65,7 @@ builder.Services.AddOpenTelemetry()
                 };
             })
             .AddHttpClientInstrumentation()
-            .AddNpgsql()
+            //.AddNpgsql()
             .AddConsoleExporter();
         /*.AddOtlpExporter(options =>
         {
