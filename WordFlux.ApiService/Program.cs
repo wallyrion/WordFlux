@@ -32,7 +32,7 @@ var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, provider, configuration) =>
+/*builder.Host.UseSerilog((context, provider, configuration) =>
 {
     configuration.ReadFrom.Configuration(context.Configuration);
     //configuration.WriteTo.Console();
@@ -41,18 +41,18 @@ builder.Host.UseSerilog((context, provider, configuration) =>
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration)
         .CreateBootstrapLogger();
-});
+});*/
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("MyMainApi"))
-    .WithMetrics(
+    /*.WithMetrics(
         (b) =>
         {
             b.AddAspNetCoreInstrumentation();
             b.AddHttpClientInstrumentation();
             b.AddConsoleExporter();
         }
-    )
+    )*/
     .WithTracing(tracing =>
     {
         tracing.AddAspNetCoreInstrumentation(c =>
