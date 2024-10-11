@@ -170,8 +170,6 @@ app.MapGlobalErrorHandling();
 //app.UseExceptionHandler();
 
 
-
-
 app.MapGet("/test", () =>
 {
     throw new Exception("eqweqw");
