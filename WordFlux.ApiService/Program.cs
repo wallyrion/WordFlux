@@ -64,6 +64,17 @@ app.MapGet("/weatherforecast", () =>
     })
     .WithName("GetWeatherForecast");
 
+app.MapGet("/health", async (IConfiguration configuration) =>
+{
+    //await TestDistributedTracesBackgroundJob.MyChannel.Writer.WriteAsync((Guid.NewGuid(), metadata ));
+
+    return new
+    {
+        ImageTag = configuration["CurrentImageTag"],
+    };
+});
+
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
