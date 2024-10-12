@@ -68,7 +68,7 @@ public static class OpenTelemetryDependencyInjection
             tracing.AddOtlpExporter("seq", c =>
             {
                 c.Endpoint = new Uri(configuration["OtelEndpointSeq"]!);
-                //c.Headers = builder.Configuration["OtelApiKey"];
+                c.Headers = configuration["OtelHeadersSeq"];
                 c.Protocol = OtlpExportProtocol.HttpProtobuf;
             });
         });
