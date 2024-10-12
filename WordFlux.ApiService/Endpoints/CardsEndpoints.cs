@@ -257,6 +257,44 @@ public static class CardsEndpoints
 
             return Results.Ok();
         }).RequireAuthorization();
+        
+        app.MapPatch("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, PatchCardRequest request, Guid cardId,
+            ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
+        {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
+            var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
+
+            if (existingCard == null)
+            {
+                return Results.NotFound();
+            }
+            
+            request.UpdateProperty(x => x.Term, request.Term);
+            request.UpdateProperty(x => x.ImageUrl, request.ImageUrl);
+            request.UpdateProperty(x => x.DeckId, request.DeckId);
+            request.UpdateProperty(x => x.Translations, request.Translations);
+
+            await dbContext.SaveChangesAsync();
+            return Results.NoContent();
+        }).RequireAuthorization();
+        
+        app.MapDelete("/cards/{cardId:guid}/image", async (ApplicationDbContext dbContext, Guid cardId,
+            ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
+        {
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
+
+            var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
+
+            if (existingCard == null)
+            {
+                return Results.NotFound();
+            }
+            
+            existingCard.ImageUrl = null;
+            await dbContext.SaveChangesAsync();
+            return Results.NoContent();
+        }).RequireAuthorization();
 
         app.MapPut("/cards/{cardId:guid}/challenges/regenerate", async (ApplicationDbContext dbContext, ILogger<Program> logger, Guid cardId,
             ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, [FromServices] CardMessagePublisher publisher) =>
@@ -276,6 +314,26 @@ public static class CardsEndpoints
         }).RequireAuthorization();
 
         return app;
+    }
+    
+    static void UpdateProperty<TSource, TResult>(this TSource obj, Expression<Func<TSource, TResult>> keySelector, TResult? newValue) where TSource : class
+    {
+        if (newValue == null)
+        {
+            return;
+        }
+
+        var memberExpression = keySelector.Body as MemberExpression;
+        if (memberExpression == null)
+        {
+            throw new ArgumentException("The expression should represent a property access.", nameof(keySelector));
+        }
+
+        // Get the property info from the member expression
+        var propertyInfo = (System.Reflection.PropertyInfo)memberExpression.Member;
+
+        // Set the value of the property
+        propertyInfo.SetValue(obj, newValue, null);
     }
 }
 
@@ -314,4 +372,6 @@ public class ParsableQueryList : IParsable<ParsableQueryList>
 
         return true;
     }
+    
 }
+

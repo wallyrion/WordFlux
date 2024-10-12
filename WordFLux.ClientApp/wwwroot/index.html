@@ -2,165 +2,165 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>WordFLux.ClientApp.styles.css</title>
-    <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="WordFLux.ClientApp.styles.css" rel="stylesheet" />
-    <link href="manifest.webmanifest" rel="manifest" />
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
-    
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"  crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <base href="/"/>
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/app.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link href="WordFLux.ClientApp.styles.css" rel="stylesheet"/>
+    <link href="manifest.webmanifest" rel="manifest"/>
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.13.0/Sortable.min.js"></script>
 
 </head>
 
 <body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
-    </div>
+<div id="app">
+    <svg class="loading-progress">
+        <circle r="40%" cx="50%" cy="50%"/>
+        <circle r="40%" cx="50%" cy="50%"/>
+    </svg>
+    <div class="loading-progress-text"></div>
+</div>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred. Something went wrong
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <!--<script>navigator.serviceWorker.register('service-worker.js');</script>-->
-    <script src="sw-registrator.js"></script>
-    <script src="pushNotifications.js"></script>
+<div id="blazor-error-ui">
+    An unhandled error has occurred. Something went wrong
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+<script src="_framework/blazor.webassembly.js"></script>
+<!--<script>navigator.serviceWorker.register('service-worker.js');</script>-->
+<script src="sw-registrator.js"></script>
+<script src="pushNotifications.js"></script>
 
 
-    <script>
+<script>
 
-        function allowDrop(ev) {
-            ev.preventDefault();
+
+    window.addEventListener('popstate', function () {
+        const backdrop = document.querySelectorAll('.modal-backdrop');
+        for (let item of backdrop) {
+            item.remove();
+        }
+    });
+
+
+    window.modalEvents = {
+        open: (id) => {
+            const myModal = new bootstrap.Modal(document.getElementById(id), {});
+            myModal.show();
+
+        },
+
+        close: (id) => {
+            const myModal = new bootstrap.Modal(document.getElementById(id), {});
+            myModal.hide();
+        },
+
+        closeByButton: (buttonHtmlElement) => {
+            buttonHtmlElement.click()
+        },
+
+        /*
+        Close: function (modalElement) {
+
+            var myModal = new bootstrap.Modal(document.getElementById("cardDetailsModal"), {});
+            //myModal.show();
+            
+            // cardDetailsModal
+            //const modal = new bootstrap.Modal(modalElement);
+            myModal.hide();
+        },*/
+
+        Initialize: function (myModalEl, dotNetHelper, dotNetMethodToInvoke) {
+            myModalEl.addEventListener('hidden.bs.modal', event => {
+                console.log('modal is closed')
+                if (event.target === myModalEl) {
+                    dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
+                }
+            })
         }
 
-        function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);
-        }
+        /*   document.querySelector('.modal').addEventListener('click', function (e) {
+               // Check if the modal is clicked, not an element inside the modal:
+               if (e.target === e.currentTarget) {
+                   dotNetHelper.invokeMethodAsync('Close');
+               }
+           });*/
+    };
 
-        function drop(ev) {
-            ev.preventDefault();
-            var data = ev.dataTransfer.getData("text");
-            ev.target.appendChild(document.getElementById(data));
-        }
+    function WaitFor(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
 
-    window.enableDragAndDrop = {
-    preventDefault: function(event) {
-    event.preventDefault(); // Allow the drop
-    },
-    handleDrop: function(event, dotNetRef, index) {
-    event.preventDefault(); // Prevent the browser's default behavior
-            dotNetRef.invokeMethodAsync('OnItemDropped', index); // Call Blazor with the dropped index
+    window.clipboardCopy = {
+        copyText: async function (text, isRetry = false) {
+            try {
+                await navigator.clipboard.writeText(text)
+            } catch (error) {
+                if (error.name === 'NotAllowedError' && error.message === "Failed to execute 'writeText' on 'Clipboard': Document is not focused." && !isRetry) {
+                    console.log('not focused')
+                    await WaitFor(200)
+                    await window.clipboardCopy.copyText(text, true)
+                }
+            }
+
+            await navigator.clipboard.writeText(text)
+        },
+
+        pasteText: async function (text, isRetry = false) {
+            try {
+                return await navigator.clipboard.readText();
+            } catch (err) {
+                if (err.name === 'NotAllowedError' && err.message === "Failed to execute 'readText' on 'Clipboard': Document is not focused." && !isRetry) {
+                    console.log('not focused')
+                    await WaitFor(200)
+                    return window.clipboardCopy.pasteText(text, true);
+                }
+
+                console.error('Failed to read clipboard contents: ', err);
+                return null;
+            }
+        },
+
+    };
+
+
+    let handler;
+
+    window.Connection = {
+        Initialize: function (interop) {
+
+            handler = function () {
+                interop.invokeMethodAsync("Connection.StatusChanged", navigator.onLine);
+            }
+
+            window.addEventListener("online", handler);
+            window.addEventListener("offline", handler);
+
+            handler(navigator.onLine);
+        },
+        Dispose: function () {
+
+            if (handler != null) {
+
+                window.removeEventListener("online", handler);
+                window.removeEventListener("offline", handler);
+            }
         }
     };
-        
-        window.addEventListener('popstate', function () {
-            const backdrop = document.querySelectorAll('.modal-backdrop');
-            for(let item of backdrop){
-                item.remove();
-            }
-        });
-        
-
-        window.modalEvents = {
-            open: (id) => {
-                const myModal = new bootstrap.Modal(document.getElementById(id), {});
-                myModal.show();
-
-            },
-
-            close: (id) => {
-                const myModal = new bootstrap.Modal(document.getElementById(id), {});
-                myModal.hide();
-            },
-            
-            closeByButton: (buttonHtmlElement) => {
-                buttonHtmlElement.click()
-            },
-            
-            /*
-            Close: function (modalElement) {
-
-                var myModal = new bootstrap.Modal(document.getElementById("cardDetailsModal"), {});
-                //myModal.show();
-                
-                // cardDetailsModal
-                //const modal = new bootstrap.Modal(modalElement);
-                myModal.hide();
-            },*/
-            
-            Initialize: function (myModalEl, dotNetHelper, dotNetMethodToInvoke) {
-                myModalEl.addEventListener('hidden.bs.modal', event => {
-                    console.log('modal is closed')
-                    if (event.target === myModalEl){
-                        dotNetHelper.invokeMethodAsync(dotNetMethodToInvoke);
-                    }
-                })   
-        }
-            
-         /*   document.querySelector('.modal').addEventListener('click', function (e) {
-                // Check if the modal is clicked, not an element inside the modal:
-                if (e.target === e.currentTarget) {
-                    dotNetHelper.invokeMethodAsync('Close');
-                }
-            });*/
-        };
-        
-        window.clipboardCopy = {
-            copyText: function(text, isRetry = false) {
-                navigator.clipboard.writeText(text).then(function () {
-                    alert(`Copied \"${text}\" to clipboard!`);
-                })
-                    .catch(function (error) {
-                        if (error.name === 'NotAllowedError' && error.message === "Failed to execute 'writeText' on 'Clipboard': Document is not focused." && !isRetry){
-
-                            setTimeout(() => {
-                                window.clipboardCopy.copyText(text, true)
-                            }, 200)
-                        }
-                    });
-            }
-        };
-        
-        
-        let handler;
-        
-        window.Connection = {
-            Initialize: function (interop) {
-
-                handler = function () {
-                    interop.invokeMethodAsync("Connection.StatusChanged", navigator.onLine);
-                }
-
-                window.addEventListener("online", handler);
-                window.addEventListener("offline", handler);
-
-                handler(navigator.onLine);
-            },
-            Dispose: function () {
-
-                if (handler != null) {
-
-                    window.removeEventListener("online", handler);
-                    window.removeEventListener("offline", handler);
-                }
-            }
-        };
-    </script>
+</script>
 
 </body>
 

@@ -174,6 +174,16 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     public async Task UpdateCard(CardRequest card, Guid cardId)
     {
         await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
+    }        
+    
+    public async Task PatchCard(PatchCardRequest card, Guid cardId)
+    {
+        await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
+    }    
+        
+    public async Task RemoveImageFromCard(Guid cardId)
+    {
+        await httpClient.DeleteAsync($"/cards/{cardId}/image");
     }    
     
     public async Task RegenerateCardChallenges(Guid cardId)
@@ -238,9 +248,9 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
         return result;
     }
     
-    public async Task<List<string>> SearchForImages(string keyword)
+    public async Task<List<string>> SearchForImages(string keyword, bool useBing)
     {
-        var response = await httpClient.GetFromJsonAsync<List<string>>($"/images?keyword={keyword}");
+        var response = await httpClient.GetFromJsonAsync<List<string>>($"/images?keyword={keyword}&useBing={useBing}");
 
         return response ?? [];
     }

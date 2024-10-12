@@ -189,7 +189,11 @@ else
         Card!.Translations.Remove(item);
         Card.Translations.Insert(0, item);
 
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+        var pathCardRequest = new PatchCardRequest
+        {
+            Translations = Card.Translations
+        };
+        await ApiClient.PatchCard(pathCardRequest, Card!.Id);
     }
 
     private async Task ReplaceTranslation((CardTranslationItem oldItem, CardTranslationItem newItem) arg)
@@ -198,14 +202,22 @@ else
 
         Card.Translations[replaceIndex] = arg.newItem;
 
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+        var pathCardRequest = new PatchCardRequest
+        {
+            Translations = Card.Translations
+        };
+        await ApiClient.PatchCard(pathCardRequest, Card!.Id);
     }
 
     private async Task RemoveTranslation(CardTranslationItem item)
     {
         Card!.Translations.Remove(item);
-
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+        
+        var pathCardRequest = new PatchCardRequest
+        {
+            Translations = Card.Translations
+        };
+        await ApiClient.PatchCard(pathCardRequest, Card!.Id);
     }
 
     private async Task AddMyTranslation(CardTranslationItem item)
@@ -228,7 +240,11 @@ else
             return;
         }
 
-        await ApiClient.UpdateCard(new CardRequest(Card!.Term, Card.Level, Card.Translations), Card.Id);
+        var pathCardRequest = new PatchCardRequest
+        {
+            Term = EditTerm
+        };
+        await ApiClient.PatchCard(pathCardRequest, Card!.Id);
 
         Card = Card with { Term = EditTerm! };
         await OnCardChanged.InvokeAsync(Card);

@@ -6,14 +6,15 @@ public static class ImagesEndpoints
 {
     public static WebApplication MapImagesEndpoints(this WebApplication app)
     {
-        app.MapGet("images", async (BingImageSearchService searchService, UnsplashImageSearchService unsplashSearch, string keyword, bool isUnsplash = true) =>
+        app.MapGet("images", async (BingImageSearchService bingSearch, UnsplashImageSearchService unsplashSearch, string keyword, bool useBing = false) =>
             {
-                if (isUnsplash)
+                if (useBing)
                 {
-                    return await unsplashSearch.GetImagesByKeyword(keyword);
+                    return await bingSearch.GetImagesByKeyword(keyword);
                 }
 
-                return await searchService.GetImagesByKeyword(keyword);
+                return await unsplashSearch.GetImagesByKeyword(keyword);
+
             })
             .CacheOutput(p =>
             {

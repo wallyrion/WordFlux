@@ -17,6 +17,15 @@ public class CardTaskExample
     public bool IsSelected { get; set; }
 }*/
 
+
+public class PatchCardRequest
+{
+    public string? Term { get; init; }
+    public Guid? DeckId { get; init; }
+    public string? ImageUrl { get; init; }
+    public List<CardTranslationItem>? Translations { get; init; }
+}
+
 public record CardRequest(
     string Term,
     string Level,

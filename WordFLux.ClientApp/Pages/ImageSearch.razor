@@ -1,31 +1,76 @@
 ﻿@page "/images"
 @using WordFLux.ClientApp.Services
 @inject ApiClient ApiClient
+@inject IJSRuntime JsRuntime
 
 <div class="input-group mb-2">
     <input type="text" class="form-control" @bind="CustomUrl" placeholder="Paste url here for a custom image" aria-label="Deck name input with two button addons">
 
-    
+    <button class="btn btn-outline-primary" type="button" @onclick="() => PasteUrl(CustomUrl)">
+        <i class="bi bi-clipboard2-fill"></i>
+    </button>  
     <button class="btn btn-outline-primary" type="button" @onclick="() => SaveWithUrl(CustomUrl)">
         <i class="bi bi-check"></i>
     </button>  
-    
- 
 </div>
 
-
-<div class="container-fluid">
-    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 g-3">
-        @foreach (var image in ImageUrls)
-        {
-            <div class="col">
-                <button class="btn p-0 border-0" style="cursor: pointer;" @onclick="() => SaveWithUrl(image)">
-                    <img src="@image" loading="lazy" class="img-thumbnail" alt="image-option"/>
-                </button>
-            </div>
-        }
+@if (!string.IsNullOrWhiteSpace(CustomUrl?.Trim()))
+{
+    <div>
+        <img src="@CustomUrl" loading="lazy" class="img-thumbnail" alt="Custom image url does not work."/>
     </div>
+
+}
+
+<div class="input-group mb-3">
+
+    <div class="input-group-text">
+        <div class="form-check form-switch">
+            <input @bind="UseBing" class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Use bing</label>
+        </div>
+    </div>
+    
+    
+    <input @bind="Keyword" type="text" class="form-control" aria-label="Text input with checkbox">
+
+    <button class="btn btn-outline-primary" type="button" @onclick="Search">
+        <i class="bi bi-search"></i>
+    </button>
 </div>
+
+@if (IsLoading)
+{
+    <div class="spinner-grow" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    @if (ImageUrls.Count > 0)
+    {
+        <div class="container-fluid">
+            <div class="row row-cols-2 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 g-3">
+                @foreach (var image in ImageUrls)
+                {
+                    <div class="col">
+                        <button class="btn p-0 border-0" style="cursor: pointer;" @onclick="() => SaveWithUrl(image)">
+                            <img src="@image" loading="lazy" class="img-thumbnail" alt="image-option"/>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-secondary">No images found for [@ImagesKeywordSearch] keyword</div>
+    }
+}
+
+
+
+
 
 
 @code
@@ -34,6 +79,9 @@
     [Parameter] public EventCallback<string> OnImageSelected { get; set; }
     public string? CustomUrl { get; set; }
     List<string> ImageUrls { get; set; } = [];
+    string? ImagesKeywordSearch { get; set; }
+    bool IsLoading { get; set; }
+    bool UseBing { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
@@ -42,9 +90,28 @@
 
     private async Task Search()
     {
-        ImageUrls = await ApiClient.SearchForImages(Keyword);
+        if (string.IsNullOrEmpty(Keyword))
+        {
+            return;
+        }
+
+        ImagesKeywordSearch = Keyword;
+        IsLoading = true;
+        StateHasChanged();
+        
+        try
+        {
+            ImageUrls = await ApiClient.SearchForImages(Keyword, UseBing);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+        
     }
 
+    
+    
 
     private async Task SaveWithUrl(string? url)
     {
@@ -54,5 +121,13 @@
         }
         
         await OnImageSelected.InvokeAsync(url);
+    }
+
+    private async Task PasteUrl(string? customUrl)
+    {
+        await Task.Delay(100);
+        var text = await JsRuntime.InvokeAsync<string>("clipboardCopy.pasteText");
+
+        CustomUrl = text;
     }
 }

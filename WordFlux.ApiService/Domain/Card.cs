@@ -24,4 +24,5 @@ public class Card
     public string? ImageUrl { get; set; }
     public CardProcessingStatus Status { get; set; }
     public List<CardTaskExample> ExampleTasks { get; set; } = [];
+
 }

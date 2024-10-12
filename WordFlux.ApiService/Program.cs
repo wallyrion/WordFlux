@@ -40,48 +40,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddLogging(builder.Configuration);
 builder.Services.AddTelemetry(builder.Configuration);
 
-
-// Add Tracing for ASP.NET Core and our custom ActivitySource and export via OTLP
-
-    
-    // get children section
-
-// Export OpenTelemetry data via OTLP, using env vars for the configuration
-/*var OtlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-if (OtlpEndpoint != null)
+builder.Services.AddServiceDiscovery();
+builder.Services.ConfigureHttpClientDefaults(http =>
 {
-    otel.UseOtlpExporter();
-}*/
+    // Turn on resilience by default
+    http.AddStandardResilienceHandler();
 
-
-
-/*builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("MyMainApi"))
-    .WithTracing(tracing =>
-    {
-        tracing.AddAspNetCoreInstrumentation(c =>
-            {
-                c.Filter = context =>
-                {
-                    Log.Logger.Information("Filtering trace");
-
-                    return true;
-                };
-            })
-            .AddHttpClientInstrumentation()
-            .AddConsoleExporter();
-        /*.AddOtlpExporter(options =>
-        {
-            var seqApiKey = builder.Configuration["OtelApiKey"];
-            var endpoint = new Uri(builder.Configuration["OtlpEndpoint"]!);
-
-            Log.Logger.Information("Endpoint is {UtelEndpointUrl}", endpoint);
-            Log.Logger.Information("Endpoint is {UtelseqApiKey}", seqApiKey);
-            options.Endpoint = endpoint;
-            options.Protocol = OtlpExportProtocol.HttpProtobuf;
-            options.Headers = $"X-Seq-ApiKey={seqApiKey}";
-        });#1#
-    });*/
+    // Turn on service discovery by default
+    http.AddServiceDiscovery();
+});
 
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()

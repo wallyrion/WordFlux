@@ -2,22 +2,22 @@
 
 namespace WordFlux.ApiService;
 
-public class BingImageSearchService
+public class BingImageSearchService(IConfiguration config)
 {
-    const string baseUrl = "https://api.bing.microsoft.com";
-    const string apiKey = "";
+    private const string BaseUrl = "https://api.bing.microsoft.com";
+    private readonly string _apiKey = config["BingSearchApiKey"]!;
     
     public async Task<List<string>> GetImagesByKeyword(string keyword)
     {
-        var result = JsonSerializer.Deserialize<ImageSearchResponse>(Constants.TemporaryImageSearchResponse);
+        //var result = JsonSerializer.Deserialize<ImageSearchResponse>(Constants.TemporaryImageSearchResponse);
 
-        return result.Value.Select(x => x.ContentUrl).ToList();
+        //return result.Value.Select(x => x.ContentUrl).ToList();
         
         
         using var client = new HttpClient();
         
-        client.BaseAddress = new Uri(baseUrl);
-        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
+        client.BaseAddress = new Uri(BaseUrl);
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _apiKey);
 
         var response = await client.GetAsync($"/v7.0/images/search?q={keyword}");
         
