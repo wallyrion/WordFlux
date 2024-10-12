@@ -1,43 +1,19 @@
 using System.Diagnostics;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Channels;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.CognitiveServices.Speech;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.TextToAudio;
-using Npgsql;
-using OpenTelemetry;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Serilog;
-using Serilog.Core;
-using WebPush;
 using WordFlux.ApiService;
 using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
 using WordFlux.ApiService.Infrastructure;
 using WordFlux.ApiService.Jobs;
 using WordFlux.ApiService.Persistence;
-using static System.Net.WebRequestMethods;
 
 var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.AddLogging(builder.Configuration);
+builder.Logging.AddLogging(builder.Configuration, builder.Services);
 builder.Services.AddTelemetry(builder.Configuration);
 
 builder.Services.AddServiceDiscovery();
@@ -103,9 +79,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenAi(builder.Configuration);
 
 var app = builder.Build();
-app.UseCors("wasm");
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+app.UseHttpLogging();
+app.UseCors("wasm");
 
 app.MapGlobalErrorHandling();
 //app.UseExceptionHandler();

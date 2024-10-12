@@ -1,4 +1,5 @@
-﻿using OpenTelemetry.Exporter;
+﻿using Microsoft.AspNetCore.HttpLogging;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -9,8 +10,16 @@ namespace WordFlux.ApiService.Infrastructure;
 public static class OpenTelemetryDependencyInjection
 {
 
-    public static ILoggingBuilder AddLogging(this ILoggingBuilder logging, IConfiguration configuration)
+    public static ILoggingBuilder AddLogging(this ILoggingBuilder logging, IConfiguration configuration, IServiceCollection builderServices)
     {
+        builderServices.AddHttpLogging(l =>
+        {
+            l.CombineLogs = true;
+            l.LoggingFields = HttpLoggingFields.All;
+
+        });
+
+        
         logging
             .AddSerilog(new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger())
             .AddOpenTelemetry(l =>
