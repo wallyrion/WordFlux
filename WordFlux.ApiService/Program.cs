@@ -18,14 +18,17 @@ using Microsoft.SemanticKernel.TextToAudio;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
+using Serilog.Core;
 using WebPush;
 using WordFlux.ApiService;
 using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
+using WordFlux.ApiService.Infrastructure;
 using WordFlux.ApiService.Jobs;
 using WordFlux.ApiService.Persistence;
 using static System.Net.WebRequestMethods;
@@ -34,52 +37,22 @@ var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
-/*builder.Host.UseSerilog((context, provider, configuration) =>
-{
-    configuration.ReadFrom.Configuration(context.Configuration);
-    //configuration.WriteTo.Console();
-    //configuration.WriteTo.Seq("http://172.191.101.172:80");
+builder.Logging.AddLogging(builder.Configuration);
+builder.Services.AddTelemetry(builder.Configuration);
 
-    Log.Logger = new LoggerConfiguration()
-        .ReadFrom.Configuration(builder.Configuration)
-        .CreateBootstrapLogger();
-});*/
-
-builder.Logging.AddOpenTelemetry(logging =>
-{
-    logging.IncludeFormattedMessage = true;
-    logging.IncludeScopes = true;
-});
-
-var otel = builder.Services.AddOpenTelemetry();
-
-// Add Metrics for ASP.NET Core and our custom metrics and export via OTLP
-otel.WithMetrics(metrics =>
-{
-    // Metrics provider from OpenTelemetry
-    metrics.AddAspNetCoreInstrumentation();
-    //Our custom metrics
-    // Metrics provides by ASP.NET Core in .NET 8
-    metrics.AddMeter("Microsoft.AspNetCore.Hosting");
-    metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
-});
 
 // Add Tracing for ASP.NET Core and our custom ActivitySource and export via OTLP
-otel.WithTracing(tracing =>
-{
-    tracing.AddSource("Sample.DistributedTracing");
+
     
-    tracing.AddAspNetCoreInstrumentation();
-    tracing.AddHttpClientInstrumentation();
-    tracing.AddEntityFrameworkCoreInstrumentation();
-});
+    // get children section
 
 // Export OpenTelemetry data via OTLP, using env vars for the configuration
-var OtlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+/*var OtlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
 if (OtlpEndpoint != null)
 {
     otel.UseOtlpExporter();
-}
+}*/
+
 
 
 /*builder.Services.AddOpenTelemetry()
@@ -114,7 +87,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme).Configure(options => { options.BearerTokenExpiration = TimeSpan.FromDays(7); });
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
+    .Configure(options => { options.BearerTokenExpiration = TimeSpan.FromDays(7); });
 
 // Add service defaults & Aspire components.
 //builder.AddServiceDefaults();
@@ -181,60 +155,11 @@ app.UseOutputCache();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapPost("/logout", async (SignInManager<AppUser> signInManager, [FromBody] object empty) =>
-{
-    if (empty is not null)
-    {
-        await signInManager.SignOutAsync();
-
-        return Results.Ok();
-    }
-
-    return Results.Unauthorized();
-}).RequireAuthorization();
-
-app.MapGet("/roles", (ClaimsPrincipal user) =>
-{
-    if (user.Identity is not null && user.Identity.IsAuthenticated)
-    {
-        var identity = (ClaimsIdentity)user.Identity;
-        var roles = identity.FindAll(identity.RoleClaimType)
-            .Select(c =>
-                new
-                {
-                    c.Issuer,
-                    c.OriginalIssuer,
-                    c.Type,
-                    c.Value,
-                    c.ValueType
-                });
-
-        return TypedResults.Json(roles);
-    }
-
-    return Results.Unauthorized();
-}).RequireAuthorization();
-
-app.MapGet("images/unsplash", async (UnsplashImageSearchService searchService, string keyword) => { return await searchService.GetImagesByKeyword(keyword); });
-
-app.MapGet("images", async (BingImageSearchService searchService, UnsplashImageSearchService unsplashSearch, string keyword, bool isUnsplash = true) =>
-    {
-        if (isUnsplash)
-        {
-            return await unsplashSearch.GetImagesByKeyword(keyword);
-        }
-
-        return await searchService.GetImagesByKeyword(keyword);
-    })
-    .CacheOutput(p =>
-    {
-        p.AddPolicy<OutputCachePolicy>();
-        p.Expire(TimeSpan.FromHours(2))
-            .SetVaryByQuery("keyword");
-    });
 
 app
+    .MapAuthEndpoints()
     .MapAudioEndpoints()
+    .MapImagesEndpoints()
     .MapCardsEndpoints()
     .MapDecksEndpoints()
     .MapMotivationalEndpoints()
