@@ -178,7 +178,7 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     
     public async Task PatchCard(PatchCardRequest card, Guid cardId)
     {
-        await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
+        await httpClient.PatchAsJsonAsync($"/cards/{cardId}", card);
     }    
         
     public async Task RemoveImageFromCard(Guid cardId)

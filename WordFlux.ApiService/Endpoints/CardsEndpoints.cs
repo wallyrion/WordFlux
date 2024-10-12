@@ -270,10 +270,10 @@ public static class CardsEndpoints
                 return Results.NotFound();
             }
             
-            request.UpdateProperty(x => x.Term, request.Term);
-            request.UpdateProperty(x => x.ImageUrl, request.ImageUrl);
-            request.UpdateProperty(x => x.DeckId, request.DeckId);
-            request.UpdateProperty(x => x.Translations, request.Translations);
+            existingCard.UpdateProperty(x => x.Term, request.Term);
+            existingCard.UpdateProperty(x => x.ImageUrl, request.ImageUrl);
+            existingCard.UpdateProperty(x => x.DeckId, request.DeckId);
+            existingCard.UpdateProperty(x => x.Translations, request.Translations);
 
             await dbContext.SaveChangesAsync();
             return Results.NoContent();

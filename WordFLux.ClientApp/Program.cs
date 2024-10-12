@@ -30,6 +30,12 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<ConnectionHealthService>();
 builder.Services.AddSingleton<InMemoryMessageQueue>();
 
+
+builder.Services.ConfigureHttpClientDefaults(http =>
+{
+    http.AddStandardResilienceHandler();
+});
+
 builder.Services.AddDefaultApiClient<RefreshIdentityHttpClient>();
 
 builder.Services.AddDefaultApiClient<ApiClient>()
