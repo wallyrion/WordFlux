@@ -33,6 +33,13 @@
                             <div class="card card-body">
                                 <pre>@exception.ToString()</pre>
                             </div>
+                            @if (exception is HttpRequestException httpRequestException)
+                            {
+                                <div class="card">
+                                    <div class="card card-body"><strong>StatusCode: </strong> @httpRequestException.StatusCode</div>
+                                </div>
+                            }
+                          
                         </div>
                     </div>
                 </ErrorContent>
