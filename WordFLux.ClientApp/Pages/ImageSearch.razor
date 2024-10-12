@@ -81,7 +81,7 @@ else
     List<string> ImageUrls { get; set; } = [];
     string? ImagesKeywordSearch { get; set; }
     bool IsLoading { get; set; }
-    bool UseBing { get; set; }
+    bool UseBing { get; set; } = true;
     
     protected override async Task OnInitializedAsync()
     {
