@@ -274,19 +274,18 @@ else
     private async Task RemoveImage()
     {
         Card = Card! with { ImageUrl = null};
-        //await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseImageModalButtonRef);
 
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations, ImageUrl: null), Card.Id);
+        await ApiClient.RemoveImageFromCard(Card.Id);        
     }
 
     private async Task EditImage()
     {
-        await SearchImageModalRef.OpenModal(Card.Term);
+        await SearchImageModalRef.OpenModal(Card!.Term);
     }
 
     private async Task OpenImageModal()
     {
-        await SearchImageModalRef.OpenModal(Card.Term);
+        await SearchImageModalRef.OpenModal(Card!.Term);
     }
 
     private async Task ImageSelected(string imgUrl)
