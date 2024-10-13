@@ -1,4 +1,4 @@
-﻿@page "/reviewV2"
+﻿@page "/review"
 @using System.Runtime.InteropServices
 @using WordFLux.ClientApp.Extensions
 @using WordFLux.ClientApp.Services
@@ -149,7 +149,8 @@
 
         if (ReviewStrategy == ReviewChallenge.Image)
         {
-            return (null, CurrentCard.Term);
+            var backTermLearn = CurrentCard.LearnLang == CurrentCard.SourceLang ? CurrentCard.Term : CurrentCard.Translations.FirstOrDefault()?.Term;
+            return (null, backTermLearn);
         }
 
         if (ReviewStrategy == ReviewChallenge.ChallengeExampleNative && ReviewChallengeExample != null)
