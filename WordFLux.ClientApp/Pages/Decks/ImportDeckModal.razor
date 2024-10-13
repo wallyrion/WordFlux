@@ -1,0 +1,166 @@
+﻿@using WordFLux.ClientApp.Services
+@using WordFlux.Contracts
+@inject ApiClient ApiClient
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+
+<div class="modal fade" id="@DialogId" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"  aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Import your cards here.</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="alert alert-info" role="alert">
+                        The following formatting is required:
+                        <ul class="m-0">
+                            <li>Row delimiter must be <span class="fw-bold fs-5">%;%</span> </li>
+                            <li>Delimiter between term and translation must be <span class="fw-bold fs-5">%-%</span> </li>
+                        </ul>
+                    </div>
+
+
+                    <div class="form-floating">
+                        <textarea  @bind="ImportText" class="form-control" placeholder="Paste your cards here" id="floatingTextarea"></textarea>
+                        <label for="floatingTextarea">Paste your cards here</label>
+                    </div>
+                </div>
+            </div>
+
+            @if (IsImportInProgress)
+            {
+            <div>
+                Importing...
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            }
+
+            <div class="container-fluid">
+                @if (ImportedDeckResponse != null)
+                {
+                <div class="alert alert-success" role="alert">
+                    @ImportedDeckResponse.ImportedCardsCount cards were successfully imported
+                </div>
+
+                if (ImportedDeckResponse.FailedRawItems.Count > 0)
+                {
+                <div class="alert alert-danger" role="alert">
+                    @ImportedDeckResponse.FailedRawItems.Count cards were not created.
+                    @if (!FailedItemsAddedByAiTranslator)
+                    {
+                    <span>You can add them manually or use power of out AI translator.</span>
+
+                    <br/>
+                    <span>Do you want to add them using AI translations automatically?</span>
+                    <button @onclick="AddFailedItemsAutomatically" disabled="@IsImportInProgress" class="btn btn-outline-primary">Add with automatic translations</button>
+                    }
+
+                </div>
+
+                <ul class="list-group">
+                    @foreach (var failedItem in ImportedDeckResponse.FailedRawItems)
+                    {
+                    <li class="list-group-item">@failedItem</li>
+                    }
+                </ul>
+                }
+                }
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button" disabled="@IsImportInProgress" @onclick="ModalClosed" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                @if (ImportedDeckResponse == null)
+                {
+                <button type="button" disabled="@IsImportInProgress" class="btn btn-primary" @onclick="ImportCards">Import</button>
+                }
+                else
+                {
+                <button disabled="@IsImportInProgress" @onclick="GoToNewDeck"  class="btn btn-outline-primary" data-bs-dismiss="modal">Go to deck <i class="bi bi-arrow-right-square"></i></button>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    const string DialogId = "ImportDeckModal";
+    [Parameter] public EventCallback OnModalClosed { get; set; }
+    bool IsImportInProgress { get; set; }
+    ImportedDeckResponse? ImportedDeckResponse { get; set; }
+    string? ImportText { get; set; }
+    bool FailedItemsAddedByAiTranslator { get; set; }
+    
+    private void GoToNewDeck()
+    {
+        Navigation.NavigateTo($"/decks/{ImportedDeckResponse!.Id}/cards");
+    }
+    private async Task ImportCards()
+    {
+        IsImportInProgress = true;
+        StateHasChanged();
+
+        try
+        {
+            ImportedDeckResponse = await ApiClient.ImportDeck(ImportText);
+        }
+        finally
+        {
+            IsImportInProgress = false;
+        }
+    }
+    
+    
+    private async Task AddFailedItemsAutomatically()
+    {
+        IsImportInProgress = true;
+        var tasks = ImportedDeckResponse!.FailedRawItems.Select(term => new {term, task = SyncTranslationForFailedItem(term, ImportedDeckResponse.Id)}).ToList();
+
+        await Task.WhenAll(tasks.Select(x => x.task));
+
+        var successItems = tasks.Where(x => x.task.Result != null).ToList();
+
+        var notSuccessItems = tasks.Where(x => x.task.Result == null).Select(x => x.term).ToList();
+
+        ImportedDeckResponse = ImportedDeckResponse with { ImportedCardsCount = successItems.Count + ImportedDeckResponse.ImportedCardsCount, FailedRawItems = notSuccessItems};
+        FailedItemsAddedByAiTranslator = true;
+        IsImportInProgress = false;
+       
+    }
+    
+    private async Task<SimpleTranslationResponse?> SyncTranslationForFailedItem(string term, Guid deckId)
+    {
+        try
+        {
+            var result = await ApiClient.GetSimpleTranslations(term, false);
+
+            var translations = result.Translations.Select(t => new CardTranslationItem(t, null, null, 0, null)).ToList();
+            await ApiClient.SaveNewCard(new CardRequest(term, "", translations, deckId));
+            
+            return result;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    private async Task ModalClosed()
+    {
+        await OnModalClosed.InvokeAsync();
+    }
+    
+    public async Task OpenModal()
+    {
+        await JsRuntime.InvokeVoidAsync("modalEvents.open", DialogId);
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

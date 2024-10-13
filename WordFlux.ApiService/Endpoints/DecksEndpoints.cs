@@ -105,7 +105,7 @@ public static class DecksEndpoints
                     Translations = [new CardTranslationItem(x.Translation, null, null, 0, null)],
                     ReviewInterval = TimeSpan.FromMinutes(2),
                     CreatedBy = Guid.Parse(userId),
-                    NextReviewDate = DateTime.UtcNow
+                    NextReviewDate = DateTime.UtcNow,
                 });
 
                 dbContext.Cards.AddRange(duplicatedCards);

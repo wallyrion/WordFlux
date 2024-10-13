@@ -27,7 +27,6 @@
 {
     [Parameter] public EventCallback<string> OnImageSelected { get; set; } 
     ElementReference CloseImageModalButtonRef { get; set; }
-    bool IsModalOpened { get; set; }
     string? SearchForImageTerm { get; set; }
 
     private async Task ImageSelected(string imageUrl)
@@ -44,7 +43,6 @@
 
         SearchForImageTerm = keyword;
         
-        IsModalOpened = true;
         await InvokeAsync(StateHasChanged);
     }
 }
