@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.HttpLogging;
+﻿using MassTransit.Logging;
+using Microsoft.AspNetCore.HttpLogging;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -56,6 +57,7 @@ public static class OpenTelemetryDependencyInjection
             // Metrics provider from OpenTelemetry
             metrics.AddAspNetCoreInstrumentation();
             //Our custom metrics
+            metrics.AddMeter("Microsoft.SemanticKernel*");
             // Metrics provides by ASP.NET Core in .NET 8
             metrics.AddMeter("Microsoft.AspNetCore.Hosting");
             metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
@@ -65,7 +67,11 @@ public static class OpenTelemetryDependencyInjection
 
         otel.WithTracing(tracing =>
         {
-            tracing.AddSource("Sample.DistributedTracing");
+            tracing
+                .AddSource("Sample.DistributedTracing")
+                .AddSource(DiagnosticHeaders.DefaultListenerName) // MassTransit ActivitySource
+                .AddSource("Microsoft.SemanticKernel*")
+                ;
 
             tracing.AddAspNetCoreInstrumentation();
             tracing.AddHttpClientInstrumentation();

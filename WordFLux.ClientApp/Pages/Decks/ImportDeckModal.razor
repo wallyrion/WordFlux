@@ -1,16 +1,18 @@
 ﻿@using WordFLux.ClientApp.Services
 @using WordFlux.Contracts
+@using WordFLux.ClientApp.Components
 @inject ApiClient ApiClient
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
+@inject LanguageProvider LanguageProvider
 
 
-<div class="modal fade" id="@DialogId" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"  aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="@DialogId" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="exampleModalLabel">Import your cards here.</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button @ref="CloseImageModalButtonRef" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
@@ -22,7 +24,37 @@
                         </ul>
                     </div>
 
+                    <div class="input-group mb-3">
+                        <label class="input-group-text">Your native language:</label>
+                        <SelectLanguageDropdown
+                            IsFullNameLabelShown="@true"
+                            OnLanguageSelected="@(e => LanguageSelected(e, true))"
+                            PredefinedLanguageCode="@NativeLanguage"
+                            IsNative="@true">
+                        </SelectLanguageDropdown>
+                    </div>
 
+                    <div class="input-group mb-3">
+                        <label class="input-group-text">Language you study:</label>
+                        <SelectLanguageDropdown
+                            IsFullNameLabelShown="@true"
+                            OnLanguageSelected="@(e => LanguageSelected(e, false))"
+                            PredefinedLanguageCode="@StudyingLanguage"
+                            IsNative="@false">
+                        </SelectLanguageDropdown>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="floatingInput" placeholder="Deck name">
+                            <label for="floatingInput">Deck name</label>
+                        </div>
+                        
+                        @*<input type="text" @bind="DeckName" class="form-control" placeholder="Imported from Oleksii's bookmarks">*@
+                    </div>
+
+
+          
                     <div class="form-floating">
                         <textarea  @bind="ImportText" class="form-control" placeholder="Paste your cards here" id="floatingTextarea"></textarea>
                         <label for="floatingTextarea">Paste your cards here</label>
@@ -32,56 +64,59 @@
 
             @if (IsImportInProgress)
             {
-            <div>
-                Importing...
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                <div>
+                    Importing...
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
-            </div>
             }
 
             <div class="container-fluid">
                 @if (ImportedDeckResponse != null)
                 {
-                <div class="alert alert-success" role="alert">
-                    @ImportedDeckResponse.ImportedCardsCount cards were successfully imported
-                </div>
-
-                if (ImportedDeckResponse.FailedRawItems.Count > 0)
-                {
-                <div class="alert alert-danger" role="alert">
-                    @ImportedDeckResponse.FailedRawItems.Count cards were not created.
-                    @if (!FailedItemsAddedByAiTranslator)
+                    @if (DeckExportPayload == null)
                     {
-                    <span>You can add them manually or use power of out AI translator.</span>
-
-                    <br/>
-                    <span>Do you want to add them using AI translations automatically?</span>
-                    <button @onclick="AddFailedItemsAutomatically" disabled="@IsImportInProgress" class="btn btn-outline-primary">Add with automatic translations</button>
+                        <div class="alert alert-success" role="alert">
+                            @ImportedDeckResponse.CardsCount will be imported
+                        </div>
                     }
 
-                </div>
-
-                <ul class="list-group">
-                    @foreach (var failedItem in ImportedDeckResponse.FailedRawItems)
+                    @if (DeckExportPayload == null)
                     {
-                    <li class="list-group-item">@failedItem</li>
+                        <div class="alert alert-secondary" role="alert">
+                            Processing your cards in the background... You can close this modal gracefully.
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                     }
-                </ul>
-                }
+
+                    if (DeckExportPayload is { Status: DeckExportStatus.Completed })
+                    {
+                        <div class="alert alert-success" role="alert">
+                            @DeckExportPayload.Items.Count cards were added to your deck
+                        </div>
+                    }
                 }
             </div>
 
 
             <div class="modal-footer">
+
+
                 <button type="button" disabled="@IsImportInProgress" @onclick="ModalClosed" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 @if (ImportedDeckResponse == null)
                 {
-                <button type="button" disabled="@IsImportInProgress" class="btn btn-primary" @onclick="ImportCards">Import</button>
+                    <button type="button" disabled="@IsImportInProgress" class="btn btn-primary" @onclick="ImportCards">Import</button>
                 }
                 else
                 {
-                <button disabled="@IsImportInProgress" @onclick="GoToNewDeck"  class="btn btn-outline-primary" data-bs-dismiss="modal">Go to deck <i class="bi bi-arrow-right-square"></i></button>
+                    <button disabled="@IsImportInProgress" @onclick="Reset" class="btn btn-outline-info">
+                        Create new import
+                    </button>
+
+                    <button disabled="@IsImportInProgress" @onclick="GoToNewDeck" class="btn btn-outline-primary" data-bs-dismiss="modal">Go to deck <i class="bi bi-arrow-right-square"></i></button>
                 }
 
             </div>
@@ -96,45 +131,81 @@
     bool IsImportInProgress { get; set; }
     ImportedDeckResponse? ImportedDeckResponse { get; set; }
     string? ImportText { get; set; }
-    bool FailedItemsAddedByAiTranslator { get; set; }
-    
+    string? DeckName { get; set; }
+
+    string? ErrorMessage { get; set; }
+    string? NativeLanguage { get; set; }
+    string? StudyingLanguage { get; set; }
+    CancellationTokenSource _cancellationTokenSource = new();
+    DeckExportPayload? DeckExportPayload { get; set; }
+    ElementReference CloseImageModalButtonRef { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var langs = await LanguageProvider.GetDefaultLanguagesAsync();
+
+        NativeLanguage = langs.NativeLanguageCode;
+        StudyingLanguage = langs.LearningLanguageCode;
+
+        await base.OnInitializedAsync();
+    }
+
     private void GoToNewDeck()
     {
         Navigation.NavigateTo($"/decks/{ImportedDeckResponse!.Id}/cards");
     }
+
     private async Task ImportCards()
     {
         IsImportInProgress = true;
         StateHasChanged();
 
+        if (string.IsNullOrEmpty(NativeLanguage) || string.IsNullOrEmpty(StudyingLanguage))
+        {
+            ErrorMessage = "You must select languages pair to import.";
+
+            return;
+        }
+
         try
         {
-            ImportedDeckResponse = await ApiClient.ImportDeck(ImportText);
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
+            ImportedDeckResponse = await ApiClient.ImportDeck(ImportText, NativeLanguage!, StudyingLanguage!, null);
+
+            Task.Run(async () =>
+            {
+                var deckId = ImportedDeckResponse!.Id;
+
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Delay(1000, token);
+                    var importResult = await ApiClient.GetDeckExport(deckId);
+
+                    if (importResult == null)
+                    {
+                        _cancellationTokenSource.CancelAfter(500);
+
+                        return;
+                    }
+
+                    if (importResult.Status == DeckExportStatus.Completed)
+                    {
+                        DeckExportPayload = importResult;
+                        await InvokeAsync(StateHasChanged);
+                        await _cancellationTokenSource.CancelAsync();
+                        _cancellationTokenSource = null;
+                    }
+                }
+            });
         }
         finally
         {
             IsImportInProgress = false;
         }
     }
-    
-    
-    private async Task AddFailedItemsAutomatically()
-    {
-        IsImportInProgress = true;
-        var tasks = ImportedDeckResponse!.FailedRawItems.Select(term => new {term, task = SyncTranslationForFailedItem(term, ImportedDeckResponse.Id)}).ToList();
 
-        await Task.WhenAll(tasks.Select(x => x.task));
-
-        var successItems = tasks.Where(x => x.task.Result != null).ToList();
-
-        var notSuccessItems = tasks.Where(x => x.task.Result == null).Select(x => x.term).ToList();
-
-        ImportedDeckResponse = ImportedDeckResponse with { ImportedCardsCount = successItems.Count + ImportedDeckResponse.ImportedCardsCount, FailedRawItems = notSuccessItems};
-        FailedItemsAddedByAiTranslator = true;
-        IsImportInProgress = false;
-       
-    }
-    
     private async Task<SimpleTranslationResponse?> SyncTranslationForFailedItem(string term, Guid deckId)
     {
         try
@@ -143,7 +214,7 @@
 
             var translations = result.Translations.Select(t => new CardTranslationItem(t, null, null, 0, null)).ToList();
             await ApiClient.SaveNewCard(new CardRequest(term, "", translations, deckId));
-            
+
             return result;
         }
         catch (Exception e)
@@ -156,11 +227,38 @@
     {
         await OnModalClosed.InvokeAsync();
     }
-    
+
     public async Task OpenModal()
     {
         await JsRuntime.InvokeVoidAsync("modalEvents.open", DialogId);
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task NavigateToDeck()
+    {
+        await JsRuntime.InvokeVoidAsync("modalEvents.closeByButton", CloseImageModalButtonRef);
+
+        Navigation.NavigateTo($"/decks/{ImportedDeckResponse!.Id}/cards");
+    }
+
+    private void LanguageSelected(SupportedLanguage lang, bool isNative)
+    {
+        if (isNative)
+        {
+            NativeLanguage = lang.Code;
+        }
+        else
+        {
+            StudyingLanguage = lang.Code;
+        }
+    }
+
+    private void Reset()
+    {
+        DeckExportPayload = null;
+        ImportedDeckResponse = null;
+        ImportText = null;
+        DeckName = null;
     }
 
 }

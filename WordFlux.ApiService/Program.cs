@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
@@ -7,6 +8,7 @@ using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
 using WordFlux.ApiService.Infrastructure;
 using WordFlux.ApiService.Jobs;
+using WordFlux.ApiService.Messaging.Consumers;
 using WordFlux.ApiService.Persistence;
 
 var startedDateTime = DateTime.UtcNow;
@@ -62,6 +64,15 @@ builder.Services.AddSingleton<BingImageSearchService>();
 builder.Services.AddSingleton<UnsplashImageSearchService>();
 builder.Services.AddHostedService<TestBackgroundService>();
 
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingInMemory((context, configurator) => 
+    {
+        configurator.ConfigureEndpoints(context);
+    });
+
+    x.AddConsumer<ImportDeckEventConsumer>();
+});
 builder.Services.AddChannels();
 //builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 

@@ -16,7 +16,9 @@ public static class OpenAiDependencyInjection
         services.AddChatCompletionKernels(apiKey, KeyedKernelType.Gpt4o, KeyedKernelType.Gpt4oMini);
 
         services.AddSingleton<OpenAiGenerator>();
+        services.AddSingleton<AzureAiTranslationService>();
         services.AddSingleton<IOpenAiGenerator, OpenAiGenerator>(s => s.GetRequiredService<OpenAiGenerator>());
+        services.AddSingleton<IAzureAiTranslator, AzureAiTranslationService>(s => s.GetRequiredService<AzureAiTranslationService>());
         services.AddKeyedSingleton<ITranslationService, AzureAiTranslationService>("AzureAiTranslator");
         services.AddKeyedSingleton<ITranslationService, OpenAiTranslationService>("OpenAiTranslator");
 

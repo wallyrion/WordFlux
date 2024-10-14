@@ -11,6 +11,20 @@ internal sealed class DeckConfiguration : IEntityTypeConfiguration<Deck>
         builder.Property(x => x.Name)
             .HasMaxLength(256);
 
+        builder.OwnsOne(x => x.Export, export =>
+        {
+            export.ToJson();
+
+            export.OwnsMany(x => x.Items, i =>
+            {
+            });
+            /*export.OwnsMany(p => p.Items, item =>
+            {
+                item.ToJson();
+            });*/
+
+        });
+        
         builder.HasOne(x => x.User)
             .WithMany()
             .HasForeignKey(x => x.UserId);

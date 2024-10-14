@@ -47,4 +47,30 @@ public record CreateDeckRequest(string Name);
 
 public record PatchDeckRequest(string? Name, bool? IsPublic);
 
-public record ImportDeckRequest(string? Name, string Cards);
+public record ImportDeckRequest(string? Name, string Cards, string NativeLanguage, string LearnLanguage);
+public record ParseExportQuizletResponse();
+
+public record ParseExportQuizletItem();
+
+
+
+public class DeckExportPayload
+{
+    public string NativeLanguage { get; set; } = null!;
+    public string LearnLanguage { get; set; } = null!;
+    public DeckExportStatus Status { get; set; }
+    
+    public List<DeckExportItem> Items { get; set; } = [];
+}
+
+public enum DeckExportStatus
+{
+    Processing,
+    Completed
+}
+
+public class DeckExportItem
+{
+    public string Term { get; set; }
+    public string? Translation { get; set; }
+}

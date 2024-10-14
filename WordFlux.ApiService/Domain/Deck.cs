@@ -13,4 +13,8 @@ public class Deck
     public string Name { get; set; } = null!;
     public DeckType Type { get; set; }
     public bool IsPublic { get; set; }
+    
+    public DeckExportPayload? Export { get; set; }
 }
+
+

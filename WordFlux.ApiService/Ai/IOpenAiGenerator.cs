@@ -1,4 +1,6 @@
-﻿namespace WordFlux.ApiService.Ai;
+﻿using WordFlux.Contracts;
+
+namespace WordFlux.ApiService.Ai;
 
 public interface IOpenAiGenerator
 {
@@ -6,4 +8,10 @@ public interface IOpenAiGenerator
     
     Task<List<(string ExampleLearn, string ExampleNative)>?> GetExamplesCardTask(string term, string learnLanguage, string nativeLanguage, int examplesCount,
         IReadOnlyList<string> translations, CancellationToken cancellationToken = default);
+}
+
+
+public interface IAzureAiTranslator
+{
+    Task<List<(string originalTerm, SimpleTranslationResponse translated)>> GetTranslations(List<string> terms, List<string> languages);
 }

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using WordFlux.ApiService.Ai.Models;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Ai;
@@ -308,6 +309,57 @@ public class OpenAiGenerator : IOpenAiGenerator
 
         return content.Examples.Select(x => (x.ExampleToLearn, x.ExampleOriginal)).ToList();
     }
+
+#pragma warning disable SKEXP0010
+
+    
+    public async Task<List<QuizletMapExportItem>> MapQuizletExportItemList(List<(string, string)> items, CancellationToken cancellationToken = default)
+    {
+        var kernel = GetKernel();
+        
+        var inputRequest = items.Select(x => new QuizletMapExportItemRequestItem
+        {
+            Term = x.Item1,
+            Description = x.Item2
+        });
+        
+        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
+        {
+            ResponseFormat = "json_object",
+        })
+        {
+            { "input", JsonSerializer.Serialize(inputRequest) }
+        };
+
+        var result = await AiFunctions.DivideExportedDescriptionIntoObjectList.InvokeAsync<OpenAIChatMessageContent>(GetKernel(KeyedKernelType.Gpt4oMini), arguments, cancellationToken);
+
+        if (result?.Content == null)
+        {
+            return [];
+        }
+
+        var content = JsonSerializer.Deserialize<QuizletMapExportResult>(result.Content);
+
+        if (content == null)
+        {
+            return [];
+        }
+
+        var response = content.Items.Select(x => new QuizletMapExportItem
+        {
+            Term = x.Term,
+            SourceLanguage = x.SourceLanguage,
+            DestinationLanguage = x.DestinationLanguage,
+            Definition = x.Definition,
+            Translations = x.Translations.Select(t => new QuizletMapExportItemTranslation
+            {
+                Translation = t.Translation,
+                Example = t.Example,
+            }).ToList()
+        });
+
+        return response.ToList();
+    }
 }
 
 /*file class TranslationResult
@@ -429,4 +481,32 @@ file class AutocompleteTranslationItem
         
     [JsonPropertyName("term_translated")] 
     public string TranslatedAutocompleteResult { get; set; } 
+}
+
+
+file class QuizletMapExportResult
+{
+    [JsonPropertyName("mapped_objects")] public List<QuizletMapExportItemInternal> Items { get; set; }
+}
+
+file class QuizletMapExportItemInternal
+{
+    [JsonPropertyName("term")] public string Term { get; set; }
+    [JsonPropertyName("srcLang")] public string? SourceLanguage { get; set; }
+    [JsonPropertyName("destLang")] public string? DestinationLanguage { get; set; }
+    
+    [JsonPropertyName("definition")] public string? Definition { get; set; }
+    [JsonPropertyName("translations")] public List<QuizletMapExportItemTranslations> Translations { get; set; } = [];
+}
+
+file class QuizletMapExportItemTranslations
+{
+    [JsonPropertyName("translation")] public string Translation { get; set; }
+    [JsonPropertyName("example")] public string Example { get; set; }
+}
+
+file class QuizletMapExportItemRequestItem
+{
+    [JsonPropertyName("translation")] public string Term { get; set; }
+    [JsonPropertyName("description")] public string Description { get; set; }
 }

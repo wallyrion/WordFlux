@@ -7,7 +7,8 @@ public class AiFunctions
     public static readonly KernelFunction TranslationsFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.GiveTranslations,
-        InputVariables = [
+        InputVariables =
+        [
             new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
             new() { Name = "inputLang", Description = "Language of the input" },
             new() { Name = "translationsLang", Description = "Language of the possible translations" },
@@ -19,16 +20,17 @@ public class AiFunctions
                          {"translations":["to encourage"]}
                          """
         }
-    }); 
-    
+    });
+
     public static readonly KernelFunction GiveAlternativesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.GiveAlternativesPrompt,
-        InputVariables = [
+        InputVariables =
+        [
             new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
-            new() { Name = "existingTranslations", Description = "Existing translations for the term" } ,
-            new() { Name = "srclang", Description = "language of the original term" } ,
-            new() { Name = "destLang", Description = "language of the translations" } 
+            new() { Name = "existingTranslations", Description = "Existing translations for the term" },
+            new() { Name = "srclang", Description = "language of the original term" },
+            new() { Name = "destLang", Description = "language of the translations" }
         ],
         OutputVariable = new OutputVariable
         {
@@ -36,15 +38,16 @@ public class AiFunctions
                          {"translations":["to encourage"]}
                          """
         }
-    });       
-    
+    });
+
     public static readonly KernelFunction CreateCardExampleTaskFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.CardExampleTaskPrompt,
-        InputVariables = [
+        InputVariables =
+        [
             new() { Name = "term", Description = "The term (can be word or phrase)" },
-            new() { Name = "learnLang", Description = "language of the term, that is learning" } ,
-            new() { Name = "nativeLang", Description = "native language" } ,
+            new() { Name = "learnLang", Description = "language of the term, that is learning" },
+            new() { Name = "nativeLang", Description = "native language" },
             new() { Name = "count", Description = "Number of examples" },
             new() { Name = "translations", Description = "existing translations. Can be used as a background context" }
         ],
@@ -54,9 +57,8 @@ public class AiFunctions
                          { "sentences": [ {"example_original": "The progress of *mankind* is dependent on education." , "example_translated": "Прогресс *человечества* зависит от образования." }  ] }
                          """
         }
-    });   
-    
-    
+    });
+
     public static readonly KernelFunction DetectLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
@@ -64,9 +66,10 @@ public class AiFunctions
                    Only these languages are possible: [{{$possibleLanguages}}].
                    If input has typo, try to fix a typo and put corrected value into suggested_term. If no typo, skip suggested_term field
                    """,
-        InputVariables = [
-            new() { Name = "input" }, 
-            new() { Name = "possibleLanguages" }, 
+        InputVariables =
+        [
+            new() { Name = "input" },
+            new() { Name = "possibleLanguages" },
         ],
         OutputVariable = new OutputVariable
         {
@@ -75,15 +78,16 @@ public class AiFunctions
                          """
         }
     });
-    
+
     public static readonly KernelFunction DetectPossibleLanguageFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
                    Detect language of src: |{{$src}}| and language of destination |{{$dest}}| and map to the JSON object: {"srcLanguage": "language of src (e.g. en, ru, uk, hr)", "destLanguage": "language of destination"}
                    If you can't do it, put empty string
                    """,
-        InputVariables = [
-            new() { Name = "src" }, 
+        InputVariables =
+        [
+            new() { Name = "src" },
             new() { Name = "dest" }
         ],
         OutputVariable = new OutputVariable
@@ -93,16 +97,17 @@ public class AiFunctions
                          """
         }
     });
-    
+
     public static readonly KernelFunction DetectLanguagesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
                    Detect language and map to the JSON object: {"srcLang": "language of {{$src}} (e.g. en-US)", "destLang": "language of {{$dest}}"}
                    Only these languages are possible: ["en-US", "ru-RU"]. src and dest can't be in the same language
                    """,
-        InputVariables = [
-            new() { Name = "src" }, 
-            new() { Name = "dest" } ,
+        InputVariables =
+        [
+            new() { Name = "src" },
+            new() { Name = "dest" },
         ],
         OutputVariable = new OutputVariable
         {
@@ -111,8 +116,7 @@ public class AiFunctions
                          """
         }
     });
-    
-    
+
     public static readonly KernelFunction AutocompleteWithTranslationFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
@@ -126,10 +130,11 @@ public class AiFunctions
                    Note 3: do not provide me autocompletes for other languages except of these 2 that I provided
                    Note 4: response should contain full string (not only the autocomplete part)
                    """,
-        InputVariables = [
-            new() { Name = "term" }, 
-            new() { Name = "lang1" }, 
-            new() { Name = "lang2" } ,
+        InputVariables =
+        [
+            new() { Name = "term" },
+            new() { Name = "lang1" },
+            new() { Name = "lang2" },
         ],
         OutputVariable = new OutputVariable
         {
@@ -138,7 +143,7 @@ public class AiFunctions
                          """
         }
     });
-    
+
     public static readonly KernelFunction AutocompleteFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
@@ -149,10 +154,11 @@ public class AiFunctions
                    Example output2: { "autocompletes": ["that's good to"], "lang": "en" } for input = "that's"
                    response should contain full string (not only the autocomplete)
                    """,
-        InputVariables = [
-            new() { Name = "term" }, 
-            new() { Name = "lang1" }, 
-            new() { Name = "lang2" } ,
+        InputVariables =
+        [
+            new() { Name = "term" },
+            new() { Name = "lang1" },
+            new() { Name = "lang2" },
         ],
         OutputVariable = new OutputVariable
         {
@@ -161,16 +167,16 @@ public class AiFunctions
                          """
         }
     });
-    
-    
+
     public static readonly KernelFunction GiveExamplesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.GiveTranslationExamples,
-        InputVariables = [
-            new() { Name = "term", Description = "the original phrase or word that is translated" }, 
-            new() { Name = "translations", Description = "Existing translations for the term" } ,
-            new() { Name = "srclang", Description = "language of the original term" } ,
-            new() { Name = "destLang", Description = "language of the translations" } 
+        InputVariables =
+        [
+            new() { Name = "term", Description = "the original phrase or word that is translated" },
+            new() { Name = "translations", Description = "Existing translations for the term" },
+            new() { Name = "srclang", Description = "language of the original term" },
+            new() { Name = "destLang", Description = "language of the translations" }
         ],
         OutputVariable = new OutputVariable
         {
@@ -179,7 +185,7 @@ public class AiFunctions
                          """
         }
     });
-    
+
     public static readonly KernelFunction GetLevelFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
@@ -196,10 +202,69 @@ public class AiFunctions
         InputVariables = [new() { Name = "term", Description = "Input word, phrase or sentence" }]
     });
 
+    public static readonly KernelFunction DivideExportedDescriptionIntoObject = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = """
+                   There is a input: '{{$term}}' and description for it: {{$translation}} 
+                   You should identify what description consist of and map it to the new object.
+                   This description can be either simple translation or contain list of translations or definition or example. 
+                   Return results in the following JSON:
+                   {"translations":[{"translation": "translation1","example":"example of usage of the input", "definition":""}] }
+                   Example and definition are optional properties but translation is required;
+                   Do not provide additional data except that is already in description;
+                   If there are multiple meanings (for translations / definitions), divide them into separate items;
+                   If there is single translation and multiple examples, provide examples in the single string for this translation
+                   Terms, examples, and definition should not be duplicated.
+                   """,
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         {"translations":[{"translation": "translation1","example":"example of usage of the input", "definition":""}] }
+                         """
+        },
+        InputVariables =
+        [
+            new() { Name = "term", Description = "Input word, phrase or sentence" },
+            new() { Name = "translation", Description = "Description of the word (can contain translation, definition, example)" }
+        ]
+    });
     
-       
+    public static readonly KernelFunction DivideExportedDescriptionIntoObjectList = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
+    {
+        Template = """
+                   You are translator assistant. I will provide you input which is list of objects.
+                   Execute the following script for each object. result must be in List of mapped results in json: {"mapped_objects" :[mapped_object1, mapped_object2, mapped_object3] }.
+                   1. There is a term and description for it;
+                   2. This description can contain translation / usage example / definition. You should separate them to different fields.
+                   3. Return results in the following JSON. Use this example
+                    mapped_object1: {"term": "halt", "srcLang":"en", "destLang":"ru", "definition":"definition of the halt", "translations":[{"translation": "остановить","example":"Just when you're thinking things could not have been better, your hookup suddenly halts all forms of communication with you, no explanation."},{"translation": "прекратить"}]}
+                    mapped_object2: {"term": "surge", "srcLang":"en", "destLang":"ru", "translations":[{"translation": "всплеск",{"translation": "рост"}, {"translation": "волна"}]}
+                   
+                   4. Translation should be inside translation field of the object;
+                   5. You should not add to the response any generated data. Also, data can not be lost.
+                   6. If there are multiple translations, divide them into different translation item inside translations array;
+                   7. Translations, examples, and definition should not be duplicated across object;
+                   8. Definition is usually in english OR in language of the term. It is usually some official quote from Dictionary. Do not put translation into definition.
+                   9. For each object, detect source and destination languages
+                   10.Definition can be empty. Omit field in this case
+                   After you completed all the steps, revise it. Check that for each item from source list there is an item in response. Order should be preserved.
+                   
+                   Here is the source list: {{$input}}
+                   """,
+        OutputVariable = new OutputVariable
+        {
+            JsonSchema = """
+                         {"mapped_objects" : [{"term": "original", "srcLang":"en", "destLang":"ru", "definition":"", "translations":[{"translation": "translation1","example":"example of usage of the input"}]}] }
+                         """
+        },
+        InputVariables =
+        [
+            new() { Name = "input", Description = "Source items." },
+        ]
+    });
+
     public static readonly KernelFunction GiveMotivationalPhraseFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = AiSystemMessages.GiveMotivationPrompt
-    });   
+    });
 }

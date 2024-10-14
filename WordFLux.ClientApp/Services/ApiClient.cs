@@ -234,13 +234,20 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     {
         var response = await httpClient.DeleteAsync($"/decks/{id}");
         response.EnsureSuccessStatusCode();
+    }   
+    
+    public async Task<DeckExportPayload?> GetDeckExport(Guid id)
+    {
+        var response = await httpClient.GetFromJsonAsync<DeckExportPayload>($"/decks/{id}/export");
+
+        return response;
     }
 
-    public async Task<ImportedDeckResponse?> ImportDeck(string? importText)
+    public async Task<ImportedDeckResponse?> ImportDeck(string importText, string nativeLanguage, string learnLanguage, string? deckName)
     {
         var escapedStr = Uri.EscapeDataString(importText);
         
-        var response = await httpClient.PostAsJsonAsync($"/decks/import", new { Cards = escapedStr });
+        var response = await httpClient.PostAsJsonAsync($"/decks/import", new ImportDeckRequest (deckName, escapedStr, nativeLanguage, learnLanguage));
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<ImportedDeckResponse>();

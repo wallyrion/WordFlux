@@ -9,7 +9,7 @@ namespace WordFlux.ApiService.Ai;
 
 #pragma warning disable SKEXP0010
 
-public class AzureAiTranslationService : ITranslationService
+public class AzureAiTranslationService : ITranslationService, IAzureAiTranslator
 
 {
     private readonly OpenAiGenerator _aiGenerator;
@@ -18,9 +18,11 @@ public class AzureAiTranslationService : ITranslationService
 
     private readonly AzureKeyCredential _credential;
     private readonly TextTranslationClient client;
-
-    public AzureAiTranslationService(OpenAiGenerator aiGenerator, IConfiguration configuration)
+    private readonly ILogger<AzureAiTranslationService> _logger;
+    
+    public AzureAiTranslationService(OpenAiGenerator aiGenerator, IConfiguration configuration, ILogger<AzureAiTranslationService> logger)
     {
+        _logger = logger;
         _aiGenerator = aiGenerator;
         var azureAiKey = configuration["AzureAiTranslatorKey"];
         _credential = new(azureAiKey);
@@ -86,6 +88,41 @@ public class AzureAiTranslationService : ITranslationService
         
         var response = new SimpleTranslationResponse(null, totalTranslations, sourceLanguage, targetLanguage);
         return response;
+
+        //return await _aiGenerator.GetTranslations(term, languages);
+    }
+    
+    public async Task<List<(string, SimpleTranslationResponse)>> GetTranslations(List<string> terms, List<string> languages)
+    {
+        Response<IReadOnlyList<TranslatedTextItem>> clientResult = await client.TranslateAsync(languages, terms);
+
+        if (!clientResult.HasValue || clientResult.Value.Count == 0)
+        {
+            return [];
+        }
+
+        var results = clientResult.Value.Select(x =>
+        {
+            var translation = x.Translations.FirstOrDefault(y => y.TargetLanguage != x.DetectedLanguage.Language);
+
+            var source = x.Translations.FirstOrDefault(y => y.TargetLanguage == x.DetectedLanguage.Language);
+
+            if (source == null)
+            {
+                _logger.LogError("For some reason source of the translation was null that is not expected. Details: {@JsonDetails}",  x);
+                return (null, null);
+            }
+            
+            if (translation == null)
+            {
+                var destLanguage = x.DetectedLanguage.Language == languages[0] ? languages[1] : languages[0];
+                return (source.Text, new SimpleTranslationResponse(null, [], x.DetectedLanguage.Language, destLanguage));
+            }
+
+            return (source.Text, new SimpleTranslationResponse(null, [translation.Text], x.DetectedLanguage.Language, translation.TargetLanguage));
+        }).Where(x => x.Text != null).ToList();
+
+        return results!;
 
         //return await _aiGenerator.GetTranslations(term, languages);
     }
