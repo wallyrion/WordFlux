@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Azure;
 using Azure.AI.Translation.Text;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -109,7 +110,7 @@ public class AzureAiTranslationService : ITranslationService, IAzureAiTranslator
 
             if (source == null)
             {
-                _logger.LogError("For some reason source of the translation was null that is not expected. Details: {@JsonDetails}",  x);
+                _logger.LogError("For some reason source of the translation was null that is not expected. Details: {@JsonDetails}",  JsonSerializer.Serialize(x));
                 return (null, null);
             }
             
