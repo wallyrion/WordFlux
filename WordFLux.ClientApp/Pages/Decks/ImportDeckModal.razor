@@ -172,7 +172,7 @@
             _cancellationTokenSource = new CancellationTokenSource();
             var token = _cancellationTokenSource.Token;
 
-            ImportedDeckResponse = await ApiClient.ImportDeck(ImportText, NativeLanguage!, StudyingLanguage!, null);
+            ImportedDeckResponse = await ApiClient.ImportDeck(ImportText, NativeLanguage!, StudyingLanguage!, DeckName);
 
             Task.Run(async () =>
             {
