@@ -293,7 +293,7 @@ public class OpenAiGenerator : IOpenAiGenerator
             { "term", term }, { "learnLang", learnLanguage }, { "nativeLang", nativeLanguage }, { "count", examplesCount },{ "translations", JsonSerializer.Serialize(translations) },
         };
 
-        var result = await AiFunctions.CreateCardExampleTaskFunc.InvokeAsync<OpenAIChatMessageContent>(GetKernel(KeyedKernelType.Gpt4o), arguments, cancellationToken);
+        var result = await AiFunctions.CreateCardExampleTaskFunc.InvokeAsync<OpenAIChatMessageContent>(GetKernel(KeyedKernelType.Gpt4oMini), arguments, cancellationToken);
 
         if (result?.Content == null)
         {
