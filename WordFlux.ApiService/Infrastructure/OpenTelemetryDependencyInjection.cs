@@ -1,6 +1,9 @@
-﻿using MassTransit.Logging;
+﻿using System.Diagnostics;
+using MassTransit.Logging;
 using Microsoft.AspNetCore.HttpLogging;
+using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Instrumentation.Http;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -17,12 +20,14 @@ public static class OpenTelemetryDependencyInjection
         {
             l.CombineLogs = true;
             l.LoggingFields = HttpLoggingFields.All;
-
         });
 
+        var seqServer = configuration["Seq:Server"];
+        var key = configuration["Seq:ApiKey"];
         
         logging
-            .AddSerilog(new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger())
+            //.AddSerilog(new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger())
+            .AddSeq(seqServer, key)
             .AddOpenTelemetry(l =>
             {
                 l.IncludeFormattedMessage = true;
@@ -32,6 +37,19 @@ public static class OpenTelemetryDependencyInjection
 
         return logging;
     }
+    
+    private static Action<OtlpExporterOptions> ConfigureSeqExporter(IConfiguration configuration)
+    {
+        var seqServer = configuration["Seq:Server"];
+        var key = configuration["Seq:ApiKey"];
+
+        return c =>
+        {
+            c.Endpoint = new Uri($"{seqServer}/ingest/otlp/v1/traces");
+            c.Headers = $"X-Seq-ApiKey={key}";
+            c.Protocol = OtlpExportProtocol.HttpProtobuf;
+        };
+    }    
     
     private static Action<OtlpExporterOptions> ConfigureAspireDashboardExporter(IConfiguration configuration)
     {
@@ -49,8 +67,6 @@ public static class OpenTelemetryDependencyInjection
     {
         var otel = services.AddOpenTelemetry();
 
-
-        
         // Add Metrics for ASP.NET Core and our custom metrics and export via OTLP
         otel.WithMetrics(metrics =>
         {
@@ -74,20 +90,26 @@ public static class OpenTelemetryDependencyInjection
                 ;
 
             tracing.AddAspNetCoreInstrumentation();
-            tracing.AddHttpClientInstrumentation();
-            tracing.AddEntityFrameworkCoreInstrumentation();
-
-
-            tracing.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
-
-            tracing.AddOtlpExporter("seq", c =>
+            tracing.AddHttpClientInstrumentation(h =>
             {
-                c.Endpoint = new Uri(configuration["OtelEndpointSeq"]!);
-                c.Headers = configuration["OtelHeadersSeq"];
-                c.Protocol = OtlpExportProtocol.HttpProtobuf;
+                h.FilterHttpRequestMessage = FilterOutSeqRequests(configuration);
             });
+            
+            tracing.AddEntityFrameworkCoreInstrumentation();
+            tracing.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
+            tracing.AddOtlpExporter(ConfigureSeqExporter(configuration));
         });
 
         return services;
+    }
+
+    private static Func<HttpRequestMessage, bool> FilterOutSeqRequests(IConfiguration configuration)
+    {
+        var seqServer = configuration["Seq:Server"];
+        return message =>
+        {
+            var isSeqUrl = message.RequestUri?.AbsoluteUri.StartsWith(seqServer!);
+            return isSeqUrl == null || !isSeqUrl.Value;
+        };
     }
 }

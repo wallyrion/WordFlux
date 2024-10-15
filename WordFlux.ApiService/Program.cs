@@ -83,7 +83,6 @@ builder.Services.AddEndpointsApiExplorer();
 
 var dbConnection = builder.Configuration.GetConnectionString("postgresdb");
 Console.WriteLine($"Connection string is (console) {dbConnection}");
-Log.Information("Connection string is {dbConnection}", dbConnection);
 
 builder.Services.AddNpgsql<ApplicationDbContext>(dbConnection);
 builder.Services.AddProblemDetails();
