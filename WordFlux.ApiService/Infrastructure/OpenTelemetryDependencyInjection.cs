@@ -108,7 +108,8 @@ public static class OpenTelemetryDependencyInjection
         var seqServer = configuration["Seq:Server"];
         return message =>
         {
-            var isSeqUrl = message.RequestUri?.AbsoluteUri.StartsWith(seqServer!);
+            Console.WriteLine($"Sending trace request to {message.RequestUri?.AbsoluteUri}");
+            var isSeqUrl = message.RequestUri?.AbsoluteUri.Contains(seqServer!);
             return isSeqUrl == null || !isSeqUrl.Value;
         };
     }
