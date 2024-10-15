@@ -12,7 +12,7 @@ public class TestBackgroundService(IServiceProvider services, NotificationsStore
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
 
             await using var scope = services.CreateAsyncScope();
 
