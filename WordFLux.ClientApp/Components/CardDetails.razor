@@ -224,7 +224,10 @@ else
     {
         Card!.Translations.Insert(0, item);
 
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+        await ApiClient.PatchCard(new PatchCardRequest
+        {
+            Translations = Card.Translations
+        }, CardId);
     }
 
     private void StartEditingTerm()
@@ -293,15 +296,21 @@ else
         Card = Card with { ImageUrl = imgUrl};
         //await JsRuntime.InvokeVoidAsync("modalEvents.CloseByButton", CloseImageModalButtonRef);
 
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations, ImageUrl: Card.ImageUrl), Card.Id);
+        await ApiClient.PatchCard(new PatchCardRequest
+        {
+            ImageUrl = imgUrl
+        }, CardId);
     }
 
     private async Task ItemsSortingChanged(List<CardTranslationItem> items, bool argsIsOrderChanged)
     {
-        Card = Card with { Translations = items };
+        Card = Card! with { Translations = items };
         StateHasChanged();
         
-        await ApiClient.UpdateCard(new CardRequest(Card.Term, Card.Level, Card.Translations), Card.Id);
+        await ApiClient.PatchCard(new PatchCardRequest
+        {
+            Translations = Card.Translations
+        }, CardId);
     }
 
     private async Task RegenerateChallenges()

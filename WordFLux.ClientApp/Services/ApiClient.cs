@@ -171,11 +171,6 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
         return (await response.Content.ReadFromJsonAsync<CardDto>())!;
     }
     
-    public async Task UpdateCard(CardRequest card, Guid cardId)
-    {
-        await httpClient.PutAsJsonAsync($"/cards/{cardId}", card);
-    }        
-    
     public async Task PatchCard(PatchCardRequest card, Guid cardId)
     {
         await httpClient.PatchAsJsonAsync($"/cards/{cardId}", card);

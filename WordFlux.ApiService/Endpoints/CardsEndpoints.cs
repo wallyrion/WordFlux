@@ -236,28 +236,6 @@ public static class CardsEndpoints
                 return await dbContext.Cards.AsNoTracking().Where(x => x.Id == card.Id).Select(CardMapper.ToCardDto()).FirstOrDefaultAsync();
             }).RequireAuthorization();
 
-        app.MapPut("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, ILogger<Program> logger, CardRequest request, Guid cardId,
-            ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
-        {
-            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal)!);
-
-            var existingCard = await dbContext.Cards.FirstOrDefaultAsync(x => x.Id == cardId && userId == x.CreatedBy);
-
-            if (existingCard == null)
-            {
-                return Results.NotFound();
-            }
-
-            existingCard.Term = request.Term;
-            existingCard.Level = request.Level;
-            existingCard.Translations = request.Translations;
-            existingCard.ImageUrl = request.ImageUrl;
-
-            await dbContext.SaveChangesAsync();
-
-            return Results.Ok();
-        }).RequireAuthorization();
-        
         app.MapPatch("/cards/{cardId:guid}", async (ApplicationDbContext dbContext, PatchCardRequest request, Guid cardId,
             ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager) =>
         {
