@@ -32,7 +32,8 @@ public static class OpenTelemetryDependencyInjection
             {
                 l.IncludeFormattedMessage = true;
                 l.IncludeScopes = true;
-                l.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
+                l.AddOtlpExporter();
+                //l.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
             });
 
         return logging;
@@ -77,8 +78,9 @@ public static class OpenTelemetryDependencyInjection
             // Metrics provides by ASP.NET Core in .NET 8
             metrics.AddMeter("Microsoft.AspNetCore.Hosting");
             metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
-            
-            metrics.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
+
+            metrics.AddOtlpExporter();
+            //metrics.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
         });
 
         otel.WithTracing(tracing =>
@@ -96,10 +98,12 @@ public static class OpenTelemetryDependencyInjection
             });
             
             tracing.AddEntityFrameworkCoreInstrumentation();
-            tracing.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
+            tracing.AddOtlpExporter();
+            //tracing.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
             tracing.AddOtlpExporter(ConfigureSeqExporter(configuration));
         });
 
+        //otel.UseOtlpExporter();
         return services;
     }
 
