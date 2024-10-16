@@ -1,13 +1,9 @@
-﻿using System.Diagnostics;
-using MassTransit.Logging;
+﻿using MassTransit.Logging;
 using Microsoft.AspNetCore.HttpLogging;
-using OpenTelemetry;
 using OpenTelemetry.Exporter;
-using OpenTelemetry.Instrumentation.Http;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using Serilog;
 
 namespace WordFlux.ApiService.Infrastructure;
 
@@ -26,14 +22,12 @@ public static class OpenTelemetryDependencyInjection
         var key = configuration["Seq:ApiKey"];
         
         logging
-            //.AddSerilog(new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger())
             .AddSeq(seqServer, key)
             .AddOpenTelemetry(l =>
             {
                 l.IncludeFormattedMessage = true;
                 l.IncludeScopes = true;
                 l.AddOtlpExporter();
-                //l.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
             });
 
         return logging;
@@ -51,18 +45,6 @@ public static class OpenTelemetryDependencyInjection
             c.Protocol = OtlpExportProtocol.HttpProtobuf;
         };
     }    
-    
-    private static Action<OtlpExporterOptions> ConfigureAspireDashboardExporter(IConfiguration configuration)
-    {
-        var aspireDashboardEndpoint = new Uri(configuration["OtelEndpointAspireDashboard"]!);
-        var aspireDashboardHeaders = configuration["OtelHeadersAspireDashboard"]!;
-        
-        return c =>
-        {
-            c.Endpoint = aspireDashboardEndpoint;
-            c.Headers = aspireDashboardHeaders;
-        };
-    }
     
     public static IServiceCollection AddTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
@@ -99,11 +81,9 @@ public static class OpenTelemetryDependencyInjection
             
             tracing.AddEntityFrameworkCoreInstrumentation();
             tracing.AddOtlpExporter();
-            //tracing.AddOtlpExporter(ConfigureAspireDashboardExporter(configuration));
             tracing.AddOtlpExporter(ConfigureSeqExporter(configuration));
         });
 
-        //otel.UseOtlpExporter();
         return services;
     }
 
