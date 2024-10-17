@@ -6,7 +6,7 @@ using WordFlux.ApiService.Persistence;
 
 namespace WordFlux.ApiService;
 
-public class TestBackgroundService(IServiceProvider services, NotificationsStore notificationsStore, ILogger<BackgroundService> logger) : BackgroundService
+public class CardsPushNotificationsBackgroundService(IServiceProvider services, NotificationsStore notificationsStore, ILogger<CardsPushNotificationsBackgroundService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
