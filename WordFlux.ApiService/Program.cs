@@ -62,7 +62,7 @@ builder.Services.AddHostedService<MigrationHostedService>();
 builder.Services.AddSingleton<NotificationsStore>();
 builder.Services.AddSingleton<BingImageSearchService>();
 builder.Services.AddSingleton<UnsplashImageSearchService>();
-builder.Services.AddHostedService<TestBackgroundService>();
+builder.Services.AddHostedService<CardsPushNotificationsBackgroundService>();
 
 builder.Services.AddMassTransit(x =>
 {
