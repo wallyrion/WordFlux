@@ -2,7 +2,7 @@ using System.Diagnostics;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
-using Serilog;
+using Microsoft.EntityFrameworkCore;
 using WordFlux.ApiService;
 using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
@@ -84,7 +84,13 @@ builder.Services.AddEndpointsApiExplorer();
 var dbConnection = builder.Configuration.GetConnectionString("postgresdb");
 Console.WriteLine($"Connection string is (console) {dbConnection}");
 
-builder.Services.AddNpgsql<ApplicationDbContext>(dbConnection);
+builder.Services.AddDbContext<ApplicationDbContext>(c =>
+{
+    c.UseNpgsql(dbConnection);
+    c.EnableDetailedErrors();
+    c.EnableSensitiveDataLogging();
+});
+
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenAi(builder.Configuration);
 
