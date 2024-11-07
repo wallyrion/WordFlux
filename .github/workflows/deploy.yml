@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy client app to Azure static web
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
