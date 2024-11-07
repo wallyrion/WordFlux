@@ -20,6 +20,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\deploy.yml = .github\workflows\deploy.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "webapi", "webapi", "{CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clientapp", "clientapp", "{F0F3D144-5403-485F-AA4E-60FA6396B8EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Domain", "WordFlux.Domain\WordFlux.Domain.csproj", "{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Infrastructure", "WordFlux.Infrastructure\WordFlux.Infrastructure.csproj", "{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Application", "WordFlux.Application\WordFlux.Application.csproj", "{43AD8354-FC68-4EE2-A40B-1B430E968631}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{FD09CB51-9E56-4913-BAE3-1A84B54E9929}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5FCD5ED6-862C-4F79-B95D-C03D4A55E724}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,11 +69,31 @@ Global
 		{6E9CEBE0-2FC6-4791-87E4-8D40ECE13B3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E9CEBE0-2FC6-4791-87E4-8D40ECE13B3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E9CEBE0-2FC6-4791-87E4-8D40ECE13B3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40470926-3141-4E36-AE3E-8863165F3B68}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{421D4F59-B920-4077-A574-18914ADC6FD4} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
+		{6E9CEBE0-2FC6-4791-87E4-8D40ECE13B3F} = {F0F3D144-5403-485F-AA4E-60FA6396B8EE}
+		{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
+		{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
+		{43AD8354-FC68-4EE2-A40B-1B430E968631} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
+		{237E43CC-9940-41C0-BEB0-ACFC57603F72} = {5FCD5ED6-862C-4F79-B95D-C03D4A55E724}
 	EndGlobalSection
 EndGlobal
