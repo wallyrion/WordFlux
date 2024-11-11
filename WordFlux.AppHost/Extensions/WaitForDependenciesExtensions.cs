@@ -1,13 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
-using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 
-namespace Aspire.Hosting;
+namespace WordFlux.AppHost.Extensions;
 
 public static class WaitForDependenciesExtensions
 {

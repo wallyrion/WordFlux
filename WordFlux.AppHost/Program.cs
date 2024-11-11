@@ -1,5 +1,6 @@
 using Aspire.Hosting.Azure;
 using Microsoft.Extensions.Hosting;
+using WordFlux.AppHost.Extensions;
 
 Console.WriteLine("Before creating builder");
 var builder = DistributedApplication.CreateBuilder(args);

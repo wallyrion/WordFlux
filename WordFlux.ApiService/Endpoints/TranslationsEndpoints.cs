@@ -1,8 +1,9 @@
 ﻿using DeepL;
 using Microsoft.AspNetCore.Mvc;
-using WordFlux.ApiService.Ai;
-using WordFlux.ApiService.Services;
+using WordFlux.ApiService.Caching;
+using WordFlux.Application;
 using WordFlux.Contracts;
+using WordFlux.Translations.Ai;
 
 namespace WordFlux.ApiService.Endpoints;
 

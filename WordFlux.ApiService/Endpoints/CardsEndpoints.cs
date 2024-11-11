@@ -3,16 +3,16 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CognitiveServices.Speech.Transcription;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
-using WordFlux.ApiService.Domain;
-using WordFlux.ApiService.Jobs;
 using WordFlux.ApiService.Mappers;
-using WordFlux.ApiService.Persistence;
 using WordFlux.ApiService.ViewModels;
+using WordFlux.Application.Jobs;
 using WordFlux.Contracts;
+using WordFlux.Domain;
+using WordFlux.Domain.Domain;
+using WordFlux.Infrastructure.Persistence;
 
 namespace WordFlux.ApiService.Endpoints;
 

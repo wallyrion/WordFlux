@@ -3,19 +3,23 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using WordFlux.ApiService;
-using WordFlux.ApiService.Ai;
 using WordFlux.ApiService.Endpoints;
-using WordFlux.ApiService.Infrastructure;
-using WordFlux.ApiService.Jobs;
-using WordFlux.ApiService.Messaging.Consumers;
-using WordFlux.ApiService.Persistence;
+using WordFlux.ApiService.ServiceCollectionExtensions;
+using WordFlux.Application.Jobs;
+using WordFlux.Domain;
+using WordFlux.Infrastructure;
+using WordFlux.Infrastructure.ImageSearch;
+using WordFlux.Infrastructure.Messaging.Consumers;
+using WordFlux.Infrastructure.Observability;
+using WordFlux.Infrastructure.Persistence;
+using WordFlux.Translations.Ai;
 
 var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.AddLogging(builder.Configuration, builder.Services);
+builder.Services.AddHttpLogging();
+builder.Logging.AddLogging(builder.Configuration);
 builder.Services.AddTelemetry(builder.Configuration);
 
 builder.Services.AddServiceDiscovery();
@@ -31,6 +35,7 @@ builder.Services.ConfigureHttpClientDefaults(http =>
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddScoped<IDbContext, ApplicationDbContext>(x => x.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
     .Configure(options => { options.BearerTokenExpiration = TimeSpan.FromDays(7); });
@@ -57,7 +62,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
     //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
 
-builder.Services.AddHostedService<MigrationHostedService>();
+builder.Services.AddInfrastructureServices();
 
 builder.Services.AddSingleton<NotificationsStore>();
 builder.Services.AddSingleton<BingImageSearchService>();

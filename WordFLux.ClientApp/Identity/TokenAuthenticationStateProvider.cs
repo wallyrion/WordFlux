@@ -2,9 +2,8 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using BlazorWasmAuth.Identity;
-using BlazorWasmAuth.Identity.Models;
 using Microsoft.AspNetCore.Components.Authorization;
+using WordFLux.ClientApp.Identity.Models;
 using WordFLux.ClientApp.Services;
 
 namespace WordFLux.ClientApp.Identity

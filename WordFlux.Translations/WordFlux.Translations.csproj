@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="Azure.AI.Translation.Text"/>
+        <PackageReference Include="DeepL.net"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+        <PackageReference Include="Microsoft.SemanticKernel"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\WordFlux.Application\WordFlux.Application.csproj" />
+      <ProjectReference Include="..\WordFlux.Contracts\WordFlux.Contracts.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,7 +1,6 @@
-﻿using Aspire.Hosting.ApplicationModel;
-using HealthChecks.NpgSql;
+﻿using HealthChecks.NpgSql;
 
-namespace Aspire.Hosting;
+namespace WordFlux.AppHost.Extensions;
 
 public static class PostgreSqlHealthCheckExtensions
 {

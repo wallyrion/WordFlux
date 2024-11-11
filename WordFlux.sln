@@ -38,6 +38,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{FD09CB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5FCD5ED6-862C-4F79-B95D-C03D4A55E724}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordFlux.Translations", "WordFlux.Translations\WordFlux.Translations.csproj", "{29C557B3-EDC7-489C-9376-1046E0A8AF44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,10 @@ Global
 		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43AD8354-FC68-4EE2-A40B-1B430E968631}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29C557B3-EDC7-489C-9376-1046E0A8AF44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29C557B3-EDC7-489C-9376-1046E0A8AF44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29C557B3-EDC7-489C-9376-1046E0A8AF44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29C557B3-EDC7-489C-9376-1046E0A8AF44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,5 +95,6 @@ Global
 		{BD5F5BA3-0FD0-4D88-8A9D-7C9610E94CC6} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
 		{D699C4F4-1621-43A1-AA8B-E6CBB8731FB0} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
 		{43AD8354-FC68-4EE2-A40B-1B430E968631} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
+		{29C557B3-EDC7-489C-9376-1046E0A8AF44} = {CC342B7F-F7EC-4DF2-8A49-C39A3EABBA7A}
 	EndGlobalSection
 EndGlobal

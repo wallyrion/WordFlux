@@ -1,5 +1,8 @@
 ﻿
 
+using WordFlux.ApiService.Caching;
+using WordFlux.Infrastructure.ImageSearch;
+
 namespace WordFlux.ApiService.Endpoints;
 
 public static class ImagesEndpoints
