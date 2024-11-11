@@ -1,4 +1,4 @@
-﻿namespace BlazorWasmAuth.Identity.Models
+﻿namespace WordFLux.ClientApp.Identity.Models
 {
     /// <summary>
     /// User info from identity endpoint to establish claims.

@@ -3,11 +3,12 @@ using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WordFlux.ApiService.Ai;
-using WordFlux.ApiService.Domain;
-using WordFlux.ApiService.Messaging.Events;
-using WordFlux.ApiService.Persistence;
+using WordFlux.Application.Events;
 using WordFlux.Contracts;
+using WordFlux.Domain;
+using WordFlux.Domain.Domain;
+using WordFlux.Infrastructure.Persistence;
+using WordFlux.Translations.Ai;
 
 namespace WordFlux.ApiService.Endpoints;
 
@@ -106,12 +107,12 @@ public static class DecksEndpoints
             }).RequireAuthorization();
 
 
-        app.MapPost("/test", async (OpenAiGenerator openAiGenerator, ImportDeckRequest request) =>
+        /*app.MapPost("/test", async (OpenAiGenerator openAiGenerator, ImportDeckRequest request) =>
         {
             
             
             //await openAiGenerator.MapQuizletExportItem(request.Name, request.Cards);
-        });
+        });*/
         
         app.MapPost("/decks/import",
             async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, ImportDeckRequest request, OpenAiGenerator openAiGenerator, IPublishEndpoint publishEndpoint) =>

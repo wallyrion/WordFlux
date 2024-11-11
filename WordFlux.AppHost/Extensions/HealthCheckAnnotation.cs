@@ -1,8 +1,6 @@
-﻿using System;
-using Aspire.Hosting.ApplicationModel;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Aspire.Hosting;
+namespace WordFlux.AppHost.Extensions;
 
 /// <summary>
 /// An annotation that associates a health check factory with a resource

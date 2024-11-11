@@ -2,7 +2,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
-using WordFlux.ApiService.Ai;
+using WordFlux.Application;
 using WordFlux.Contracts;
 
 namespace WordFlux.ApiService.Endpoints;

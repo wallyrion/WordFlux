@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Diagnostics;
+/*using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WordFlux.ApiService.Endpoints;
@@ -25,4 +25,4 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
 
         return true;
     }
-}
+}*/

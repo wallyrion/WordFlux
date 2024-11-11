@@ -1,7 +1,6 @@
-﻿using Aspire.Hosting.ApplicationModel;
-using HealthChecks.Uris;
+﻿using HealthChecks.Uris;
 
-namespace Aspire.Hosting;
+namespace WordFlux.AppHost.Extensions;
 
 public static class HttpEndpointHealthCheckExtensions
 {

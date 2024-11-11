@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
-using WordFlux.ApiService.Domain;
 using WordFlux.Contracts;
+using WordFlux.Domain.Domain;
 
 namespace WordFlux.ApiService.Mappers;
 

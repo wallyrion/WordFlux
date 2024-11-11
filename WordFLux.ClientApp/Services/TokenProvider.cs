@@ -1,5 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using BlazorWasmAuth.Identity;
 using WordFLux.ClientApp.Identity;
 using WordFLux.ClientApp.Storage;
 

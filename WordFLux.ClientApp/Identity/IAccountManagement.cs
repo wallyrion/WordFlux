@@ -1,6 +1,6 @@
-﻿using BlazorWasmAuth.Identity.Models;
+﻿using WordFLux.ClientApp.Identity.Models;
 
-namespace BlazorWasmAuth.Identity
+namespace WordFLux.ClientApp.Identity
 {
     /// <summary>
     /// Account management services.

@@ -6,40 +6,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WordFlux.Application\WordFlux.Application.csproj" />
     <ProjectReference Include="..\WordFlux.Contracts\WordFlux.Contracts.csproj" />
+    <ProjectReference Include="..\WordFlux.Infrastructure\WordFlux.Infrastructure.csproj" />
     <ProjectReference Include="..\WordFlux.ServiceDefaults\WordFlux.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\WordFlux.Translations\WordFlux.Translations.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.Translation.Text" />
     <PackageReference Include="DeepL.net" />
-    <PackageReference Include="MassTransit" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.SemanticKernel" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="OpenTelemetry.Exporter.Console" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
-    <PackageReference Include="Seq.Extensions.Logging" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="System.Threading.Channels" />
-    <PackageReference Include="WebPush" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="sample-3s.mp3">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 
