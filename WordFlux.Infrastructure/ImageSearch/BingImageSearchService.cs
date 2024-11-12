@@ -10,11 +10,6 @@ public class BingImageSearchService(IConfiguration config)
     
     public async Task<List<string>> GetImagesByKeyword(string keyword)
     {
-        //var result = JsonSerializer.Deserialize<ImageSearchResponse>(Constants.TemporaryImageSearchResponse);
-
-        //return result.Value.Select(x => x.ContentUrl).ToList();
-        
-        
         using var client = new HttpClient();
         
         client.BaseAddress = new Uri(BaseUrl);
@@ -28,18 +23,16 @@ public class BingImageSearchService(IConfiguration config)
 
         return content.Value.Select(x => x.ContentUrl).ToList();
     }
-    
-   
 }
 
 
-public class ImageSearchResponse
+file class ImageSearchResponse
 {
-    public List<ImageSearchValues> Value { get; set; } = [];
+    public required List<ImageSearchValues> Value { get; init; } = [];
 }
 
 
-public class ImageSearchValues
+file class ImageSearchValues
 {
-    public string ContentUrl { get; set; }
+    public required string ContentUrl { get; init; }
 }
