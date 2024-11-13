@@ -11,7 +11,7 @@
     </PackageVersion>
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="8.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.27.0" />
@@ -34,7 +34,7 @@
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="8.2.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.KeyVault" Version="8.2.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.PostgreSQL" Version="8.2.0" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="8.2.0" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
     <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="8.0.1" />
     <PackageVersion Include="BlazorTooltips" Version="8.0.6" />
