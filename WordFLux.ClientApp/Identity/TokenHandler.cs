@@ -41,6 +41,11 @@ public class TokenHandler : DelegatingHandler
             }
             
             var authResponse = await _refreshIdentityHttpClient.RefreshToken(refreshToken!);
+            if (authResponse == null)
+            {
+                return result;
+            }
+            
             await _tokenProvider.SetAuthTokensAsync(authResponse);
             
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.AccessToken);
