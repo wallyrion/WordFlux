@@ -19,9 +19,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
 
-      - name: Restore dependencies - TwitPoster
+      - name: Restore dependencies - Wordflux
         run: dotnet restore ./WordFlux.ApiService --locked-mode
 
       - name: Replace CurrentImageTag in appsettings.json
@@ -32,8 +32,11 @@ jobs:
       - name: Verify appsettings.json
         run: cat ./WordFlux.ApiService/appsettings.json
 
-      - name: Build - TwitPoster
+      - name: Build - Wordflux
         run: dotnet build --no-restore ./WordFlux.ApiService -c Release
+
+      - name: Test - Wordflux
+        run: dotnet test ./Wordflux.Tests.Integration --verbosity normal -c Release
     
   build-clientapp:
     runs-on: ubuntu-latest
