@@ -36,7 +36,7 @@ jobs:
         run: dotnet build --no-restore ./WordFlux.ApiService -c Release
 
       - name: Test - Wordflux
-        run: dotnet test ./Wordflux.Tests.Integration --verbosity normal-c Release
+        run: dotnet test ./Wordflux.Tests.Integration --verbosity normal -c Release
     
   build-clientapp:
     runs-on: ubuntu-latest
