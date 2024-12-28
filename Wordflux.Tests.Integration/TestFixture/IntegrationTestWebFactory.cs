@@ -15,6 +15,11 @@ public class IntegrationTestWebFactory(DockerFixtures fixtures) : WebApplication
             var collection = new[]
             {
                 KeyValuePair.Create("ConnectionStrings:postgresdb", fixtures.Postgres.ConnectionString),
+                KeyValuePair.Create("OpenAIKey", "open-ai-key"),
+                KeyValuePair.Create("AzureAiTranslatorKey", "azure-ai-key"),
+                KeyValuePair.Create("DeeplAuthKey", "deepl-auth-key"),
+                KeyValuePair.Create("UnsplashApiKey", "unsplash-key"),
+                KeyValuePair.Create("BingSearchApiKey", "bing-key"),
             };
             x.AddInMemoryCollection(collection!);
         });
