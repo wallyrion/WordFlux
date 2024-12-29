@@ -4,7 +4,7 @@ namespace WordFlux.ApiService.ServiceCollectionExtensions;
 
 public static class HttpLoggingExtensions
 {
-    public static IServiceCollection AddHttpLogging(this IServiceCollection builderServices)
+    public static IServiceCollection AddWordfluxHttpLogging(this IServiceCollection builderServices)
     {
         builderServices.AddHttpLogging(l =>
         {
