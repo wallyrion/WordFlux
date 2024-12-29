@@ -1,25 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <IsAspireHost>true</IsAspireHost>
+        <TargetFramework>net9.0</TargetFramework>
         <UserSecretsId>9e052381-7334-4a30-90a1-ea7abfd430b8</UserSecretsId>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\WordFlux.ApiService\WordFlux.ApiService.csproj"/>
+        <PackageReference Include="Aspire.Hosting.AppHost"/>
+        <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
+        <PackageReference Include="Aspire.Hosting.Azure.PostgreSQL"/>
+        
+        <!-- <PackageReference Include="Aspire.Hosting.AppHost"/>
+         <PackageReference Include="Aspire.Hosting.Azure.KeyVault"/>
+         <PackageReference Include="Aspire.Hosting.Azure.PostgreSQL"/>
+         <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
+         <PackageReference Include="AspNetCore.HealthChecks.NpgSql"/>
+         <PackageReference Include="AspNetCore.HealthChecks.Uris"/>-->
+
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost"/>
-        <PackageReference Include="Aspire.Hosting.Azure.KeyVault"/>
-        <PackageReference Include="Aspire.Hosting.Azure.PostgreSQL"/>
-        <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
-        <PackageReference Include="AspNetCore.HealthChecks.NpgSql"/>
-        <PackageReference Include="AspNetCore.HealthChecks.Uris"/>
-
+      <ProjectReference Include="..\WordFlux.ApiService\WordFlux.ApiService.csproj" />
     </ItemGroup>
 
 </Project>

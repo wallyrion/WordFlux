@@ -1,4 +1,5 @@
-﻿using HealthChecks.NpgSql;
+﻿/*
+using HealthChecks.NpgSql;
 
 namespace WordFlux.AppHost.Extensions;
 
@@ -20,3 +21,4 @@ public static class PostgreSqlHealthCheckExtensions
         return builder.WithAnnotation(HealthCheckAnnotation.Create(cs => new NpgSqlHealthCheck(new NpgSqlHealthCheckOptions(cs))));
     }
 }
+*/

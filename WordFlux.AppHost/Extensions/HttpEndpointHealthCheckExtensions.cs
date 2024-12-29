@@ -1,4 +1,5 @@
-﻿using HealthChecks.Uris;
+﻿/*
+using HealthChecks.Uris;
 
 namespace WordFlux.AppHost.Extensions;
 
@@ -48,3 +49,4 @@ public static class HttpEndpointHealthCheckExtensions
         }));
     }
 }
+*/

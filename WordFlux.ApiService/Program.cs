@@ -18,7 +18,7 @@ var startedDateTime = DateTime.UtcNow;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpLogging();
+builder.Services.AddWordfluxHttpLogging();
 builder.Logging.AddLogging(builder.Configuration);
 builder.Services.AddTelemetry(builder.Configuration);
 
