@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿/*using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace WordFlux.AppHost.Extensions;
 
@@ -27,4 +27,4 @@ public class HealthCheckAnnotation(Func<IResource, CancellationToken, Task<IHeal
             return connectionStringFactory(cs);
         });
     }
-}
+}*/
