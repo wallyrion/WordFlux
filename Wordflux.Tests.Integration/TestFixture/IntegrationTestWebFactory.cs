@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using WordFlux.ApiService;
+using WordFlux.Application.Jobs;
 using Wordflux.Tests.Integration.Containers;
 
 namespace Wordflux.Tests.Integration.TestFixture;
@@ -10,6 +13,13 @@ public class IntegrationTestWebFactory(DockerFixtures fixtures) : WebApplication
 {
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        builder.ConfigureServices((context, collection) =>
+        {
+            collection.RemoveAll<CardDetectLanguageBackgroundJob>();
+            collection.RemoveAll<TestDistributedTracesBackgroundJob>();
+            collection.RemoveAll<CardCreateTasksBackgroundJob>();
+        });
+        
         builder.ConfigureHostConfiguration(x =>
         {
             var collection = new[]
@@ -24,6 +34,9 @@ public class IntegrationTestWebFactory(DockerFixtures fixtures) : WebApplication
             x.AddInMemoryCollection(collection!);
         });
         
+        
         return base.CreateHost(builder);
     }
+
+   
 }

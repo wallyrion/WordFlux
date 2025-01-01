@@ -1,8 +1,11 @@
 ﻿using System.Security.Claims;
 using MassTransit;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WordFlux.Application.Decks.Commands;
+using WordFlux.Application.Decks.Queries;
 using WordFlux.Application.Events;
 using WordFlux.Contracts;
 using WordFlux.Domain;
@@ -17,20 +20,10 @@ public static class DecksEndpoints
     public static WebApplication MapDecksEndpoints(this WebApplication app)
     {
         app.MapGet("/decks",
-            async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
-                CancellationToken cancellationToken = default) =>
-            {
-                var userId = userManager.GetUserId(claimsPrincipal)!;
-
-                return await dbContext.Decks
-                    .Where(c => c.UserId == userId)
-                    .OrderBy(x => x.Type)
-                    .ThenBy(x => x.CreatedAt)
-                    .Select(d => new DeckDto(d.Id, d.Name, d.Cards.Count, d.CreatedAt, d.Type, d.IsPublic, true))
-                    .ToListAsync(cancellationToken);
-            }).RequireAuthorization();
+                async (ISender sender, CancellationToken cancellationToken = default) => await sender.Send(new GetDecksQuery(), cancellationToken))
+            .RequireAuthorization();
         
-        app.MapGet("/decks/{deckId}/export",
+        app.MapGet("/decks/{deckId:guid}/export",
             async (ApplicationDbContext dbContext, Guid deckId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
                 CancellationToken cancellationToken = default) =>
             {
@@ -60,24 +53,17 @@ public static class DecksEndpoints
         }).RequireAuthorization();
 
         
-        app.MapPost("/decks",
-            async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, CreateDeckRequest request) =>
+        app.MapPost("/decks", async (CreateDeckRequest request, ISender sender) =>
             {
-                var userId = userManager.GetUserId(claimsPrincipal)!;
-
-                var createdDeck = new Deck
+                var command = new CreateDeckCommand
                 {
-                    CreatedAt = DateTime.UtcNow,
-                    UserId = userId,
-                    Id = Guid.NewGuid(),
                     Name = request.Name,
                     Type = DeckType.Custom
                 };
 
-                dbContext.Decks.Add(createdDeck);
-                await dbContext.SaveChangesAsync();
-
+                var createdDeck = await sender.Send(command);
                 return createdDeck;
+
             }).RequireAuthorization();
         
         app.MapPost("/decks/parse-export-quizlet",

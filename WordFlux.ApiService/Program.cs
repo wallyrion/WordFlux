@@ -1,10 +1,14 @@
 using System.Diagnostics;
+using System.Reflection;
+using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WordFlux.ApiService.Endpoints;
 using WordFlux.ApiService.ServiceCollectionExtensions;
+using WordFlux.Application.Common;
+using WordFlux.Application.Common.Behaviours;
 using WordFlux.Application.Jobs;
 using WordFlux.Domain;
 using WordFlux.Infrastructure;
@@ -62,6 +66,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
     //builder.Configuration.AddAzureKeyVaultSecrets("secrets");
 }
 
+builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices();
 
 builder.Services.AddSingleton<NotificationsStore>();
