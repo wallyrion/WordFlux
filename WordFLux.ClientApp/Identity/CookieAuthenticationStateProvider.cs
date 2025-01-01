@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using WordFLux.ClientApp.Identity.Models;
+using WordFlux.Contracts;
 
 namespace WordFLux.ClientApp.Identity
 {

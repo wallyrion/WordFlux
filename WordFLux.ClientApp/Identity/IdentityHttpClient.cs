@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using WordFLux.ClientApp.Identity.Models;
 using WordFLux.ClientApp.Services;
+using WordFlux.Contracts;
 
 namespace WordFLux.ClientApp.Identity;
 
@@ -156,5 +157,3 @@ public class RoleClaim
     public string? Value { get; set; }
     public string? ValueType { get; set; }
 }
-
-public record AuthResponse(string AccessToken, string RefreshToken);

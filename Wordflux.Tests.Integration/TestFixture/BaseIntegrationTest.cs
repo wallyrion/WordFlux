@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Net.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Respawn;
+using WordFlux.Contracts;
 using Wordflux.Tests.Integration.Containers;
 
 namespace Wordflux.Tests.Integration.TestFixture;
@@ -37,5 +39,18 @@ public abstract class BaseIntegrationTest(DockerFixtures fixtures) : IAsyncLifet
 
         await _respawner.ResetAsync(_dbConnection);
         await _dbConnection.DisposeAsync();
+    }
+    
+    
+    protected async Task AddDefaultAuthAsync()
+    {
+        var registerDto = new { email = "test@gmail.com", password = "Qwerty1234!" };
+        await ApiClient.PostAsJsonAsync("register", registerDto);
+
+        var login = await ApiClient.PostAsJsonAsync("login?useCookies=false&useSessionCookies=false", registerDto);
+
+        var authResponse = await login.Content.ReadFromJsonAsync<AuthResponse>();
+        var token = authResponse!.AccessToken;
+        ApiClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using WordFlux.Contracts;
 
 namespace WordFLux.ClientApp.Identity;
 
