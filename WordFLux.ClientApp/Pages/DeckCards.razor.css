@@ -7,35 +7,22 @@
 }
 
 /* Initially hide the button block */
-.card-buttons {
-    position: absolute;
-    width: 100%;
-    padding: 8px;
-    z-index: 10; /* Ensure buttons are visible over other content */
-    background-color: white; /* Background for contrast */
-    bottom: -48px; /* Position the button block just below the card */
-    display: none; /* Hidden until hover */
-}
 
-.card:hover .card-buttons {
-    display: block;
-}
+
 
 /* Hover effect to show button block and move card up */
-.card:not(.new-term):hover {
-    transform: translateY(-20px); /* Lift the card up */
-    transition: transform 0.3s ease; /* Smooth transition */
-}
+
 
 
 /* Make sure the cards' height adjusts automatically */
+/*
 .card {
     width: 100%;
     display: flex;
     flex-direction: column;
-    position: relative; /* Ensure buttons are positioned within the card */
+    position: relative; !* Ensure buttons are positioned within the card *!
 }
 
 .card-body {
-    flex-grow: 1; /* Allow the card body to grow based on content */
-}
+    flex-grow: 1; !* Allow the card body to grow based on content *!
+}*/

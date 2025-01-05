@@ -129,6 +129,11 @@
     {
     }
 
+    protected override void OnParametersSet()
+    {
+        DuplicateDeckName = $"Copy of {Deck.Name}";
+    }
+
     private async Task Remove()
     {
         bool confirmed = await JS.InvokeAsync<bool>("confirm", "Are you use you want to remove this deck? All cards inside will be removed as well.");
@@ -161,6 +166,7 @@
 
         await ApiClient.PatchDeck(Deck.Id, DeckName);
         var changedDeck = Deck with { Name = DeckName };
+        Deck = changedDeck;
         IsEditMode = false;
         DeckName = null;
 
@@ -200,7 +206,8 @@
         var newDeck = await ApiClient.DuplicateDeck(Deck.Id, DuplicateDeckName);
 
         IsDuplicateInProgress = false;
-        Navigation.NavigateTo($"/decks/{newDeck.Id}/cards", true);
+        await JS.InvokeVoidAsync("modalEvents.closeByButton", CloseButton);
+        Navigation.NavigateTo($"/decks/{newDeck.Id}/cards", false);
     }
 
     private async Task CopyLinkToDeck()

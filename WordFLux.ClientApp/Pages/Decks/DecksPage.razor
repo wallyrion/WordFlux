@@ -23,7 +23,8 @@
                 Import <i class="bi bi-box-arrow-in-down"></i>
             </button>
 
-            <button type="button" class="btn btn-primary ms-2" @onclick="() => IsAddDeckVisible = true" data-bs-target="#exampleModal">
+            <button type="button" class="btn btn-primary ms-2" @onclick="() => IsAddDeckVisible = true"
+                    data-bs-target="#exampleModal">
                 Add new <i class="bi bi-journal-plus"></i>
             </button>
         </div>
@@ -34,11 +35,26 @@
         {
             <div class="row mb-4">
                 <div class="col-12">
-                    <AddNewDeck OnStateChanged="RefreshDecks"/>
+                    <AddNewDeck OnSaved="RefreshDecks" OnCancelled="@(() => IsAddDeckVisible = false)"/>
                 </div>
             </div>
         }
 
+        <div class="input-group mb-3">
+            <input @bind="SearchKeyword" type="text" class="form-control" placeholder="Search for your existing cards"
+                   aria-label="Recipient's username" aria-describedby="search-cards">
+            <button class="btn btn-outline-secondary" @onclick="ClearSearchInput" type="button" ><i class="bi bi-x"></i></button>
+            <button class="btn btn-outline-secondary" @onclick="SearchForCards" type="button" id="search-cards"><i class="bi bi-search"></i></button>
+        </div>
+
+        <div class="mb-3">
+            @if (SearchCardsResponse != null)
+            {
+                <CardsList Cards="SearchCardsResponse.Cards" IsEditable="@false"></CardsList>
+            }
+
+        </div>
+        
         <div class="row mb-3">
             @foreach (var deck in DeckCollection)
             {
@@ -48,28 +64,7 @@
             }
         </div>
 
-        <div>
-
-
-
-            @*<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            ...
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Understood</button>
-                        </div>
-                    </div>
-                </div>
-            </div> *@
-        </div>
+      
     }
 </div>
 
@@ -79,7 +74,9 @@
     List<DeckDto> DeckCollection { get; set; } = [];
     bool IsAddDeckVisible { get; set; }
     ImportDeckModal ImportDeckModalRef { get; set; } = null!;
-
+    string? SearchKeyword { get; set; }
+    SearchCardResponse? SearchCardsResponse { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
         await RefreshDecks();
@@ -100,9 +97,19 @@
         }
     }
 
-   
+    private async Task SearchForCards()
+    {
+        if (string.IsNullOrWhiteSpace(SearchKeyword))
+        {
+            return;
+        }
 
+        SearchCardsResponse =  await ApiClient.SearchCards(SearchKeyword);
+    }
 
-  
-
+    private void ClearSearchInput()
+    {
+        SearchKeyword = null;
+        SearchCardsResponse = null;
+    }
 }
