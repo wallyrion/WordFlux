@@ -2,7 +2,7 @@
 using WordFlux.Contracts;
 using WordFlux.Domain.Domain;
 
-namespace WordFlux.ApiService.Mappers;
+namespace WordFlux.Application.Cards;
 
 public static class CardMapper
 {

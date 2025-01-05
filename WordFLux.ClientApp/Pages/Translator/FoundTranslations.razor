@@ -14,6 +14,14 @@
                     <button disabled="@(IsLoading || IsExamplesLoading)" type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="visually-hidden">Toggle Dropdown</span>
                     </button>
+                    @if (SearchCardResponse is not null && SearchCardResponse.TotalCount > 0)
+                    {
+                        <button class="btn btn-outline-info @(!isClickedAlready ? "highlight-animation" : "")"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample"
+                                aria-expanded="false" aria-controls="collapseExample" @onclick="RemoveAnimation">
+                            <span> <i><i class="bi bi-copy"></i></i></span>
+                        </button>
+                    }
                     <ul class="dropdown-menu">
                         @foreach (var deck in Decks)
                         {
@@ -43,6 +51,43 @@
 
 </div>
 
+
+<div class="collapse" id="collapseExample">
+    @if (SearchCardResponse is not null)
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4 mb-3 mt-3">
+
+            @foreach (var foundCard in SearchCardResponse.Cards)
+            {
+                <div class="col">
+                    <div class="card">
+                        <div class="row g-0 align-items-center" style="padding-top: 2rem;">
+                            <div class="w-50 position-absolute top-0 end-0">
+                                <span class="bg-primary badge">@foundCard.DeckName</span>
+                                <a class="btn btn-outline-primary btn-icon-sm" href="/card/@foundCard.Id">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+
+                            <div class="col-8">
+                                <div class="card-body m-0">
+                                    <h5 class="card-title">@foundCard.Term</h5>
+                                    <p class="card-text">@(foundCard.Translations.FirstOrDefault()?.Term)</p>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(foundCard.ImageUrl))
+                            {
+                                <div class="col-4 position-relative">
+                                    <img src="@foundCard.ImageUrl" class="img-fluid rounded-end" alt="Card image">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 
 @if (ImageUrl != null)
 {
@@ -83,6 +128,7 @@
     const string DefaultDeckName = "Default";
 
     [Parameter] public SimpleTranslationResponse Translation { get; set; } = null!;
+    [Parameter] public SearchCardResponse? SearchCardResponse { get; set; } = null!;
     [Parameter] public string? Level { get; set; }
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public List<DeckDto> Decks { get; set; } = [];
@@ -99,6 +145,7 @@
     public string? ImageUrl { get; set; }
     List<CardTranslationItem> Examples { get; set; } = [];
     string? ActualTerm => !string.IsNullOrWhiteSpace(Translation.SuggestedTerm) ? Translation.SuggestedTerm : Term;
+    bool isClickedAlready = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,6 +164,13 @@
      
     }
 
+    
+    void RemoveAnimation()
+    {
+        isClickedAlready = true;
+    }
+
+    
     private async Task SaveToCards(Guid deckId)
     {
         var selectedTranslations = Examples.Where(x => x.IsSelected).ToList();

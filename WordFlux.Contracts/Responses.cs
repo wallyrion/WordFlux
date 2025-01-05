@@ -31,3 +31,5 @@ public record ImportedDeckResponse(Guid Id, int CardsCount);
 public record DeckDto(Guid Id, string Name, int CardsCount, DateTimeOffset CreatedAt, DeckType Type, bool IsPublic, bool IsEditable);
 
 public record SupportedLanguage(string Name, string NativeName, string Code);
+
+public record SearchCardResponse(List<CardDto> Cards, int TotalCount);
