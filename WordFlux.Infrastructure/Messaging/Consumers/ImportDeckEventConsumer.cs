@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WordFlux.Application;
-using WordFlux.Application.Events;
+using WordFlux.Application.Decks.Events;
 using WordFlux.Application.Jobs;
 using WordFlux.Contracts;
 using WordFlux.Domain.Domain;

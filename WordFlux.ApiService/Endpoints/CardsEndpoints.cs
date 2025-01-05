@@ -1,13 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextToAudio;
-using WordFlux.ApiService.Mappers;
 using WordFlux.ApiService.ViewModels;
+using WordFlux.Application.Cards;
+using WordFlux.Application.Cards.Queries;
 using WordFlux.Application.Jobs;
 using WordFlux.Contracts;
 using WordFlux.Domain;
@@ -20,6 +22,18 @@ public static class CardsEndpoints
 {
     public static WebApplication MapCardsEndpoints(this WebApplication app)
     {
+        app.MapGet("/cards/search",
+            async (ISender mediatr, [FromQuery] string keyword, CancellationToken cancellationToken = default) =>
+            {
+                var result = await mediatr.Send(new SearchCardsQuery
+                {
+                    Keyword = keyword
+                }, cancellationToken);
+
+                return result;
+
+            }).RequireAuthorization();
+        
         app.MapGet("/cards/{cardId:guid}",
             async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
                 CancellationToken cancellationToken = default) =>

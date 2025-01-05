@@ -73,6 +73,7 @@
                                LearnLanguage="@LearnLanguageCode"
                                NativeLanguage="@NativeLanguageCode"
                                OnSearch="e => SearchForTerm(e)"
+                               SearchCardResponse="SearchCardsResponse"
             />
         }
         
@@ -102,7 +103,8 @@
     bool UseCustomAiTranslator { get; set; }
     string? NativeLanguageCode{ get; set; }
     string? LearnLanguageCode { get; set; }
-
+    SearchCardResponse? SearchCardsResponse { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("On initializing Translator Page");
@@ -191,12 +193,24 @@
 
             CancellationTokenSource = new CancellationTokenSource();
 
+            var searchForDuplicatesTask = Task.Run(async () =>
+            {
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+                if (authState.User.Identity?.IsAuthenticated == true)
+                {
+                    SearchCardsResponse = await Api.SearchCards(Term);
+                }
+            });
+            
+            
             Translation = await Api.GetSimpleTranslations(Term, UseCustomAiTranslator,  NativeLanguageCode, LearnLanguageCode, Temperature, CancellationTokenSource.Token);
             IsLoading = false;
 
             StateHasChanged();
-
+            
             Level = await Api.GetLevel(Term, CancellationTokenSource.Token);
+            await searchForDuplicatesTask;
 
         }
         finally

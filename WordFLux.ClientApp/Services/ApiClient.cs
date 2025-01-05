@@ -39,6 +39,12 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     {
         return (await httpClient.GetFromJsonAsync<List<CardDto>>($"/cards?deckId={deckId}"))!;
     }    
+    
+    public async Task<SearchCardResponse> SearchCards(string keyword)
+    {
+        return (await httpClient.GetFromJsonAsync<SearchCardResponse>($"/cards/search?keyword={keyword}"))!;
+    }    
+    
     public async Task<CardDto?> GetCard(Guid cardId)
     {
         var card = await httpClient.GetFromJsonAsync<CardDto>($"/cards/{cardId}");
