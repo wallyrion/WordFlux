@@ -12,11 +12,13 @@ using WordFlux.Application.Common.Behaviours;
 using WordFlux.Application.Jobs;
 using WordFlux.Domain;
 using WordFlux.Infrastructure;
+using WordFlux.Infrastructure.Authorization;
 using WordFlux.Infrastructure.ImageSearch;
 using WordFlux.Infrastructure.Messaging.Consumers;
 using WordFlux.Infrastructure.Observability;
 using WordFlux.Infrastructure.Persistence;
 using WordFlux.Translations.Ai;
+
 
 var startedDateTime = DateTime.UtcNow;
 
@@ -36,13 +38,7 @@ builder.Services.ConfigureHttpClientDefaults(http =>
     http.AddServiceDiscovery();
 });
 
-builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<AppUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IDbContext, ApplicationDbContext>(x => x.GetRequiredService<ApplicationDbContext>());
-
-builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
-    .Configure(options => { options.BearerTokenExpiration = TimeSpan.FromDays(7); });
 
 // Add service defaults & Aspire components.
 //builder.AddServiceDefaults();
@@ -68,6 +64,8 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices();
+builder.Services.AddWordfluxAuthorization();
+await builder.Services.AddKeysProtectionPersistence(builder.Configuration);
 
 builder.Services.AddSingleton<NotificationsStore>();
 builder.Services.AddSingleton<BingImageSearchService>();
