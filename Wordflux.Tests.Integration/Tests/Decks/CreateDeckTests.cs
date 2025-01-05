@@ -2,8 +2,6 @@
 using FluentAssertions;
 using WordFlux.Contracts;
 using WordFlux.Domain.Domain;
-using Wordflux.Tests.Integration.Containers;
-using Wordflux.Tests.Integration.TestFixture;
 
 namespace Wordflux.Tests.Integration.Tests.Decks;
 
@@ -25,5 +23,13 @@ public class CreateDeckTests(DockerFixtures fixtures) : BaseIntegrationTest(fixt
         var myDecks = await ApiClient.GetFromJsonAsync<IReadOnlyList<DeckDto>>("/decks");
         var createdDeck = myDecks.Should().ContainSingle().Subject;
         createdDeck.Name.Should().Be(deckRequest.Name);
+    }
+    
+    [Fact]
+    public async Task Should_Be_Unauthorized()
+    {
+        var deckRequest = new CreateDeckRequest("my_deck");
+        var createDeckResponse = await ApiClient.PostAsJsonAsync("decks", deckRequest);
+        createDeckResponse.Should().Be401Unauthorized();
     }
 }

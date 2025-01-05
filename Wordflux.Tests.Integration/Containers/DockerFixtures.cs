@@ -1,6 +1,4 @@
-﻿using Wordflux.Tests.Integration.TestFixture;
-
-namespace Wordflux.Tests.Integration.Containers;
+﻿namespace Wordflux.Tests.Integration.Containers;
 
 [Collection(nameof(SharedTestCollection))]
 public class DockerFixtures : IAsyncLifetime
