@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using WordFlux.ApiService;
 using WordFlux.Application.Jobs;
+using Wordflux.Tests.Integration.Extensions;
 
 namespace Wordflux.Tests.Integration.TestFixture;
 
@@ -13,9 +14,9 @@ public class IntegrationTestWebFactory(DockerFixtures fixtures) : WebApplication
     {
         builder.ConfigureServices((context, collection) =>
         {
-            collection.RemoveAll<CardDetectLanguageBackgroundJob>();
-            collection.RemoveAll<TestDistributedTracesBackgroundJob>();
-            collection.RemoveAll<CardCreateTasksBackgroundJob>();
+            collection.RemoveAllImplementedBy<CardDetectLanguageBackgroundJob>();
+            collection.RemoveAllImplementedBy<TestDistributedTracesBackgroundJob>();
+            collection.RemoveAllImplementedBy<CardCreateTasksBackgroundJob>();
         });
         
         builder.ConfigureHostConfiguration(x =>
@@ -23,6 +24,7 @@ public class IntegrationTestWebFactory(DockerFixtures fixtures) : WebApplication
             var collection = new[]
             {
                 KeyValuePair.Create("ConnectionStrings:postgresdb", fixtures.Postgres.ConnectionString),
+                KeyValuePair.Create("ConnectionStrings:KeysPersistenceBlobStorage", $"DefaultEndpointsProtocol=https;AccountName={AzuriteFixture.AccountName};AccountKey={AzuriteFixture.SharedKey};BlobEndpoint={fixtures.Azurite.ConnectionString};"),
                 KeyValuePair.Create("OpenAIKey", "open-ai-key"),
                 KeyValuePair.Create("AzureAiTranslatorKey", "azure-ai-key"),
                 KeyValuePair.Create("DeeplAuthKey", "deepl-auth-key"),
