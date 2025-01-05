@@ -86,7 +86,7 @@
     [Parameter] public string? Level { get; set; }
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public List<DeckDto> Decks { get; set; } = [];
-    [Parameter] public bool UseAzureAiTranslator { get; set; }
+    [Parameter] public bool UseCustomAiTranslator { get; set; }
     [Parameter] public string Term { get; set; } = null!;
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<CardDto> OnCardSaved { get; set; }
@@ -107,7 +107,7 @@
             IsExamplesLoading = true;
             StateHasChanged();
             
-            Examples = await Api.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator, CancellationToken);
+            Examples = await Api.GetTranslationExamples(ActualTerm!, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage, UseCustomAiTranslator, CancellationToken);
             Examples[0].IsSelected = true;
         }
         finally
@@ -171,7 +171,7 @@
             var res = await Api.GetAlternatives(ActualTerm, Translation.Translations, Translation.SourceLanguage, Translation.DestinationLanguage);
 
             Translation = Translation with { Translations = [..Translation.Translations, ..res] };
-            var examples = await Api.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage, UseAzureAiTranslator);
+            var examples = await Api.GetTranslationExamples(ActualTerm!, res, Translation.SourceLanguage, Translation.DestinationLanguage, UseCustomAiTranslator, CancellationToken);
 
             Examples = [..Examples, ..examples];
         }

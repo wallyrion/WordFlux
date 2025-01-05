@@ -6,7 +6,7 @@
 
 @if (TranslationResponse != null && !string.IsNullOrWhiteSpace(TranslationResponse.SuggestedTerm) && !TranslationResponse.SuggestedTerm.Equals(Term, StringComparison.InvariantCultureIgnoreCase))
 {
-<div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@TranslationResponse.SuggestedTerm </span></div>
+    <div>No found results for <span class="text-secondary">@Term</span>. Showing results for <span class="text-info">@TranslationResponse.SuggestedTerm </span></div>
 }
 
 <div class="d-flex justify-content-between mb-2">
@@ -35,18 +35,22 @@
     
     <div class="form-check form-switch align-self-end">
         <Tooltip Title="Leverage Azure AI translator power instead of default custom AI translator">
-            <input class="form-check-input" @bind="@UseAzureAiTranslator" @bind:after="ChangeSearchEngine" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            <input class="form-check-input" @bind="@UseCustomAiTranslator" @bind:after="ChangeSearchEngine" type="checkbox" role="switch" id="flexSwitchCheckDefault">
         </Tooltip>
 
-        <label class="form-check-label" for="flexSwitchCheckDefault">Azure AI</label>
+        <label class="form-check-label" for="flexSwitchCheckDefault">Custom AI translator</label>
     </div>
 
 </div>
 
-<div>
-    <label for="rangeTemperature" class="form-label">Temperature</label>
-    <input @bind="Temperature" @bind:after="ChangeTemperature"  type="range" class="form-range" min="0" max="100" step="1" id="rangeTemperature">
-</div>
+@if (UseCustomAiTranslator)
+{
+    <div>
+        <label for="rangeTemperature" class="form-label">Temperature</label>
+        <input @bind="Temperature" @bind:after="ChangeTemperature"  type="range" class="form-range" min="0" max="100" step="1" id="rangeTemperature">
+    </div>
+}
+
 
 
 <div class="position-relative">
@@ -84,7 +88,7 @@
     [Parameter] public EventCallback<int> OnTemperatureChanged { get; set; }
     [Parameter] public EventCallback<string> OnSearch { get; set; }
     [Parameter] public EventCallback<(string code, bool isNative)> OnLanguageChanged { get; set; }
-    [Parameter] public bool UseAzureAiTranslator { get; set; }
+    [Parameter] public bool UseCustomAiTranslator { get; set; }
     [Parameter] public int Temperature { get; set; }
     [Parameter] public string? Term { get; set; }
     [Parameter] public EventCallback<string> OnTermChanged { get; set; }
@@ -119,8 +123,8 @@
 
     private async Task ChangeSearchEngine()
     {
-        var value = UseAzureAiTranslator;
-        await OnEngineChanged.InvokeAsync(value ? TranslationEngine.AzureAi : TranslationEngine.OpenAiCustom);
+        var value = UseCustomAiTranslator;
+        await OnEngineChanged.InvokeAsync(value ? TranslationEngine.OpenAiCustom : TranslationEngine.AzureAi);
     }
     
     private async Task ChangeTemperature()
