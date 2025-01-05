@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using WordFlux.ApiService;
 using WordFlux.Application.Jobs;
-using Wordflux.Tests.Integration.Containers;
 
 namespace Wordflux.Tests.Integration.TestFixture;
 

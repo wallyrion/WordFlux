@@ -45,7 +45,7 @@ public record GetAutocompleteResponse(string DetectedLanguage, List<string> Comp
 
 public record CreateDeckRequest(string Name);
 
-public record PatchDeckRequest(string? Name, bool? IsPublic);
+public record PatchDeckRequest(string? Name = null, bool? IsPublic = null);
 
 public record ImportDeckRequest(string? Name, string Cards, string NativeLanguage, string LearnLanguage);
 public record ParseExportQuizletResponse();

@@ -20,6 +20,8 @@
 
     <ItemGroup>
         <Using Include="Xunit"/>
+        <Using Include="Wordflux.Tests.Integration.TestFixture"/>
+        <Using Include="Wordflux.Tests.Integration.Containers"/>
     </ItemGroup>
 
     <ItemGroup>

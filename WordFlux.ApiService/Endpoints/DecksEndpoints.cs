@@ -40,17 +40,18 @@ public static class DecksEndpoints
                 return Results.Ok(deck.Export);
             }).RequireAuthorization();
 
-        app.MapGet("/decks/{deckId:guid}", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, Guid deckId,
-            CancellationToken cancellationToken = default) =>
+        app.MapGet("/decks/{deckId:guid}", async (Guid deckId, ISender sender, CancellationToken cancellationToken = default) =>
         {
-            var userId = userManager.GetUserId(claimsPrincipal)!;
+            var deck = await sender.Send(new GetDeckByIdQuery(deckId), cancellationToken);
 
-            return await dbContext.Decks
-                .Where(x => x.Id == deckId)
-                .Where(x => x.IsPublic || x.UserId == userId)
-                .Select(d => new DeckDto(d.Id, d.Name, d.Cards.Count, d.CreatedAt, d.Type, d.IsPublic, d.UserId == userId))
-                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        }).RequireAuthorization();
+            if (deck == null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(deck);
+
+        });
 
         
         app.MapPost("/decks", async (CreateDeckRequest request, ISender sender) =>
@@ -236,53 +237,29 @@ public static class DecksEndpoints
             return Results.Ok(new CreateDeckResponse(createdDeck.Id, createdDeck.Name));
         }).RequireAuthorization();
 
-        app.MapPatch("/decks/{deckId:guid}", async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
-            PatchDeckRequest request, Guid deckId) =>
+        app.MapPatch("/decks/{deckId:guid}", async (PatchDeckRequest request, Guid deckId, ISender sender, CancellationToken cancellationToken) =>
         {
-            var userId = userManager.GetUserId(claimsPrincipal)!;
-
-            var existingDeck = await dbContext.Decks.FirstOrDefaultAsync(d => d.Id == deckId && d.UserId == userId);
-
-            if (existingDeck == null)
+            var patchCommand = new PatchDeckCommand
             {
-                return Results.NotFound();
-            }
-
-            if (request.IsPublic != null)
-            {
-                existingDeck.IsPublic = request.IsPublic.Value;
-            }
-
-            if (request.Name != null)
-            {
-                existingDeck.Name = request.Name;
-            }
-
-            await dbContext.SaveChangesAsync();
+                DeckId = deckId,
+                Name = request.Name,
+                IsPublic = request.IsPublic
+            };
+            
+            await sender.Send(patchCommand, cancellationToken);
 
             return Results.NoContent();
         }).RequireAuthorization();
 
         app.MapDelete("/decks/{deckId:guid}",
-            async (ApplicationDbContext dbContext, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager, Guid deckId) =>
+            async (Guid deckId, ISender sender) =>
             {
-                var userId = userManager.GetUserId(claimsPrincipal)!;
-
-                var existingDeck = await dbContext.Decks.FirstOrDefaultAsync(d => d.Id == deckId && d.UserId == userId);
-
-                if (existingDeck == null)
+                var command = new DeleteDeckCommand
                 {
-                    return Results.NotFound();
-                }
-
-                if (existingDeck.Type == DeckType.Default)
-                {
-                    return Results.BadRequest("Could not remove default deck");
-                }
-
-                dbContext.Decks.Remove(existingDeck);
-                await dbContext.SaveChangesAsync();
-
+                    DeckId = deckId
+                };
+                await sender.Send(command);
+                
                 return Results.NoContent();
             }).RequireAuthorization();
 

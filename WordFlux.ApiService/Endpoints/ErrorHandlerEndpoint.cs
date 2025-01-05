@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using WordFlux.Domain.Exceptions;
 
 namespace WordFlux.ApiService.Endpoints;
 
@@ -21,9 +22,17 @@ public static class ErrorHandlerEndpoint
 
             if (exception is ValidationException validationException)
             {
-                return Results.Problem(statusCode: 400, type: "ValidationFailure", title: "Validation error", detail: "One or more validation errors has occured", extensions: [
-                    new KeyValuePair<string, object?>("errors", validationException.Errors)
-                ]);
+                var errors = validationException.Errors.Select(x => new KeyValuePair<string, string[]> (x.PropertyName, [x.ErrorMessage]));
+
+                return Results.ValidationProblem(errors: errors);
+            }
+            
+            if (exception is DomainValidationException domainValidationException)
+            {
+                return Results.ValidationProblem(errors: new List<KeyValuePair<string, string[]>>
+                {
+                    new(domainValidationException.PropertyName ?? "", [domainValidationException.Message])
+                });
             }
             
             logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
