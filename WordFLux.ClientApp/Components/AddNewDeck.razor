@@ -1,19 +1,36 @@
 ﻿@using WordFLux.ClientApp.Services
 @inject ApiClient ApiClient
-<PageTitle>Decks</PageTitle>
-
 
 <div class="input-group" disabled="@IsLoading">
+    <input type="text" class="form-control" @bind="DeckName" placeholder="How I met your mother s1e1"
+           aria-label="New deck name">
+
+    <button class="btn btn-outline-success" type="button" @onclick="Save">
+        <i class="bi bi-check"></i>
+    </button>
+
+    <button class="btn btn-outline-secondary" type="button" @onclick="CancelEdit">
+        <i class="bi bi-x"></i>
+    </button>
+</div>
+
+
+
+@*
+<div class="input-group" >
+    
     <form @onsubmit="Save" class="d-flex w-100">
         <input @bind="DeckName" type="text" class="form-control" placeholder="How I met your mother s1e1" aria-label="New deck name">
         <button class="btn btn-outline-dark" type="submit"><i class="bi bi-floppy"></i></button>
     </form>
 </div>
+*@
 
 
 @code
 {
-    [Parameter] public EventCallback OnStateChanged { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public EventCallback OnCancelled { get; set; }
 
     bool IsLoading { get; set; }
 
@@ -30,6 +47,11 @@
         }
 
         await ApiClient.CreateDeck(DeckName);
-        await OnStateChanged.InvokeAsync();
+        await OnSaved.InvokeAsync();
+    }
+
+    private async Task CancelEdit()
+    {
+        await OnCancelled.InvokeAsync();
     }
 }
