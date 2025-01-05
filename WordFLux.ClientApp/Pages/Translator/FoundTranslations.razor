@@ -128,7 +128,7 @@
     const string DefaultDeckName = "Default";
 
     [Parameter] public SimpleTranslationResponse Translation { get; set; } = null!;
-    [Parameter] public SearchCardResponse? SearchCardResponse { get; set; } = null!;
+    [Parameter] public SearchCardResponse? SearchCardResponse { get; set; }
     [Parameter] public string? Level { get; set; }
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public List<DeckDto> Decks { get; set; } = [];
