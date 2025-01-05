@@ -103,11 +103,11 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     
     
     public async Task<List<CardTranslationItem>> GetTranslationExamples(string term, List<string> translations, string sourceLanguage, string destinationLanguage,
-        bool useAzureAiTranslator, CancellationToken token = default)
+        bool useCustomAiTranslator, CancellationToken token = default)
     {
         logger.LogInformation("Getting FROM UI examples for term {Term} and translations {@Translations}", term, translations);
         var request = new GetTranslationExamplesRequest(term, translations, sourceLanguage, destinationLanguage);
-        var response = await httpClient.PostAsJsonAsync($"/translations/examples?useAzureAiTranslator={useAzureAiTranslator}", request, cancellationToken: token);
+        var response = await httpClient.PostAsJsonAsync($"/translations/examples?useAzureAiTranslator={!useCustomAiTranslator}", request, cancellationToken: token);
 
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<List<CardTranslationItem>>(cancellationToken: token);

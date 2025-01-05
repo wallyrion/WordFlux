@@ -30,7 +30,7 @@
         <div class="mb-3 position-relative">
             <TranslatorSearch Level="@Level"
                               IsLoading="IsLoading"
-                              UseAzureAiTranslator="UseAzureAiTranslator"
+                              UseCustomAiTranslator="UseCustomAiTranslator"
                               OnSearch="(args) => SearchForTerm(args)"
                               OnReset="() => Reset()"
                               Term="@Term"
@@ -38,7 +38,7 @@
                               OnTemperatureChanged="t => Temperature = t"
                               OnTermChanged="OnTermChanged"
                               TranslationResponse="Translation"
-                              OnEngineChanged="e => UseAzureAiTranslator = e == TranslatorSearch.TranslationEngine.AzureAi"
+                              OnEngineChanged="e => UseCustomAiTranslator = e == TranslatorSearch.TranslationEngine.OpenAiCustom"
                               LearnLanguageCode="@LearnLanguageCode"
                               NativeLanguageCode="@NativeLanguageCode"
                               OnLanguageChanged="LanguageChanged"
@@ -63,7 +63,7 @@
         @if (Translation != null && SavedCard == null)
         {
             <FoundTranslations Term="@Term" 
-                               UseAzureAiTranslator="UseAzureAiTranslator"
+                               UseCustomAiTranslator="UseCustomAiTranslator"
                                Level="@Level"
                                CancellationToken="CancellationTokenSource.Token"
                                Decks="Decks"
@@ -96,10 +96,10 @@
     
     [SupplyParameterFromQuery(Name = "lg_native")] string? NativeLanguageCodeFromQuery { get; set; }
     [SupplyParameterFromQuery(Name = "lg_learn")] string? LearnLanguageCodeFromQuery { get; set; }
-    [SupplyParameterFromQuery(Name = "useAzureAi")] bool UseAzureAiTranslatorFromQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "use_custom_ai")] bool UseCustomAiTranslatorFromQuery { get; set; }
 
     int Temperature { get; set; } = 50;
-    bool UseAzureAiTranslator { get; set; }
+    bool UseCustomAiTranslator { get; set; }
     string? NativeLanguageCode{ get; set; }
     string? LearnLanguageCode { get; set; }
 
@@ -109,7 +109,7 @@
         Term = TermFromQuery;
         NativeLanguageCode = NativeLanguageCodeFromQuery;
         LearnLanguageCode = LearnLanguageCodeFromQuery;
-        UseAzureAiTranslator = UseAzureAiTranslatorFromQuery;
+        UseCustomAiTranslator = UseCustomAiTranslatorFromQuery;
         /*if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("initialCount", out var _initialCount))
         {
             currentCount = Convert.ToInt32(_initialCount);
@@ -187,11 +187,11 @@
             SavedCard = null;
             StateHasChanged();
             Navigation.NavigateTo(
-                Navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { { "term", Term }, { "lg_native", NativeLanguageCode }, { "lg_learn", LearnLanguageCode }, { "useAzureAi", UseAzureAiTranslator } }));
+                Navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { { "term", Term }, { "lg_native", NativeLanguageCode }, { "lg_learn", LearnLanguageCode }, { "use_custom_ai", UseCustomAiTranslator } }));
 
             CancellationTokenSource = new CancellationTokenSource();
 
-            Translation = await Api.GetSimpleTranslations(Term, UseAzureAiTranslator,  NativeLanguageCode, LearnLanguageCode, Temperature, CancellationTokenSource.Token);
+            Translation = await Api.GetSimpleTranslations(Term, UseCustomAiTranslator,  NativeLanguageCode, LearnLanguageCode, Temperature, CancellationTokenSource.Token);
             IsLoading = false;
 
             StateHasChanged();
