@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.TextToAudio;
 using WordFlux.ApiService.ViewModels;
 using WordFlux.Application.Cards;
 using WordFlux.Application.Cards.Queries;
+using WordFlux.Application.Common.Abstractions;
 using WordFlux.Application.Jobs;
 using WordFlux.Contracts;
 using WordFlux.Domain;
@@ -33,6 +34,30 @@ public static class CardsEndpoints
                 return result;
 
             }).RequireAuthorization();
+
+        app.MapGet("/cards/search/v2",
+            async (ISender mediatr, [FromQuery] string keyword, CancellationToken cancellationToken = default) =>
+            {
+                var result = await mediatr.Send(new SearchCardsFullTextCardsQuery
+                {
+                    Keyword = keyword
+                }, cancellationToken);
+
+                return result;
+
+            });
+        
+        app.MapGet("/cards/search-index",
+            async (ISender mediatr, ISearchService searchService,  CancellationToken cancellationToken = default) =>
+            {
+                await searchService.CreateIndexAsync(cancellationToken);
+            });
+        
+        app.MapPost("/cards/search/v2",
+            async (ISender mediatr, [FromBody] TestCard card, ISearchService searchService, CancellationToken cancellationToken = default) =>
+            {
+                await searchService.AddAsync(card, cancellationToken);
+            });
         
         app.MapGet("/cards/{cardId:guid}",
             async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,

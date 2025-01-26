@@ -63,7 +63,7 @@ if (builder.Configuration["UseAzureKeyVault"] == "true")
 }
 
 builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddWordfluxAuthorization();
 await builder.Services.AddKeysProtectionPersistence(builder.Configuration);
 
