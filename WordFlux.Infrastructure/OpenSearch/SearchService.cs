@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenSearch.Client;
 using WordFlux.Application.Common.Abstractions;
+using WordFlux.Domain.Domain;
 
 namespace WordFlux.Infrastructure.OpenSearch;
 
@@ -239,7 +240,7 @@ public class SearchService(OpenSearchClient client, ILogger<SearchService> logge
                 Term = term!,
                 Translations = hit.Source.Where(c => c.Key.StartsWith("Translation")).SelectMany(c =>
                 {
-                    var lang =  c.Key.Split("_")[1];
+                    var lang = c.Key[..c.Key.IndexOf('_')];
                     var translations = c.Value as List<object>;
                     var r1 = translations!.Cast<string>().Select(t => new TestCardTranslation
                     {
@@ -255,6 +256,46 @@ public class SearchService(OpenSearchClient client, ILogger<SearchService> logge
         });
 
         return response.ToList();
+    }
+    public async Task<IEnumerable<(Guid cardId, double? Score)>> SearchCardsAsync(string userId, string query, CancellationToken cancellationToken = default)
+    {
+        var searchResponse = client.Search<Dictionary<string, object>>(s => s
+            .Index(DefaultIndex)
+            .Query(q => q
+                .Bool(b => b
+                    .Must(mu => mu
+                            .MultiMatch(mm => mm
+                                .Fields(f => f
+                                    .Field("Translation_*")
+                                    .Field("Term_*")
+                                )
+                                .Query(query)
+                            ),
+                        mu => mu
+                            .Term(t => t
+                                .Field("UserId")
+                                .Value(userId)
+                            )
+                    )
+                )
+            )
+        );
+
+        var getAll = client.Search<Dictionary<string, object>>(s => s
+                .Index(DefaultIndex) // Specify the index name
+                .Query(q => q
+                        .MatchAll() // Match all documents
+                )
+                .Size(1000) // Adjust the size to retrieve more documents if needed
+        );
+
+        var searchResults = searchResponse.Hits.Select(hit =>
+        {
+            var cardId = Guid.Parse(hit.Id);
+            return (cardId, hit.Score);
+        });
+
+        return searchResults;
     }
 
     public async Task AddAsync(TestCard card, CancellationToken cancellationToken = default)
@@ -278,4 +319,34 @@ public class SearchService(OpenSearchClient client, ILogger<SearchService> logge
 
         await client.Indices.RefreshAsync(DefaultIndex);
     }
+    
+    public async Task AddAsync(Card card, CancellationToken cancellationToken = default)
+    {
+        var srcLang = card.SourceLanguage ?? "default";
+        var targetLang = card.TargetLanguage ?? "default";
+        
+        var translations = card.Translations.Select(t => t.Term).ToArray();
+        var doc = new Dictionary<string, object>
+        {
+            { $"Term_{srcLang}", card.Term },
+            { "UserId", card.CreatedBy },
+            { $"Translation_{targetLang}", translations }
+        };
+        
+        /*foreach (var translation in card.Translations.GroupBy(x => x.Language))
+        {
+            doc.Add($"Translation_{translation.Key}", translation.Select(c => c.Text).ToArray());
+        }*/
+
+        await client.IndexAsync(doc, i => i
+                .Index(DefaultIndex)
+                .Id(card.Id)
+            ,
+            cancellationToken);
+
+        await client.Indices.RefreshAsync(DefaultIndex, ct: cancellationToken);
+    }
 }
+
+
+record SearchCardItem(Guid CardId, int Score);

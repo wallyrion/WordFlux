@@ -18,20 +18,26 @@ public static class DependecyInjectionExtensions
         services.AddHostedService<MigrationHostedService>();
         services.AddScoped<ICurrentUser, CurrentUser>();
 
+        services.AddOpenSearch(configuration);
+        return services;
+    }
+
+    public static IServiceCollection AddOpenSearch(this IServiceCollection services, IConfiguration configuration)
+    {
         var openSearchSettings = configuration.GetSection("Opensearch").Get<OpensearchOptions>();
         var settings = new ConnectionSettings(new Uri(openSearchSettings!.Url))
             .BasicAuthentication(openSearchSettings.Username, openSearchSettings.Password)
             .DefaultIndex(SearchService.DefaultIndex);
-
+        
         if (openSearchSettings.SkipSslVerification)
         {
             settings = settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll);
         }
-
+        
         var client = new OpenSearchClient(settings);
         services.AddSingleton(client);
         services.AddSingleton<ISearchService, SearchService>();
-        
+
         return services;
     }
 }

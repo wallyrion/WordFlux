@@ -42,7 +42,7 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     
     public async Task<SearchCardResponse> SearchCards(string keyword)
     {
-        return (await httpClient.GetFromJsonAsync<SearchCardResponse>($"/cards/search?keyword={keyword}"))!;
+        return (await httpClient.GetFromJsonAsync<SearchCardResponse>($"/cards/search/v2?keyword={keyword}"))!;
     }    
     
     public async Task<CardDto?> GetCard(Guid cardId)
@@ -152,14 +152,14 @@ public class ApiClient(HttpClient httpClient, LocalStorage storage, ILogger<ApiC
     }
     
     
-    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useAzureAiTranslator, string? nativeLangCode = null, string? learnLangCode = null, int? temperature = null, CancellationToken token = default)
+    public async Task<SimpleTranslationResponse> GetSimpleTranslations(string term, bool useCustomAiTranslator, string? nativeLangCode = null, string? learnLangCode = null, int? temperature = null, CancellationToken token = default)
     {
         var languages = await storage.GetMyLanguages();
 
         nativeLangCode ??= languages.native;
         learnLangCode ??= languages.studing;
         
-        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={nativeLangCode}&studyingLanguage={learnLangCode}&useAzureAiTranslator={useAzureAiTranslator}&temperature={temperature}", cancellationToken: token))!;
+        return (await httpClient.GetFromJsonAsync<SimpleTranslationResponse>($"/translations?term={term}&nativeLanguage={nativeLangCode}&studyingLanguage={learnLangCode}&useCustomAiTranslator={useCustomAiTranslator}&temperature={temperature}", cancellationToken: token))!;
     }
     public async Task<string> GetLevel(string term, CancellationToken token)
     {

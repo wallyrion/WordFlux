@@ -13,4 +13,12 @@ public static class CardMapper
             CardTaskExamples = x.ExampleTasks
         };
     }
+    
+    public static CardDto ToCardDto(this Card x)
+    {
+        return new CardDto(x.Id, x.CreatedAt, x.Term, x.Level, x.Translations, x.ReviewInterval, x.Deck.Name, x.ImageUrl, x.NativeLanguage, x.LearnLanguage, x.SourceLanguage, x.TargetLanguage)
+        {
+            CardTaskExamples = x.ExampleTasks
+        };
+    }
 }

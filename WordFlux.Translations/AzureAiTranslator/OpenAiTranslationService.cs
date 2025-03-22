@@ -135,7 +135,9 @@ public class AzureAiTranslationService : ITranslationService, IAzureAiTranslator
     {
         if (sourceLanguage.Equals("en", StringComparison.OrdinalIgnoreCase) || targetLanguage.Equals("en", StringComparison.OrdinalIgnoreCase))
         {
-            return (await client.LookupDictionaryEntriesAsync(sourceLanguage, targetLanguage, term)).Value[0].Translations.Select(x => x.DisplayTarget);
+            var l1 = await client.LookupDictionaryEntriesAsync(sourceLanguage, targetLanguage, term);
+            
+            return (l1).Value[0].Translations.Select(x => x.DisplayTarget);
         }
         
         
@@ -184,7 +186,7 @@ public class AzureAiTranslationService : ITranslationService, IAzureAiTranslator
             request = request with {SourceLanguage = detectedLanguages.Value.srcLang, DestinationLanguage = detectedLanguages.Value.destLang};
         }
 
-        var translations = request.Translations.Select(x => new InputTextWithTranslation(request.Term, x));
+        //var translations = request.Translations.Select(x => new InputTextWithTranslation(request.Term, x));
         var response = await GetDictionaryExamplesAsync(request.SourceLanguage, request.DestinationLanguage,  request.Term,  request.Translations);
 
         var items = response.Item1.Value.Select(x =>
