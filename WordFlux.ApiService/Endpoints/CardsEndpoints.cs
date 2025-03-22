@@ -51,13 +51,13 @@ public static class CardsEndpoints
             async (ISender mediatr, ISearchService searchService,  CancellationToken cancellationToken = default) =>
             {
                 await searchService.CreateIndexAsync(cancellationToken);
-            });
+            }).RequireAuthorization(auth => auth.RequireRole(Roles.Admin));
         
         app.MapPost("/cards/search/v2",
             async (ISender mediatr, [FromBody] TestCard card, ISearchService searchService, CancellationToken cancellationToken = default) =>
             {
                 await searchService.AddAsync(card, cancellationToken);
-            });
+            }).RequireAuthorization(auth => auth.RequireRole(Roles.Admin));
         
         app.MapGet("/cards/{cardId:guid}",
             async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,

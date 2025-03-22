@@ -14,6 +14,8 @@ public static class DependencyInjection
     public static IServiceCollection AddWordfluxAuthorization(this IServiceCollection services)
     {
         services.AddIdentityApiEndpoints<AppUser>()
+            .AddRoles<IdentityRole>()
+            .AddRoleManager<RoleManager<IdentityRole>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
         
         services.AddAuthorization();
