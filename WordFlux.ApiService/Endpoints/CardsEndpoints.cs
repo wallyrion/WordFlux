@@ -45,19 +45,19 @@ public static class CardsEndpoints
 
                 return result;
 
-            });
+            }).RequireAuthorization();;
         
-        app.MapGet("/cards/search-index",
+        app.MapGet("/cards/create-search-index",
             async (ISender mediatr, ISearchService searchService,  CancellationToken cancellationToken = default) =>
             {
                 await searchService.CreateIndexAsync(cancellationToken);
-            });
+            }).RequireAuthorization(auth => auth.RequireRole(Roles.Admin));
         
         app.MapPost("/cards/search/v2",
             async (ISender mediatr, [FromBody] TestCard card, ISearchService searchService, CancellationToken cancellationToken = default) =>
             {
                 await searchService.AddAsync(card, cancellationToken);
-            });
+            }).RequireAuthorization(auth => auth.RequireRole(Roles.Admin));
         
         app.MapGet("/cards/{cardId:guid}",
             async (ApplicationDbContext dbContext, Guid cardId, ClaimsPrincipal claimsPrincipal, UserManager<AppUser> userManager,
@@ -216,7 +216,7 @@ public static class CardsEndpoints
         app.MapPost("/cards",
             async (ILogger<Program> logger, ApplicationDbContext dbContext, CardRequest request, ClaimsPrincipal claimsPrincipal,
                 CardMessagePublisher messagePublisher,
-                UserManager<AppUser> userManager) =>
+                UserManager<AppUser> userManager, ISearchService searchService) =>
             {
                 var userIdStr = userManager.GetUserId(claimsPrincipal);
                 var userId = Guid.Parse(userIdStr!);
@@ -261,6 +261,10 @@ public static class CardsEndpoints
                 dbContext.Cards.Add(card);
                 await dbContext.SaveChangesAsync();
 
+                await searchService.AddAsync(card);
+                await dbContext.SaveChangesAsync();
+                
+                
                 if (card.SourceLanguage == null)
                 {
                     await messagePublisher.PublishNewCardForLanguageDetection(card.Id);

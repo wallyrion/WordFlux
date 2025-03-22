@@ -32,7 +32,7 @@ builder.Services.AddSingleton<InMemoryMessageQueue>();
 
 builder.Services.ConfigureHttpClientDefaults(http =>
 {
-    http.AddStandardResilienceHandler();
+    //http.AddStandardResilienceHandler();
 });
 
 builder.Services.AddDefaultApiClient<RefreshIdentityHttpClient>();
