@@ -18,18 +18,15 @@ public class OpenSearchBasicTests
     [Fact]
     public async Task OpenSearchBasic()
     {
-        var _opensearchContainer = new OpenSearchFixture();
-        await _opensearchContainer.InitializeAsync();
-        var connection = _opensearchContainer.GetConnectionString();
-        
+        var opensearchContainer = new OpenSearchFixture();
+        await opensearchContainer.InitializeAsync();
+
         var serviceCollection = new ServiceCollection()
             .AddLogging();
 
-
-        
         var collection = new[]
         {
-            KeyValuePair.Create("Opensearch:Url", _opensearchContainer.GetConnectionString()),
+            KeyValuePair.Create("Opensearch:Url", opensearchContainer.GetConnectionString()),
             KeyValuePair.Create("Opensearch:SkipSslVerification", "true"),
             KeyValuePair.Create("Opensearch:Username", "admin"),
             KeyValuePair.Create("Opensearch:Password", "VeryStrongP@ssw0rd!")

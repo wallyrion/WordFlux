@@ -45,6 +45,7 @@ public class SearchService(OpenSearchClient client, ILogger<SearchService> logge
         if (!creationResponse.IsValid)
         {
             logger.LogError(creationResponse.OriginalException, "Failed to create default index");
+            throw new Exception("Failed to create default index", creationResponse.OriginalException);
         }
     }
 

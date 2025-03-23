@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WordFlux.ApiService.Caching;
 using WordFlux.Application;
+using WordFlux.Application.Common.Abstractions;
 using WordFlux.Contracts;
 using WordFlux.Translations.Ai;
 
@@ -58,7 +59,7 @@ public static class TranslationsEndpoints
             return Results.Ok(response);
         });
         
-        app.MapGet("/translations/autocomplete/with-translations", async ([FromQuery] string term, [FromQuery] string lang1, [FromQuery] string lang2, OpenAiGenerator openAiGenerator, CancellationToken cancellationToken) =>
+        app.MapGet("/translations/autocomplete/with-translations", async ([FromQuery] string term, [FromQuery] string lang1, [FromQuery] string lang2, IAutocompleteService openAiGenerator, CancellationToken cancellationToken) =>
         {
             var result = await openAiGenerator.GetAutocompleteWithTranslations(term, lang1, lang2, cancellationToken);
 
@@ -77,6 +78,7 @@ public static class TranslationsEndpoints
         });
         
         
+        /*
         app.MapPost("/translations/autocomplete/with-translations", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator, CancellationToken cancellationToken) =>
         {
             var result = await openAiGenerator.GetAutocompleteWithTranslations(request.Term, request.SourceLanguage, request.DestinationLanguage, cancellationToken);
@@ -86,6 +88,7 @@ public static class TranslationsEndpoints
 
             return response;
         }).CacheOutput(t => t.Expire(TimeSpan.FromMinutes(1)));
+        */
         
         app.MapPost("/translations/autocomplete", async (GetAutocompleteRequest request, OpenAiGenerator openAiGenerator) =>
         {

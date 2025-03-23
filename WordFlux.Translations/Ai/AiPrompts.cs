@@ -24,7 +24,7 @@ namespace WordFlux.Translations.Ai;
 
 }*/
 
-public static class AiSystemMessages
+public static class AIPrompts
 {
     /*public const string GiveTranslations =
         """
@@ -123,4 +123,15 @@ public static class AiSystemMessages
                                                 Consider the following translations: {{$translations}} as a background context;
                                                 After you have completed all the steps, run the procedure of finding nonsense in your sentences. Be strict as this content is important and mistake can't be made. Take as much time as need.
                                                 """;
+
+    public const string GetAutocompleteWithTranslationsPrompt = """
+                                                                Suggest me autocomplete for this word: {{$term}}. (it is used as a autocomplete for translator)
+                                                                It can be only in these 2 languages: [{{$lang1}}, {{$lang2}}]
+                                                                Return results in JSON. Give me up to 3 results for autocomplete. Also, return detected language (can be only 1 of what I provided)
+                                                                Example output: { "autocompletes": [{"term": "fin", "term_translated" : "плавник"}, {"term":"first","term_translated":"первый"}], "lang": "en" } for input = "fin"
+                                                                Example output2: { "autocompletes": [{"term": "aptitude", "term_translated" : "способность"}], "lang": "en" } for input = "aptitude"
+                                                                Note 1: autocompletes must be valid words. Return response as faster as possible
+                                                                Note 2: if provided input is already a correct word / phrase, it must be in response. (e.g. "Get to" => "добраться до")
+                                                                Note 3: do not provide me autocompletes for other languages except of these 2 that I provided
+                                                                """;
 }

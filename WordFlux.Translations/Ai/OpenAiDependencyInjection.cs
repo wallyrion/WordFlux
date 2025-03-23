@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using WordFlux.Application;
+using WordFlux.Application.Common.Abstractions;
 using WordFlux.Translations.AzureAiTranslator;
 
 namespace WordFlux.Translations.Ai;
@@ -11,12 +13,15 @@ namespace WordFlux.Translations.Ai;
 
 public static class OpenAiDependencyInjection
 {
-    public static IServiceCollection AddOpenAi(this IServiceCollection services, IConfiguration configuration)
+    [Experimental("SKEXP0070")]
+    public static IServiceCollection AddSemanticKernels(this IServiceCollection services, IConfiguration configuration)
     {
         var apiKey = configuration["OpenAIKey"]!;
+        var geminiKey = configuration["GeminiAIKey"]!;
 
-        services.AddTextAudioKernel(apiKey);
-        services.AddChatCompletionKernels(apiKey, KeyedKernelType.Gpt4o, KeyedKernelType.Gpt4oMini);
+        services.AddTextAudioKernel(geminiKey);
+        services.AddOpenAiChatCompletionKernels(apiKey, KeyedKernelType.Gpt4o, KeyedKernelType.Gpt4oMini);
+        services.AddGeminiKeyAiChatCompletionKernels(geminiKey, KeyedKernelType.GeminiFlash, KeyedKernelType.Gemini15Flash);
 
         services.AddSingleton<OpenAiGenerator>();
         services.AddSingleton<AzureAiTranslationService>();
@@ -25,6 +30,9 @@ public static class OpenAiDependencyInjection
         services.AddKeyedSingleton<ITranslationService, AzureAiTranslationService>("AzureAiTranslator");
         services.AddKeyedSingleton<ITranslationService, OpenAiTranslationService>("OpenAiTranslator");
 
+        services.AddSingleton<IAutocompleteService, AutocompleteService>();
+        
+
         services.AddSingleton<IAudioAiGenerator, AudioAiGenerator>();
         //services.AddSingleton<ITranslationService, AzureAiTranslationService>();
         //services.AddSingleton<ITranslationService, OpenAiTranslationService>();
@@ -32,13 +40,28 @@ public static class OpenAiDependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddChatCompletionKernels(this IServiceCollection services, string apiKey, params KeyedKernelType[] types)
+    private static IServiceCollection AddOpenAiChatCompletionKernels(this IServiceCollection services, string apiKey, params KeyedKernelType[] types)
     {
         foreach (var model in types)
         {
             var modelName = GetModelNameByType(model);
             var kernelBuilder = Kernel.CreateBuilder();
             kernelBuilder.AddOpenAIChatCompletion(modelName, apiKey);
+            var kernel = kernelBuilder.Build();
+            services.AddKeyedSingleton(model, kernel);
+        }
+
+        return services;
+    } 
+    
+    [Experimental("SKEXP0070")]
+    private static IServiceCollection AddGeminiKeyAiChatCompletionKernels(this IServiceCollection services, string apiKey, params KeyedKernelType[] types)
+    {
+        foreach (var model in types)
+        {
+            var modelName = GetModelNameByType(model);
+            var kernelBuilder = Kernel.CreateBuilder();
+            kernelBuilder.AddGoogleAIGeminiChatCompletion(modelName, apiKey);
             var kernel = kernelBuilder.Build();
             services.AddKeyedSingleton(model, kernel);
         }
@@ -63,6 +86,8 @@ public static class OpenAiDependencyInjection
         KeyedKernelType.AudioText => "tts-1",
         KeyedKernelType.Gpt4oMini => "gpt-4o-mini",
         KeyedKernelType.Gpt4o => "gpt-4o",
+        KeyedKernelType.GeminiFlash => "gemini-2.0-flash",
+        KeyedKernelType.Gemini15Flash => "gemini-1.5-flash",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
