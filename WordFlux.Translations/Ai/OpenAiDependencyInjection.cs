@@ -21,7 +21,7 @@ public static class OpenAiDependencyInjection
 
         services.AddTextAudioKernel(geminiKey);
         services.AddOpenAiChatCompletionKernels(apiKey, KeyedKernelType.Gpt4o, KeyedKernelType.Gpt4oMini);
-        services.AddGeminiKeyAiChatCompletionKernels(geminiKey, KeyedKernelType.GeminiFlash);
+        services.AddGeminiKeyAiChatCompletionKernels(geminiKey, KeyedKernelType.GeminiFlash, KeyedKernelType.Gemini15Flash);
 
         services.AddSingleton<OpenAiGenerator>();
         services.AddSingleton<AzureAiTranslationService>();
@@ -61,7 +61,7 @@ public static class OpenAiDependencyInjection
         {
             var modelName = GetModelNameByType(model);
             var kernelBuilder = Kernel.CreateBuilder();
-            //kernelBuilder.AddGoogleAIGeminiChatCompletion(modelName, apiKey);
+            kernelBuilder.AddGoogleAIGeminiChatCompletion(modelName, apiKey);
             var kernel = kernelBuilder.Build();
             services.AddKeyedSingleton(model, kernel);
         }

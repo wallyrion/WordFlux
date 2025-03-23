@@ -5,6 +5,7 @@
         <PackageReference Include="DeepL.net"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
         <PackageReference Include="Microsoft.SemanticKernel"/>
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" />
 
     </ItemGroup>
 

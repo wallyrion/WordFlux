@@ -127,7 +127,7 @@ public class AiFunctions
                    Example output: { "autocompletes": [{"term": "fin", "term_translated" : "плавник"}, {"term":"first","term_translated":"первый"}], "lang": "en" } for input = "fin"
                    Example output2: { "autocompletes": [{"term": "aptitude", "term_translated" : "способность"}], "lang": "en" } for input = "aptitude"
                    Note 1: autocompletes must be valid words. Return response as faster as possible
-                   Note 2: if provided input is already a correct word / phrase, it must be in response. (e.g. "Get to" => "добраться до")
+                   Note 2: if provided input is already a correct word / phrase, it must be in response. (e.g. "Get to" => "добраться до"). If there is a typo, you can try to fix it.
                    Note 3: do not provide me autocompletes for other languages except of these 2 that I provided
                    """,
         InputVariables =
