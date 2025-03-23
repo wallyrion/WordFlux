@@ -27,34 +27,6 @@ public class OpenAiGenerator : IOpenAiGenerator
 
     
     [Experimental("SKEXP0010")]
-    public async Task<(string detectedLanguage, List<(string, string)> autocompletes)?> GetAutocompleteWithTranslations(string term, string lang1, string lang2, CancellationToken cancellationToken = default)
-    {
-        KernelArguments arguments = new(new OpenAIPromptExecutionSettings
-        {
-            ResponseFormat = "json_object",
-            Temperature = 1
-        }) { { "lang1", lang1 }, { "lang2", lang2 }, { "term", term } };
-
-        
-        var result = await AiFunctions.AutocompleteWithTranslationFunc.InvokeAsync<OpenAIChatMessageContent>(Kernel, arguments, cancellationToken);
-        
-        if (result == null || result.Content == null)
-        {
-            _logger.LogError("Got null result");
-
-            return null;
-        }
-
-        var content = JsonSerializer.Deserialize<AutocompleteWithTranslationsResult>(result.Content);
-
-        if (content == null)
-        {
-            return null;
-        }
-
-        return (content.DetectedLanguage, content.Autocompletes.Select(x => (x.AutocompleteResult, x.TranslatedAutocompleteResult)).ToList());
-    }
-    [Experimental("SKEXP0010")]
     public async Task<(string detectedLanguage, List<string> autocompletes)?> GetAutocomplete(string term, string lang1, string lang2)
     {
         KernelArguments arguments = new(new OpenAIPromptExecutionSettings
@@ -462,13 +434,7 @@ file class CardExampleTaskItem
     [JsonPropertyName("example_translated")] public required string ExampleOriginal { get; set; }
 }
 
-file class AutocompleteWithTranslationsResult
-{
-    [JsonPropertyName("autocompletes")] public List<AutocompleteTranslationItem> Autocompletes { get; set; }
-    [JsonPropertyName("lang")] public string DetectedLanguage { get; set; }
 
-  
-}
 
 file class AutocompleteResult
 {
@@ -477,14 +443,6 @@ file class AutocompleteResult
   
 }
 
-file class AutocompleteTranslationItem
-{
-    [JsonPropertyName("term")] 
-    public string AutocompleteResult { get; set; } 
-        
-    [JsonPropertyName("term_translated")] 
-    public string TranslatedAutocompleteResult { get; set; } 
-}
 
 
 file class QuizletMapExportResult

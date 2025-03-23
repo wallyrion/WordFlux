@@ -6,7 +6,7 @@ public class AiFunctions
 {
     public static readonly KernelFunction TranslationsFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
-        Template = AiSystemMessages.GiveTranslations,
+        Template = AIPrompts.GiveTranslations,
         InputVariables =
         [
             new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
@@ -24,7 +24,7 @@ public class AiFunctions
 
     public static readonly KernelFunction GiveAlternativesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
-        Template = AiSystemMessages.GiveAlternativesPrompt,
+        Template = AIPrompts.GiveAlternativesPrompt,
         InputVariables =
         [
             new() { Name = "term", Description = "The term (can be word or phrase to sentence) that must be translated" },
@@ -42,7 +42,7 @@ public class AiFunctions
 
     public static readonly KernelFunction CreateCardExampleTaskFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
-        Template = AiSystemMessages.CardExampleTaskPrompt,
+        Template = AIPrompts.CardExampleTaskPrompt,
         InputVariables =
         [
             new() { Name = "term", Description = "The term (can be word or phrase)" },
@@ -117,18 +117,18 @@ public class AiFunctions
         }
     });
 
+    
     public static readonly KernelFunction AutocompleteWithTranslationFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
         Template = """
                    Suggest me autocomplete for this word: {{$term}}. (it is used as a autocomplete for translator)
-                   It can be only in these 2 languages: [{{$lang1}}, {{$lang2}}] (only one of them)
+                   It can be only in these 2 languages: [{{$lang1}}, {{$lang2}}]
                    Return results in JSON. Give me up to 3 results for autocomplete. Also, return detected language (can be only 1 of what I provided)
                    Example output: { "autocompletes": [{"term": "fin", "term_translated" : "плавник"}, {"term":"first","term_translated":"первый"}], "lang": "en" } for input = "fin"
                    Example output2: { "autocompletes": [{"term": "aptitude", "term_translated" : "способность"}], "lang": "en" } for input = "aptitude"
                    Note 1: autocompletes must be valid words. Return response as faster as possible
                    Note 2: if provided input is already a correct word / phrase, it must be in response. (e.g. "Get to" => "добраться до")
                    Note 3: do not provide me autocompletes for other languages except of these 2 that I provided
-                   Note 4: response should contain full string (not only the autocomplete part)
                    """,
         InputVariables =
         [
@@ -170,7 +170,7 @@ public class AiFunctions
 
     public static readonly KernelFunction GiveExamplesFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
-        Template = AiSystemMessages.GiveTranslationExamples,
+        Template = AIPrompts.GiveTranslationExamples,
         InputVariables =
         [
             new() { Name = "term", Description = "the original phrase or word that is translated" },
@@ -265,6 +265,6 @@ public class AiFunctions
 
     public static readonly KernelFunction GiveMotivationalPhraseFunc = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig
     {
-        Template = AiSystemMessages.GiveMotivationPrompt
+        Template = AIPrompts.GiveMotivationPrompt
     });
 }

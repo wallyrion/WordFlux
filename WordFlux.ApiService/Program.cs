@@ -19,6 +19,7 @@ using WordFlux.Infrastructure.Observability;
 using WordFlux.Infrastructure.Persistence;
 using WordFlux.Translations.Ai;
 
+#pragma warning disable SKEXP0070
 
 var startedDateTime = DateTime.UtcNow;
 
@@ -100,7 +101,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(c =>
 });
 
 builder.Services.AddProblemDetails();
-builder.Services.AddOpenAi(builder.Configuration);
+builder.Services.AddSemanticKernels(builder.Configuration);
 
 var app = builder.Build();
 app.UseSwagger();

@@ -31,7 +31,7 @@ public static class DependecyInjectionExtensions
         
         if (openSearchSettings.SkipSslVerification)
         {
-            settings = settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll);
+            //settings = settings.ServerCertificateValidationCallback(CertificateValidations.AllowAll);
         }
         
         var client = new OpenSearchClient(settings);
