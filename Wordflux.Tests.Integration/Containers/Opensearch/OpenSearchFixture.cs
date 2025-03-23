@@ -1,6 +1,6 @@
 ﻿namespace Testcontainers.OpenSearch;
 
-public class OpenSearchFixture : IAsyncLifetime
+public class OpenSearchFixture : IAsyncLifetime, IAsyncDisposable
 {
     private readonly OpenSearchContainer _opensearchContainer = new OpenSearchBuilder().Build();
 
@@ -18,5 +18,10 @@ public class OpenSearchFixture : IAsyncLifetime
     public Task DisposeAsync()
     {
         return _opensearchContainer.DisposeAsync().AsTask();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await DisposeAsync();
     }
 }
