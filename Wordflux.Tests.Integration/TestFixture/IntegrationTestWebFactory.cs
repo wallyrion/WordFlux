@@ -26,6 +26,7 @@ public class IntegrationTestWebFactory(DockerFixtures fixtures) : WebApplication
                 KeyValuePair.Create("ConnectionStrings:postgresdb", fixtures.Postgres.ConnectionString),
                 KeyValuePair.Create("ConnectionStrings:KeysPersistenceBlobStorage", $"DefaultEndpointsProtocol=https;AccountName={AzuriteFixture.AccountName};AccountKey={AzuriteFixture.SharedKey};BlobEndpoint={fixtures.Azurite.ConnectionString};"),
                 KeyValuePair.Create("OpenAIKey", "open-ai-key"),
+                KeyValuePair.Create("GeminiAIKey", "gemini-ai-key"),
                 KeyValuePair.Create("AzureAiTranslatorKey", "azure-ai-key"),
                 KeyValuePair.Create("DeeplAuthKey", "deepl-auth-key"),
                 KeyValuePair.Create("UnsplashApiKey", "unsplash-key"),
