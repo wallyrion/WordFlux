@@ -2,7 +2,13 @@
 
 namespace WordFlux.Domain;
 
-public class AppUser : IdentityUser
+public class AppUser : IdentityUser<Guid>
 {
-    public IEnumerable<IdentityRole>? Roles { get; set; }
+    public IEnumerable<ApplicationRole>? Roles { get; set; }
 }
+
+
+public class ApplicationRole : IdentityRole<Guid>
+{
+}
+

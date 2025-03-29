@@ -221,14 +221,14 @@ public static class CardsEndpoints
                 var userIdStr = userManager.GetUserId(claimsPrincipal);
                 var userId = Guid.Parse(userIdStr!);
 
-                var defaultDeck = await dbContext.Decks.FirstOrDefaultAsync(f => f.Type == DeckType.Default && f.UserId == userIdStr);
+                var defaultDeck = await dbContext.Decks.FirstOrDefaultAsync(f => f.Type == DeckType.Default && f.UserId == userId);
 
                 if (defaultDeck == null)
                 {
                     defaultDeck = new Deck
                     {
                         CreatedAt = DateTime.UtcNow,
-                        UserId = userIdStr!,
+                        UserId = userId,
                         Id = Guid.NewGuid(),
                         Type = DeckType.Default,
                         Name = "Default",

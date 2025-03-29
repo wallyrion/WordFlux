@@ -27,7 +27,7 @@ public class CardsPushNotificationsBackgroundService(IServiceProvider services, 
 
             foreach (var user in users)
             {
-                await NotifyAboutNextCardAppeared(dbContext, Guid.Parse(user.Id));
+                await NotifyAboutNextCardAppeared(dbContext, user.Id);
             }
         }
     }

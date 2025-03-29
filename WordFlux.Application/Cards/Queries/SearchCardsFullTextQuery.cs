@@ -20,7 +20,7 @@ public class SearchCardsFullTextCardsQueryHandler(IDbContext dbContext, ICurrent
     {
         var currentUserId = currentUser.GetUserId();
 
-        var foundCardIds = await searchService.SearchCardsAsync(currentUserId, request.Keyword, cancellationToken);
+        var foundCardIds = await searchService.SearchCardsAsync(currentUserId.ToString(), request.Keyword, cancellationToken);
         
         var cards = await dbContext.Cards
             .Where(c => foundCardIds.Select(f => f.cardId).Contains(c.Id))

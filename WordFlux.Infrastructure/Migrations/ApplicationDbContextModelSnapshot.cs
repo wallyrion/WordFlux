@@ -17,43 +17,12 @@ namespace WordFlux.ApiService.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -67,9 +36,8 @@ namespace WordFlux.ApiService.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -78,7 +46,7 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -92,9 +60,8 @@ namespace WordFlux.ApiService.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -103,7 +70,7 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("text");
@@ -114,9 +81,8 @@ namespace WordFlux.ApiService.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -125,13 +91,13 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -140,10 +106,10 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("text");
@@ -159,10 +125,11 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("WordFlux.ApiService.AppUser", b =>
+            modelBuilder.Entity("WordFlux.Domain.AppUser", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
@@ -223,7 +190,39 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("WordFlux.ApiService.Domain.Card", b =>
+            modelBuilder.Entity("WordFlux.Domain.ApplicationRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("WordFlux.Domain.Domain.Card", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -285,7 +284,7 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("Cards");
                 });
 
-            modelBuilder.Entity("WordFlux.ApiService.Domain.Deck", b =>
+            modelBuilder.Entity("WordFlux.Domain.Domain.Deck", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -305,9 +304,8 @@ namespace WordFlux.ApiService.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -316,67 +314,67 @@ namespace WordFlux.ApiService.Migrations
                     b.ToTable("Decks");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("WordFlux.ApiService.AppUser", null)
+                    b.HasOne("WordFlux.Domain.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.HasOne("WordFlux.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.HasOne("WordFlux.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.HasOne("WordFlux.Domain.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WordFlux.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.HasOne("WordFlux.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WordFlux.Domain.ApplicationRole", b =>
+                {
+                    b.HasOne("WordFlux.Domain.AppUser", null)
                         .WithMany("Roles")
                         .HasForeignKey("AppUserId");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("WordFlux.Domain.Domain.Card", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.HasOne("WordFlux.ApiService.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.HasOne("WordFlux.ApiService.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WordFlux.ApiService.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("WordFlux.ApiService.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("WordFlux.ApiService.Domain.Card", b =>
-                {
-                    b.HasOne("WordFlux.ApiService.Domain.Deck", "Deck")
+                    b.HasOne("WordFlux.Domain.Domain.Deck", "Deck")
                         .WithMany("Cards")
                         .HasForeignKey("DeckId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -387,7 +385,7 @@ namespace WordFlux.ApiService.Migrations
                             b1.Property<Guid>("CardId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<int>("Id")
+                            b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("integer");
 
@@ -399,7 +397,7 @@ namespace WordFlux.ApiService.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.HasKey("CardId", "Id");
+                            b1.HasKey("CardId", "__synthesizedOrdinal");
 
                             b1.ToTable("Cards");
 
@@ -414,7 +412,7 @@ namespace WordFlux.ApiService.Migrations
                             b1.Property<Guid>("CardId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<int>("Id")
+                            b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("integer");
 
@@ -437,7 +435,7 @@ namespace WordFlux.ApiService.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.HasKey("CardId", "Id");
+                            b1.HasKey("CardId", "__synthesizedOrdinal");
 
                             b1.ToTable("Cards");
 
@@ -454,18 +452,26 @@ namespace WordFlux.ApiService.Migrations
                     b.Navigation("Translations");
                 });
 
-            modelBuilder.Entity("WordFlux.ApiService.Domain.Deck", b =>
+            modelBuilder.Entity("WordFlux.Domain.Domain.Deck", b =>
                 {
-                    b.HasOne("WordFlux.ApiService.AppUser", "User")
+                    b.HasOne("WordFlux.Domain.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("WordFlux.ApiService.Domain.DeckExportPayload", "Export", b1 =>
+                    b.OwnsOne("WordFlux.Contracts.DeckExportPayload", "Export", b1 =>
                         {
                             b1.Property<Guid>("DeckId")
                                 .HasColumnType("uuid");
+
+                            b1.Property<string>("LearnLanguage")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("NativeLanguage")
+                                .IsRequired()
+                                .HasColumnType("text");
 
                             b1.Property<int>("Status")
                                 .HasColumnType("integer");
@@ -479,12 +485,12 @@ namespace WordFlux.ApiService.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("DeckId");
 
-                            b1.OwnsMany("WordFlux.ApiService.Domain.DeckExportItem", "Items", b2 =>
+                            b1.OwnsMany("WordFlux.Contracts.DeckExportItem", "Items", b2 =>
                                 {
                                     b2.Property<Guid>("DeckExportPayloadDeckId")
                                         .HasColumnType("uuid");
 
-                                    b2.Property<int>("Id")
+                                    b2.Property<int>("__synthesizedOrdinal")
                                         .ValueGeneratedOnAdd()
                                         .HasColumnType("integer");
 
@@ -495,11 +501,9 @@ namespace WordFlux.ApiService.Migrations
                                     b2.Property<string>("Translation")
                                         .HasColumnType("text");
 
-                                    b2.HasKey("DeckExportPayloadDeckId", "Id");
+                                    b2.HasKey("DeckExportPayloadDeckId", "__synthesizedOrdinal");
 
                                     b2.ToTable("Decks");
-
-                                    b2.ToJson("Items");
 
                                     b2.WithOwner()
                                         .HasForeignKey("DeckExportPayloadDeckId");
@@ -513,12 +517,12 @@ namespace WordFlux.ApiService.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WordFlux.ApiService.AppUser", b =>
+            modelBuilder.Entity("WordFlux.Domain.AppUser", b =>
                 {
                     b.Navigation("Roles");
                 });
 
-            modelBuilder.Entity("WordFlux.ApiService.Domain.Deck", b =>
+            modelBuilder.Entity("WordFlux.Domain.Domain.Deck", b =>
                 {
                     b.Navigation("Cards");
                 });

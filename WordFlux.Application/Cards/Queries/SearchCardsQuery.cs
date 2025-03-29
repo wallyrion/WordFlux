@@ -20,7 +20,7 @@ public class SearchCardsQueryHandler(IDbContext dbContext, ICurrentUser currentU
 
         var query = dbContext.Cards
             .AsNoTracking()
-            .Where(x => x.CreatedBy.ToString() == currentUserId)
+            .Where(x => x.CreatedBy == currentUserId)
             .Where(x => x.Term == request.Keyword);
         
         var count = await query.CountAsync(cancellationToken);

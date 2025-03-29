@@ -30,7 +30,7 @@ public static class DecksEndpoints
                 var userId = userManager.GetUserId(claimsPrincipal)!;
 
                 var deck = await dbContext.Decks
-                    .FirstOrDefaultAsync(c => c.UserId == userId && deckId == c.Id, cancellationToken);
+                    .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId) && deckId == c.Id, cancellationToken);
 
                 if (deck == null)
                 {
@@ -136,7 +136,7 @@ public static class DecksEndpoints
                 var createdDeck = new Deck
                 {
                     CreatedAt = DateTime.UtcNow,
-                    UserId = userId,
+                    UserId = Guid.Parse(userId),
                     Id = Guid.NewGuid(),
                     Name = request.Name ?? $"Imported {DateTime.UtcNow.ToLongDateString()}",
                     Type = DeckType.Custom,
@@ -191,7 +191,7 @@ public static class DecksEndpoints
                 return Results.BadRequest();
             }
 
-            var userId = userManager.GetUserId(claimsPrincipal)!;
+            var userId = Guid.Parse(userManager.GetUserId(claimsPrincipal))!;
             var deck = await dbContext.Decks.FirstOrDefaultAsync(x => x.Id == deckId);
 
             if (deck == null)
@@ -227,7 +227,7 @@ public static class DecksEndpoints
                 Level = x.Level,
                 Translations = x.Translations,
                 ReviewInterval = TimeSpan.FromMinutes(2),
-                CreatedBy = Guid.Parse(userId),
+                CreatedBy = userId,
                 NextReviewDate = DateTime.UtcNow
             });
 

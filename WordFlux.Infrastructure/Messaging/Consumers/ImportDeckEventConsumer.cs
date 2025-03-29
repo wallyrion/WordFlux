@@ -42,8 +42,8 @@ public class ImportDeckEventConsumer(
         var notVerifiedItems = payload.Items.Where(x => string.IsNullOrWhiteSpace(x.Translation)).ToList();
 
        // List<Card> translatedVerifiedCards = []; 
-        var translatedVerifiedCards = await AddTranslationForVerifiedCards(verifiedItems, payload, deck.Id, Guid.Parse(deck.UserId));
-        var translatedNotVerifiedCards = await AddTranslationForMissingCards(notVerifiedItems, payload, deck.Id, Guid.Parse(deck.UserId));
+        var translatedVerifiedCards = await AddTranslationForVerifiedCards(verifiedItems, payload, deck.Id, deck.UserId);
+        var translatedNotVerifiedCards = await AddTranslationForMissingCards(notVerifiedItems, payload, deck.Id, deck.UserId);
 
         deck.Export!.Status = DeckExportStatus.Completed; 
         dbContext.Cards.AddRange(translatedVerifiedCards);
