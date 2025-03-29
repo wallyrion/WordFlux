@@ -30,11 +30,12 @@ public class CreateDeckCommandHandler(ICurrentUser currentUser, IDbContext dbCon
     public async Task<Deck> Handle(CreateDeckCommand request, CancellationToken cancellationToken)
     {
         var currentUserId = currentUser.GetUserId();
+        ArgumentNullException.ThrowIfNull(currentUserId);
         
         var createdDeck = new Deck
         {
             CreatedAt = DateTime.UtcNow,
-            UserId = currentUserId,
+            UserId = currentUserId.Value,
             Id = Guid.NewGuid(),
             Name = request.Name,
             Type = DeckType.Custom

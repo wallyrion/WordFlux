@@ -2,5 +2,5 @@
 
 public interface ICurrentUser
 {
-    Guid GetUserId();
+    Guid? GetUserId();
 }

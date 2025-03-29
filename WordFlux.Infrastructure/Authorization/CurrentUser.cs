@@ -8,13 +8,18 @@ namespace WordFlux.Infrastructure.Authorization;
 
 public class CurrentUser(IHttpContextAccessor httpContextAccessor, UserManager<AppUser> userManager) : ICurrentUser
 {
-    public Guid GetUserId()
+    public Guid? GetUserId()
     {
         var claimsPrincipal = httpContextAccessor.HttpContext?.User 
                               ?? throw new InvalidOperationException("No user context available.");
 
         var userId = userManager.GetUserId(claimsPrincipal);
 
+        if (userId is null)
+        {
+            return null;
+        }
+        
         return Guid.Parse(userId!);
     }
 }
