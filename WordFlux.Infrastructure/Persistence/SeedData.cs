@@ -28,16 +28,16 @@ public class SeedData
         },
     ];
 
-    public static async Task InitializeAsync(IServiceProvider serviceProvider)
+    /*public static async Task InitializeAsync(IServiceProvider serviceProvider)
     {
-        await using var context = new ApplicationDbContext(serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>());
+        await using var context = new ApplicationDbContext();
 
         if (context.Users.Any())
         {
             return;
         }
 
-        var userStore = new UserStore<AppUser>(context);
+        var userStore = new UserStore<AppUser, ApplicationRole, ApplicationDbContext>(context);
         var password = new PasswordHasher<AppUser>();
 
         using var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -72,7 +72,7 @@ public class SeedData
         }
 
         await context.SaveChangesAsync();
-    }
+    }*/
 
     private class SeedUser : AppUser
     {
