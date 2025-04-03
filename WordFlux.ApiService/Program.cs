@@ -139,6 +139,8 @@ app
     .MapPushNotificationsEndpoints()
     ;
 
+app.MapMethods("/alive", [HttpMethods.Head], () => Results.Ok());
+
 app.MapGet("/health", async (IConfiguration configuration) =>
 {
     var currentActivity = Activity.Current;
